@@ -22,7 +22,6 @@ async function atualizarTodos() {
 }
 
 io.on('connection', async (socket) => {
-    
     socket.on('fazer_login', async (dados) => {
         const { data, error } = await supabase.from('usuarios').select('*').eq('email', dados.email).eq('senha', dados.senha).single(); 
         if (error) {
