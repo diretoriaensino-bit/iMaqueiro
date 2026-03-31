@@ -19,7 +19,7 @@ let maqueirosOnline = [];
 async function atualizarTodos() {
     try {
         const { data: ativos } = await supabase.from('pedidos').select('*').neq('status', 'finalizado').order('id', { ascending: false });
-        const { data: historico } = await supabase.from('pedidos').select('*').eq('status', 'finalizado').order('finalizado_at', { ascending: false }).limit(20);
+        const { data: historico } = await supabase.from('pedidos').select('*').eq('status', 'finalizado').order('finalizado_at', { ascending: false }).limit(30);
         io.emit('atualizar_lista', { ativos: ativos || [], historico: historico || [] });
     } catch (e) { console.log("Erro ao atualizar:", e); }
 }
@@ -60,7 +60,7 @@ io.on('connection', async (socket) => {
             urgencia: d.urgencia, trajeto: d.trajeto, risco_assistencial: d.risco_assistencial,
             status: 'pendente', maqueiro_sugerido: sugerido
         }]);
-        await atualizarTodos();
+        atualizarTodos();
     });
 
     socket.on('rejeitar_pedido', async (id) => {
@@ -77,8 +77,16 @@ io.on('connection', async (socket) => {
         atualizarTodos();
     });
 
-    socket.on('aceitar_ida', async (d) => {
-        await supabase.from('pedidos').update({ status: 'aceito', maqueiro_ida: d.nomeMaqueiro, aceito_em: new Date().toISOString() }).eq('id', d.idPedido);
+    // --- NOVA LÓGICA DE ACEITE INTELIGENTE ---
+    socket.on('aceitar_chamado', async (dados) => {
+        // Primeiro verifica se é uma Ida ou uma Volta
+        const { data: p } = await supabase.from('pedidos').select('status').eq('id', dados.idPedido).single();
+        
+        if (p && p.status === 'pendente') {
+            await supabase.from('pedidos').update({ status: 'aceito', maqueiro_ida: dados.nomeMaqueiro, aceito_em: new Date().toISOString() }).eq('id', dados.idPedido);
+        } else if (p && p.status === 'aguardando_retorno') {
+            await supabase.from('pedidos').update({ status: 'aceito_retorno', maqueiro_volta: dados.nomeMaqueiro, aceito_retorno_at: new Date().toISOString() }).eq('id', dados.idPedido);
+        }
         atualizarTodos();
     });
     
@@ -89,7 +97,7 @@ io.on('connection', async (socket) => {
     
     socket.on('iniciar_ida', async (id) => {
         await supabase.from('pedidos').update({ status: 'em_transito_ida', inicio_transporte_at: new Date().toISOString() }).eq('id', id);
-        atualizarTodos();
+        await atualizarTodos();
     });
     
     socket.on('entregue_destino', async (id) => {
@@ -103,15 +111,21 @@ io.on('connection', async (socket) => {
     });
 
     socket.on('pedir_retorno', async (id) => {
-        await supabase.from('pedidos').update({ status: 'aguardando_retorno', pedido_retorno_at: new Date().toISOString() }).eq('id', id);
+        let sugerido = null;
+        if (maqueirosOnline.length > 0) {
+            sugerido = maqueirosOnline[0].nome;
+            const m = maqueirosOnline.shift();
+            maqueirosOnline.push(m);
+        }
+        await supabase.from('pedidos').update({ status: 'aguardando_retorno', pedido_retorno_at: new Date().toISOString(), maqueiro_sugerido: sugerido }).eq('id', id);
         atualizarTodos();
     });
     
     socket.on('finalizar_geral', async (id) => {
         await supabase.from('pedidos').update({ status: 'finalizado', finalizado_at: new Date().toISOString() }).eq('id', id);
-        await atualizarTodos();
+        atualizarTodos();
     });
 });
 
 const PORT = process.env.PORT || 3000;
-server.listen(PORT, () => console.log(`🚀 iMaqueiro rodando em http://localhost:${PORT}`));
+server.listen(PORT, () => console.log(`🚀 iMaqueiro rodando na porta ${PORT}`));

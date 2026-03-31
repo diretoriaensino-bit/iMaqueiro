@@ -9,182 +9,211 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
         :root { --primary: #0056b3; --success: #28a745; --light: #f4f7f6; --white: #fff; --dark: #343a40; --warning: #ffc107; --danger: #dc3545; --gray: #6c757d;}
-        body { font-family: 'Segoe UI', sans-serif; background: var(--light); margin: 0; user-select: none; }
+        body { font-family: 'Segoe UI', sans-serif; background: var(--light); margin: 0; user-select: none; color: var(--dark); overflow-x: hidden; }
+        
         .app-shell { width: 100%; min-height: 100vh; display: flex; flex-direction: column; transition: all 0.3s; }
+        
+        /* MOBILE */
         @media (max-width: 900px) {
             .app-shell { max-width: 450px; margin: 0 auto; background: white; box-shadow: 0 0 20px rgba(0,0,0,0.1); }
-            .dashboard-container { flex-direction: column !important; height: auto !important; padding: 10px !important; }
+            .dashboard-container { flex-direction: column !important; height: auto !important; padding: 15px !important; }
             .sidebar-form { width: 100% !important; margin-bottom: 20px; box-shadow: none !important; border: 1px solid #eee; }
-            header { padding: 10px 15px !important; } header h2 { font-size: 1.1rem; }
-            .stats-bar { gap: 10px; } .stat-item { padding: 10px !important; } .stat-item h2 { font-size: 1.2rem; }
+            header { padding: 15px 20px !important; border-radius: 0 !important; }
+            .stats-bar { flex-wrap: wrap; }
+            .stat-item { padding: 10px !important; }
+            .cards-grid { grid-template-columns: 1fr !important; }
         }
-        .screen { display: none; padding: 20px; box-sizing: border-box; flex: 1; flex-direction: column; }
-        .active { display: flex; }
-        header { background: var(--primary); color: white; padding: 15px 30px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
-        .dashboard-container { display: flex; gap: 20px; width: 100%; padding: 20px; box-sizing: border-box; height: calc(100vh - 100px); }
+
+        /* DESKTOP */
         @media (min-width: 901px) {
             .app-shell { max-width: 100%; margin: 0; }
-            .dashboard-container { max-width: 1400px; margin: 0 auto; height: calc(100vh - 120px); }
+            .dashboard-container { display: flex; gap: 20px; width: 100%; max-width: 1400px; margin: 0 auto; height: calc(100vh - 100px); padding: 0 20px; }
             .sidebar-form { width: 350px; background: white; padding: 20px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); overflow-y: auto; flex-shrink: 0; }
             .main-panel { flex: 1; background: #eef2f5; padding: 20px; border-radius: 15px; overflow-y: auto; }
+            .cards-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 15px; }
         }
-        .cards-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 15px; }
-        .card { background: white; border-radius: 12px; padding: 15px; border-left: 8px solid #ddd; box-shadow: 0 2px 5px rgba(0,0,0,0.05); position: relative; }
-        .btn { padding: 12px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 0.9rem; -webkit-appearance: none; appearance: none; }
+
+        .screen { display: none; padding: 20px; box-sizing: border-box; flex: 1; flex-direction: column; }
+        .active { display: flex; }
+
+        header { background: var(--primary); color: white; padding: 15px 30px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 4px 10px rgba(0,0,0,0.1); margin-bottom: 10px; }
+        
+        .card { background: white; border-radius: 12px; padding: 15px; border-left: 8px solid #ddd; box-shadow: 0 2px 5px rgba(0,0,0,0.05); position: relative; display: flex; flex-direction: column; justify-content: space-between;}
+        
+        .btn { padding: 12px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 0.95rem; transition: 0.2s; -webkit-appearance: none; appearance: none; }
+        .btn:hover { opacity: 0.9; }
         .btn-main { background: var(--primary); color: white; width: 100%; }
+        
         input:not([type="range"]), select { 
-            -webkit-appearance: none; -moz-appearance: none; appearance: none; 
-            width: 100%; padding: 12px; margin-bottom: 12px; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; background: white; font-size: 0.9rem;
+            -webkit-appearance: none; appearance: none; width: 100%; padding: 12px; margin-bottom: 12px; border: 1px solid #ddd; border-radius: 8px; background: white; font-size: 0.9rem;
         }
-        label { font-size: 0.75rem; font-weight: bold; color: var(--gray); display: block; margin-bottom: 3px; }
+
+        .stat-item { background: white; padding: 15px; border-radius: 10px; flex: 1; text-align: center; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
         .stats-bar { display: flex; gap: 10px; margin-bottom: 20px; }
-        .stat-item { background: white; padding: 12px; border-radius: 10px; flex: 1; text-align: center; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
-        .stat-item h2 { margin: 0; color: var(--primary); font-size: 1.5rem; }
-        .stat-item span { font-size: 0.7rem; color: var(--gray); font-weight: bold; text-transform: uppercase; }
-        .badge-risco { background: var(--danger); color: white; font-size: 10px; padding: 3px 8px; border-radius: 10px; font-weight: bold; animation: blink 1s infinite; }
-        @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.6; } }
+
+        /* ANIMAÇÃO DE LOGIN */
+        .login-animation-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--primary); z-index: 9999; flex-direction: column; justify-content: center; align-items: center; color: white; }
+        .maca-icon { font-size: 5rem; animation: macaAndando 2s linear infinite; }
+        @keyframes macaAndando { 0% { transform: translateX(-150%) scaleX(-1); } 100% { transform: translateX(150%) scaleX(-1); } }
+
+        /* MODAIS */
         .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 999; justify-content: center; align-items: center; padding: 20px; }
-        .modal-content { background: white; width: 90%; max-width: 400px; border-radius: 15px; padding: 20px; }
-        .chat-box { height: 250px; overflow-y: auto; background: #f8f9fa; padding: 10px; border-radius: 10px; margin-bottom: 15px; display: flex; flex-direction: column; gap: 8px; }
+        .modal-content { background: white; width: 100%; max-width: 400px; border-radius: 15px; padding: 20px; position: relative; }
+        
+        /* CHAT */
+        .chat-box { height: 250px; overflow-y: auto; background: #f8f9fa; padding: 10px; border-radius: 10px; display: flex; flex-direction: column; gap: 8px; }
         .msg { padding: 8px 12px; border-radius: 12px; font-size: 0.85rem; max-width: 80%; }
         .msg.meu { align-self: flex-end; background: var(--primary); color: white; }
         .msg.outro { align-self: flex-start; background: #ddd; }
-        #call-modal { display: none; position: fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.95); z-index:1500; color:white; flex-direction:column; justify-content:center; align-items:center; text-align:center; padding:20px;}
-        .pulse { width: 80px; height: 80px; border-radius: 50%; animation: pulse-anim 1.5s infinite; margin-bottom: 20px; display: flex; align-items: center; justify-content: center; font-size: 2rem; }
-        @keyframes pulse-anim { 0% { box-shadow: 0 0 0 0 rgba(255,255,255,0.7); } 70% { box-shadow: 0 0 0 20px rgba(255,255,255,0); } 100% { box-shadow: 0 0 0 0 rgba(255,255,255,0); } }
-        #swipe-accept { -webkit-appearance: none; -moz-appearance: none; appearance: none; width: 100%; background: transparent; position: absolute; height: 100%; cursor: pointer; outline: none; z-index: 10; }
-        #swipe-accept::-webkit-slider-thumb { -webkit-appearance: none; appearance: none; width: 60px; height: 60px; border-radius: 50%; background: var(--success); }
-        #swipe-accept::-moz-range-thumb { -moz-appearance: none; appearance: none; width: 60px; height: 60px; border-radius: 50%; background: var(--success); border: none; }
-        .toast-notif { position: fixed; top: 20px; right: 20px; background: var(--dark); color: white; padding: 15px; border-radius: 10px; z-index: 2000; display: none; }
+        .toast-notif { position: fixed; top: 20px; right: 20px; background: var(--dark); color: white; padding: 15px 25px; border-radius: 10px; z-index: 2000; display: none; box-shadow: 0 5px 15px rgba(0,0,0,0.3); font-size: 0.9rem; cursor: pointer; }
 
-        /* NOVA ANIMAÇÃO DE LOGIN (MACA) */
-        .login-animation-overlay {
-            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0, 86, 179, 0.95); z-index: 9999; flex-direction: column;
-            justify-content: center; align-items: center; color: white; text-align: center;
-        }
-        .maca-icon {
-            font-size: 5rem; color: white;
-            animation: macaAndando 2s linear infinite;
-        }
-        @keyframes macaAndando {
-            0% { transform: translateX(-150%) scaleX(-1); }
-            100% { transform: translateX(150%) scaleX(-1); }
-        }
+        /* TELA CHAMADA MAQUEIRO (UBER STYLE) */
+        #call-modal { display: none; position: fixed; top:0; left:0; width:100%; height:100%; background:rgba(20,20,20,0.98); z-index:1500; color:white; flex-direction:column; justify-content:center; align-items:center; text-align:center; padding:20px;}
+        #swipe-accept { -webkit-appearance: none; appearance: none; width: 100%; background: transparent; position: absolute; height: 100%; cursor: pointer; outline: none; z-index: 10; }
+        #swipe-accept::-webkit-slider-thumb { -webkit-appearance: none; appearance: none; width: 65px; height: 65px; border-radius: 50%; background: var(--success); box-shadow: 0 0 15px var(--success);}
     </style>
 </head>
 <body>
+
     <div class="app-shell">
         
-        <div id="screen-login" class="screen active">
-            <div style="text-align:center; background:white; padding:30px; border-radius:20px; box-shadow:0 10px 30px rgba(0,0,0,0.1); width:100%; max-width:350px; margin: auto;">
-                <img src="/logo-hospital.png" style="width:80px; margin-bottom:10px;">
-                <h1 style="color:var(--primary); margin:0;">iMaqueiro</h1>
-                <p style="color:var(--gray); font-size:0.9rem; margin-bottom: 20px;">Painel Logístico Hospitalar</p>
-                <input type="email" id="login-email" placeholder="E-mail profissional">
+        <div id="screen-login" class="screen active" style="justify-content:center; align-items:center; background:var(--primary); padding: 0;">
+            <div style="background:white; padding:40px 30px; border-radius:20px; box-shadow:0 10px 30px rgba(0,0,0,0.2); width:90%; max-width:350px; text-align:center;">
+                <img src="/logo-hospital.png" style="width:70px; margin-bottom:15px;">
+                <h2 style="color:var(--primary); margin:0 0 20px 0; font-size: 1.8rem;">iMaqueiro</h2>
+                <input type="email" id="login-email" placeholder="E-mail corporativo">
                 <input type="password" id="login-senha" placeholder="Senha">
-                <button class="btn btn-main" onclick="tentarLogin()">ACESSAR</button>
-                <p id="login-msg" style="color:red; font-size:0.8rem; margin-top:10px;"></p>
+                <button class="btn btn-main" style="margin-top: 10px;" onclick="tentarLogin()">ACESSAR</button>
+                <p id="login-msg" style="color:red; font-size:0.85rem; margin-top:15px;"></p>
             </div>
         </div>
 
-        <div id="screen-nurse" class="screen" style="flex-direction: column; padding: 0;">
+        <div id="screen-nurse" class="screen" style="padding: 0;">
             <header>
-                <div style="display:flex; align-items:center; gap:12px;">
-                    <img src="/logo-hospital.png" style="width:35px; filter: brightness(0) invert(1);">
-                    <h2 style="margin:0">Enfermagem</h2>
+                <div style="display:flex; align-items:center; gap:10px;">
+                    <img src="/logo-hospital.png" style="width:30px; filter: brightness(0) invert(1);">
+                    <h3 style="margin:0">Enfermagem</h3>
                 </div>
                 <div style="display:flex; align-items:center; gap:15px;">
-                    <span id="user-name-nurse" style="font-weight:bold; font-size: 0.85rem;"></span>
-                    <button class="btn" style="background:rgba(255,255,255,0.2); color:white; padding: 5px 10px;" onclick="fazerLogout()">Sair</button>
+                    <span id="user-name-nurse" style="font-weight:bold; font-size:0.9rem;"></span>
+                    <button class="btn" style="background:rgba(255,255,255,0.2); color:white; padding:8px 15px;" onclick="fazerLogout()">Sair</button>
                 </div>
             </header>
+
             <div class="dashboard-container">
                 <div class="sidebar-form">
-                    <h3 style="margin-top:0"><i class="fa fa-plus-circle"></i> Novo Pedido</h3>
-                    <label>Paciente</label>
-                    <input type="text" id="paciente" placeholder="Nome completo">
+                    <h3 style="margin:0 0 15px 0; color:var(--primary)"><i class="fa fa-plus-circle"></i> Novo Transporte</h3>
+                    <label>Paciente</label><input type="text" id="paciente" placeholder="Nome do Paciente">
                     <div style="display:flex; gap:10px;">
-                        <div style="flex:1"><label>Origem</label><input type="text" id="origem" placeholder="Ex: UTI 01"></div>
+                        <div style="flex:1"><label>Origem</label><input type="text" id="origem" placeholder="Ex: UTI"></div>
                         <div style="flex:1"><label>Destino</label><input type="text" id="destino" placeholder="Ex: Raio-X"></div>
                     </div>
                     <label>Equipamento</label>
-                    <select id="tipo">
-                        <option value="Maca">Maca</option><option value="Cadeira">Cadeira de Rodas</option>
-                    </select>
+                    <select id="tipo"><option value="Maca (Padrão)">Maca (Padrão)</option><option value="Cadeira de Rodas">Cadeira de Rodas</option><option value="Maca com O2">Maca com O2</option><option value="Incubadora">Incubadora</option></select>
                     <label>Urgência</label>
-                    <select id="urgencia">
-                        <option value="Verde">Rotina (Verde)</option>
-                        <option value="Amarelo">Urgente (Amarelo)</option>
-                        <option value="Vermelho">Emergência (Vermelho)</option>
-                    </select>
+                    <select id="urgencia"><option value="Verde">Verde (Rotina)</option><option value="Amarelo">Amarelo (Urgente)</option><option value="Vermelho">Vermelho (Emergência)</option></select>
                     <label>Trajeto</label>
-                    <select id="trajeto">
-                        <option value="ida_volta">Ida e Volta</option>
-                        <option value="so_ida">Somente Ida</option>
-                    </select>
-                    <label>Risco / Isolamento</label>
-                    <select id="risco">
-                        <option value="Nenhum">Sem Risco</option>
-                        <option value="Contato">Contato</option>
-                    </select>
-                    <button class="btn btn-main" onclick="enviarPedido()">SOLICITAR MAQUEIRO</button>
+                    <select id="trajeto"><option value="ida_volta">Ida e Volta</option><option value="so_ida">Somente Ida</option></select>
+                    <label>Isolamento</label>
+                    <select id="risco"><option value="Nenhum">Sem Risco</option><option value="Contato">Isolamento Contato</option><option value="Gotículas">Isolamento Gotículas</option></select>
+                    <button class="btn btn-main" style="padding:15px; margin-top: 10px;" onclick="enviarPedido()">SOLICITAR AGORA</button>
                 </div>
+
                 <div class="main-panel">
                     <div class="stats-bar">
                         <div class="stat-item"><h2 id="stat-pendente">0</h2><span>Aguardando</span></div>
-                        <div class="stat-item"><h2 id="stat-curso">0</h2><span>Em curso</span></div>
-                        <div class="stat-item"><h2 id="stat-risco" style="color:var(--danger)">0</h2><span>Riscos</span></div>
+                        <div class="stat-item"><h2 id="stat-curso">0</h2><span>Em trânsito</span></div>
+                        <div class="stat-item"><h2 id="stat-risco" style="color:var(--danger)">0</h2><span>Riscos Biológicos</span></div>
                     </div>
+                    <h3 style="color:var(--gray); margin-bottom: 10px;">Transportes Ativos</h3>
                     <div class="cards-grid" id="nurse-list"></div>
                 </div>
             </div>
         </div>
 
-        <div id="screen-maqueiro" class="screen">
-            <div class="user-bar"><span id="user-name-maq" style="font-weight:bold"></span><button onclick="fazerLogout()">Sair</button></div>
-            <button class="btn" id="btn-som" onclick="ativarAudio()" style="background:var(--success); color:white; margin-bottom:15px;">🔔 ATIVAR ALERTAS</button>
-            <div id="maqueiro-list"></div>
-            <h4 style="margin:20px 0 10px 0">Meus Transportes Hoje</h4>
-            <div id="maqueiro-history"></div>
+        <div id="screen-maqueiro" class="screen" style="padding: 0;">
+            <header style="background:var(--dark);">
+                <div style="display:flex; align-items:center; gap:10px;">
+                    <i class="fa fa-ambulance" style="font-size: 1.5rem;"></i>
+                    <h3 style="margin:0">Painel do Maqueiro</h3>
+                </div>
+                <div style="display:flex; align-items:center; gap:15px;">
+                    <span id="user-name-maq" style="font-weight:bold; font-size:0.9rem;"></span>
+                    <button class="btn" style="background:rgba(255,255,255,0.2); color:white; padding:8px 15px;" onclick="fazerLogout()">Sair</button>
+                </div>
+            </header>
+
+            <div class="dashboard-container">
+                <div class="sidebar-form" style="background:var(--primary); color:white;">
+                    <div style="text-align: center; margin-bottom: 20px;">
+                        <i class="fa fa-user-circle" style="font-size: 4rem; opacity: 0.8; margin-bottom: 10px;"></i>
+                        <h3 style="margin:0;">Meu Desempenho</h3>
+                    </div>
+                    <div class="stats-bar" style="flex-direction: column;">
+                        <div class="stat-item" style="background:rgba(255,255,255,0.1); color:white; border:none; box-shadow:none;">
+                            <h2 id="total-hoje" style="color:white; font-size: 2.5rem;">0</h2><span>Corridas Finalizadas Hoje</span>
+                        </div>
+                        <div class="stat-item" style="background:var(--success); color:white; border:none; box-shadow:none;">
+                            <h2 style="color:white;">ON</h2><span>Status</span>
+                        </div>
+                    </div>
+                    <button class="btn" id="btn-som" onclick="ativarAudio()" style="background:var(--warning); color:black; width:100%; margin-top:10px;"><i class="fa fa-volume-up"></i> Ativar Alertas Sonoros</button>
+                    
+                    <h4 style="border-top: 1px solid rgba(255,255,255,0.2); padding-top: 20px; margin-top: 20px;"><i class="fa fa-history"></i> Histórico Recente</h4>
+                    <div id="maqueiro-history" style="font-size: 0.85rem; opacity: 0.9;"></div>
+                </div>
+
+                <div class="main-panel">
+                    <div id="area-corrida-ativa" style="display:none; margin-bottom: 30px;">
+                        <h3 style="color:var(--success); margin:0 0 10px 0;"><i class="fa fa-play-circle"></i> Minha Corrida Atual</h3>
+                        <div class="cards-grid" id="maqueiro-ativo"></div>
+                    </div>
+
+                    <h3 style="color:var(--gray); margin:0 0 10px 0;"><i class="fa fa-list"></i> Chamados Disponíveis</h3>
+                    <div class="cards-grid" id="maqueiro-pendentes"></div>
+                </div>
+            </div>
         </div>
+
     </div>
 
     <div id="login-animation" class="login-animation-overlay">
-        <i class="fa fa-bed maca-icon"></i>
-        <p style="margin-top: 20px; font-size: 1.2rem; font-weight: bold;">Validando credenciais...</p>
+        <i class="fa fa-bed maca-icon"></i><h2 style="margin-top:20px;">iMaqueiro</h2><p>Conectando...</p>
     </div>
 
     <div id="chat-modal" class="modal-overlay">
         <div class="modal-content">
-            <h3>Chat de Apoio</h3>
+            <h3 style="margin-top:0">Mensagens</h3>
             <div class="chat-box" id="chat-box"></div>
-            <div id="quick-replies" style="display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:15px;"></div>
-            <button class="btn" style="width:100%; margin-top:15px; background:#eee" onclick="fecharChat()">Fechar</button>
+            <div id="quick-replies" style="display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:10px;"></div>
+            <button class="btn" style="width:100%; margin-top:15px; background:#eee" onclick="document.getElementById('chat-modal').style.display='none'; idChatAtivo=null;">Fechar</button>
         </div>
     </div>
 
     <div id="qr-modal" class="modal-overlay">
         <div class="modal-content">
-            <h3>Validar Leito</h3>
-            <div id="qr-reader"></div>
+            <h3 style="margin-top:0">Escanear Leito</h3>
+            <div id="qr-reader" style="width:100%; border-radius:10px; overflow:hidden;"></div>
             <button class="btn" style="background:var(--danger); color:white; width:100%; margin-top:15px;" onclick="fecharQR()">Cancelar</button>
         </div>
     </div>
 
     <div id="call-modal">
-        <div id="call-risco" style="background:var(--danger); width:100%; padding:10px; position:absolute; top:0; font-weight:bold; display:none;">⚠️ ISOLAMENTO!</div>
-        <div class="pulse" id="call-icon" style="background:var(--success);"><i class="fa fa-ambulance"></i></div>
-        <h2 id="call-paciente" style="margin:0; font-size: 1.4rem;"></h2>
-        <h1 id="call-rota" style="margin:10px 0;"></h1>
-        <div style="width:280px; height:60px; background:#333; border-radius:30px; position:relative; display:flex; align-items:center; justify-content:center; margin-top:30px;">
-            <span style="color:#888; font-weight:bold; font-size: 0.9rem;">Deslize para aceitar ➔</span>
+        <div id="call-risco" style="background:var(--danger); width:100%; padding:15px; position:absolute; top:0; font-weight:bold; font-size:1.1rem; display:none; letter-spacing: 1px;">⚠️ ISOLAMENTO</div>
+        <i class="fa fa-bell fa-shake" style="font-size: 3.5rem; color: var(--warning); margin-bottom: 15px;"></i>
+        <h2 id="call-paciente" style="margin:0; font-size: 1.5rem; color: #fff;"></h2>
+        <h1 id="call-rota" style="margin:10px 0; font-size: 2.8rem; color: var(--warning);"></h1>
+        <p id="call-equip" style="color: #ccc; font-size: 1.1rem; margin-bottom: 40px;"></p>
+        
+        <div style="width:300px; height:70px; background:#222; border-radius:35px; position:relative; display:flex; align-items:center; justify-content:center; border: 2px solid #555;">
+            <span style="color:#aaa; font-weight:bold;">DESLIZE PARA ACEITAR</span>
             <input type="range" min="0" max="100" value="0" id="swipe-accept">
         </div>
-        <button onclick="passarVezCall()" style="background:none; border:none; color:var(--warning); margin-top:20px; font-weight:bold; cursor:pointer;">PASSAR A VEZ</button>
+        <button onclick="passarVezCall()" style="background:none; border:none; color:var(--danger); margin-top:30px; font-weight:bold; font-size:1.1rem; text-decoration:underline;">PASSAR A VEZ</button>
     </div>
 
-    <div id="toast" class="toast-notif" onclick="this.style.display='none'"><b>Chat:</b> <span id="toast-msg"></span></div>
+    <div id="toast" class="toast-notif" onclick="this.style.display='none'"><i class="fa fa-envelope" style="font-size:1.5rem; color:var(--warning)"></i> <div><b id="toast-autor"></b><br><span id="toast-msg"></span></div></div>
+
     <audio id="audio-alerta" src="https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3" loop></audio>
     <audio id="audio-emergencia" src="https://assets.mixkit.co/active_storage/sfx/951/951-preview.mp3" loop></audio>
 
@@ -208,55 +237,159 @@
         socket.on('login_sucesso', u => {
             usuario = u;
             localStorage.setItem('imaqueiro_user', JSON.stringify(u));
-            
-            // MOSTRA ANIMAÇÃO
-            const animEl = document.getElementById('login-animation');
-            animEl.style.display = 'flex';
-
-            // AGUARDA 2 SEGUNDOS E ABRE O PAINEL
-            setTimeout(() => {
-                animEl.style.display = 'none';
-                abrirPainel(u);
-            }, 2000);
+            document.getElementById('login-animation').style.display = 'flex';
+            setTimeout(() => { document.getElementById('login-animation').style.display = 'none'; abrirPainel(u); }, 2000);
         });
 
         socket.on('login_erro', m => document.getElementById('login-msg').innerText = m);
-        function abrirPainel(u) { document.querySelectorAll('.screen').forEach(s => s.classList.remove('active')); document.getElementById(u.cargo === 'enfermagem' ? 'screen-nurse' : 'screen-maqueiro').classList.add('active'); document.getElementById(u.cargo === 'enfermagem' ? 'user-name-nurse' : 'user-name-maq').innerText = u.nome; socket.emit('solicitar_lista'); }
         function fazerLogout() { localStorage.removeItem('imaqueiro_user'); location.reload(); }
-        function enviarPedido() { const d = { paciente: document.getElementById('paciente').value, origem: document.getElementById('origem').value, destino: document.getElementById('destino').value, tipo: document.getElementById('tipo').value, urgencia: document.getElementById('urgencia').value, trajeto: document.getElementById('trajeto').value, risco_assistencial: document.getElementById('risco').value }; if(!d.paciente || !d.origem || !d.destino) return alert("Preencha origem e destino!"); socket.emit('novo_pedido', d); document.getElementById('paciente').value = ""; document.getElementById('origem').value = ""; document.getElementById('destino').value = ""; }
+
+        function abrirPainel(u) {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.getElementById(u.cargo === 'enfermagem' ? 'screen-nurse' : 'screen-maqueiro').classList.add('active');
+            document.getElementById(u.cargo === 'enfermagem' ? 'user-name-nurse' : 'user-name-maq').innerText = u.nome;
+            socket.emit('solicitar_lista');
+        }
+
+        function enviarPedido() {
+            const d = { paciente: document.getElementById('paciente').value, origem: document.getElementById('origem').value, destino: document.getElementById('destino').value, tipo: document.getElementById('tipo').value, urgencia: document.getElementById('urgencia').value, trajeto: document.getElementById('trajeto').value, risco_assistencial: document.getElementById('risco').value };
+            if(!d.paciente || !d.origem || !d.destino) return alert("Preencha origem e destino!");
+            socket.emit('novo_pedido', d);
+            document.getElementById('paciente').value = ""; document.getElementById('origem').value = ""; document.getElementById('destino').value = "";
+        }
+
         socket.on('atualizar_lista', data => { pedidosAtivos = data.ativos; renderizar(data.ativos, data.historico); });
-        socket.on('notificacao_mensagem', d => { if(d.autor !== usuario.nome && idChatAtivo !== d.idPedido) { document.getElementById('toast-msg').innerText = `${d.autor}: ${d.texto}`; document.getElementById('toast').style.display = 'block'; setTimeout(() => document.getElementById('toast').style.display='none', 4000); } });
+
+        socket.on('notificacao_mensagem', d => {
+            if(d.autor !== usuario.nome && idChatAtivo !== d.idPedido) {
+                document.getElementById('toast-autor').innerText = d.autor; document.getElementById('toast-msg').innerText = d.texto;
+                document.getElementById('toast').style.display = 'flex';
+                setTimeout(() => document.getElementById('toast').style.display='none', 5000);
+            }
+        });
 
         function renderizar(ativos, historico) {
-            const nList = document.getElementById('nurse-list'), mList = document.getElementById('maqueiro-list'), mHist = document.getElementById('maqueiro-history');
+            const nList = document.getElementById('nurse-list');
+            const mPendentes = document.getElementById('maqueiro-pendentes');
+            const mAtivo = document.getElementById('maqueiro-ativo');
+            const mHist = document.getElementById('maqueiro-history');
+            
             if(!usuario) return;
-            nList.innerHTML = ""; mList.innerHTML = ""; mHist.innerHTML = "";
-            let callNow = false; contHoje = 0;
+            nList.innerHTML = ""; mPendentes.innerHTML = ""; mAtivo.innerHTML = ""; mHist.innerHTML = "";
+            let callNow = false; let contHoje = 0; let temAtivo = false;
+            let cPendente = 0, cCurso = 0, cRisco = 0;
+
             ativos.forEach(p => {
                 const color = p.urgencia === 'Vermelho' ? 'var(--danger)' : (p.urgencia === 'Amarelo' ? 'var(--warning)' : 'var(--success)');
-                const badgeRisco = p.risco_assistencial !== 'Nenhum' ? `<span style="background:red; color:white; font-size:9px; padding:2px 5px; border-radius:5px;">ISOLAMENTO</span>` : "";
-                const card = `<div class="card" style="border-left-color:${color}"><div style="display:flex; justify-content:space-between; align-items:start;"><b>${p.origem} ➔ ${p.destino}</b> ${badgeRisco}</div><div style="font-size:0.9rem; margin:5px 0;">👤 ${p.paciente}</div><div style="font-size:0.8rem; color:var(--gray);">${p.tipo} | ${p.status.toUpperCase().replace(/_/g, ' ')}</div><button onclick="abrirChat(${p.id})" style="position:absolute; right:10px; bottom:10px; border:none; background:#f0f0f0; width:30px; height:30px; border-radius:50%;"><i class="fa fa-comment"></i></button></div>`;
-                if(usuario.cargo === 'enfermagem') nList.innerHTML += `<div>${card}${p.status === 'no_destino' && p.trajeto === 'ida_volta' ? `<button class="btn btn-main" style="margin-top:5px; background:var(--success); font-size:0.8rem; padding:8px;" onclick="socket.emit('pedir_retorno', ${p.id})">Solicitar Retorno</button>` : ""}</div>`;
+                const badgeRisco = p.risco_assistencial !== 'Nenhum' ? `<span style="background:var(--danger); color:white; font-size:9px; padding:3px 6px; border-radius:5px; font-weight:bold;">${p.risco_assistencial.toUpperCase()}</span>` : "";
+                
+                if(p.risco_assistencial !== 'Nenhum') cRisco++;
+                if(p.status === 'pendente') cPendente++; else cCurso++;
+
+                const cardBase = `
+                    <div class="card" style="border-left-color:${color}">
+                        <div style="display:flex; justify-content:space-between; align-items:start; margin-bottom:8px;">
+                            <b style="font-size:1.05rem">${p.origem} ➔ ${p.destino}</b> ${badgeRisco}
+                        </div>
+                        <div style="font-size:0.95rem; margin-bottom:5px;">👤 ${p.paciente}</div>
+                        <div style="font-size:0.8rem; color:var(--gray); margin-bottom:5px;">🚑 ${p.tipo}</div>
+                        <div style="font-size:0.85rem;">Status: <b style="color:var(--primary)">${p.status.toUpperCase().replace(/_/g, ' ')}</b></div>
+                        <button onclick="abrirChat(${p.id})" style="position:absolute; right:15px; bottom:15px; border:none; background:#f0f0f0; width:35px; height:35px; border-radius:50%; cursor:pointer;"><i class="fa fa-comment" style="color:var(--primary)"></i></button>
+                `;
+
+                // TELA DA ENFERMAGEM
+                if(usuario.cargo === 'enfermagem') {
+                    const infoMaq = `<div style="font-size:0.8rem; color:var(--gray); margin-top:5px;">Maqueiro: ${p.maqueiro_ida || '---'}</div>`;
+                    const btnRetorno = (p.status === 'no_destino' && p.trajeto === 'ida_volta') ? `<button class="btn btn-main" style="margin-top:12px; background:var(--success);" onclick="socket.emit('pedir_retorno', ${p.id})"><i class="fa fa-undo"></i> Solicitar Retorno</button>` : "";
+                    nList.innerHTML += `<div>${cardBase}${infoMaq}${btnRetorno}</div></div>`;
+                }
+                
+                // TELA DO MAQUEIRO
                 if(usuario.cargo === 'maqueiro') {
-                    if((p.status === 'pendente' || p.status === 'aguardando_retorno') && (!p.maqueiro_sugerido || p.maqueiro_sugerido === usuario.nome)) { callNow = true; idChamadoAtual = p.id; document.getElementById('call-paciente').innerText = p.paciente; document.getElementById('call-rota').innerText = p.origem + " ➔ " + p.destino; document.getElementById('call-risco').style.display = (p.risco_assistencial !== 'Nenhum' ? 'block' : 'none'); if(audioLigado) p.urgencia === 'Vermelho' ? document.getElementById('audio-emergencia').play() : document.getElementById('audio-alerta').play(); }
-                    let b = "";
-                    if(p.maqueiro_ida === usuario.nome || p.maqueiro_volta === usuario.nome) { if(p.status === 'aceito' || p.status === 'aceito_retorno') b = `<button class="btn btn-main" onclick="abrirQR(${p.id})">Confirmar Leito (QR)</button>`; else if(p.status === 'na_origem') b = `<button class="btn" style="background:var(--warning); width:100%" onclick="socket.emit('iniciar_ida', ${p.id})">Iniciar Trajeto</button>`; else if(p.status === 'em_transito_ida') b = `<button class="btn" style="background:var(--dark); color:white; width:100%" onclick="socket.emit('entregue_destino', ${p.id})">Finalizar</button>`; }
-                    if(b || p.status === 'pendente') mList.innerHTML += card + b;
+                    const isPendente = p.status === 'pendente' || p.status === 'aguardando_retorno';
+                    const isMeu = p.maqueiro_ida === usuario.nome || p.maqueiro_volta === usuario.nome;
+
+                    if(isPendente) {
+                        // Lógica da Roleta (Modal Tela Preta)
+                        if(!p.maqueiro_sugerido || p.maqueiro_sugerido === usuario.nome) {
+                            callNow = true; idChamadoAtual = p.id;
+                            document.getElementById('call-paciente').innerText = p.paciente;
+                            document.getElementById('call-rota').innerText = p.origem + " ➔ " + p.destino;
+                            document.getElementById('call-equip').innerText = p.tipo;
+                            document.getElementById('call-risco').style.display = (p.risco_assistencial !== 'Nenhum' ? 'block' : 'none');
+                            if(audioLigado) p.urgencia === 'Vermelho' ? document.getElementById('audio-emergencia').play() : document.getElementById('audio-alerta').play();
+                        }
+                        
+                        // Lógica da Lista de Disponíveis (Botão Aceitar Manual)
+                        let btnAceitar = `<button class="btn btn-main" style="background:var(--success); margin-top:15px; width:100%;" onclick="aceitarChamadoManual(${p.id})">ACEITAR CHAMADO</button>`;
+                        mPendentes.innerHTML += `${cardBase}${btnAceitar}</div>`;
+                    } 
+                    else if (isMeu) {
+                        temAtivo = true;
+                        let btnAcao = "";
+                        if(p.status === 'aceito' || p.status === 'aceito_retorno') btnAcao = `<button class="btn btn-main" style="margin-top:15px; width:100%;" onclick="abrirQR(${p.id})"><i class="fa fa-qrcode"></i> LER QR CODE LEITO</button>`;
+                        else if(p.status === 'na_origem') btnAcao = `<button class="btn" style="background:var(--warning); margin-top:15px; width:100%;" onclick="socket.emit('iniciar_ida', ${p.id})"><i class="fa fa-play"></i> INICIAR TRAJETO</button>`;
+                        else if(p.status === 'em_transito_ida') btnAcao = `<button class="btn" style="background:var(--dark); color:white; margin-top:15px; width:100%;" onclick="socket.emit('entregue_destino', ${p.id})"><i class="fa fa-check"></i> ENTREGUE NO DESTINO</button>`;
+                        
+                        mAtivo.innerHTML += `${cardBase}${btnAcao}</div>`;
+                    }
                 }
             });
-            historico.forEach(p => { if(p.maqueiro_ida === usuario.nome || p.maqueiro_volta === usuario.nome) { contHoje++; mHist.innerHTML += `<div style="background:white; padding:10px; border-radius:8px; margin-bottom:8px; font-size:0.8rem; border-left:4px solid #ccc;"><b>${p.origem} ➔ ${p.destino}</b> | ${p.paciente}</div>`; } });
-            if(usuario.cargo === 'maqueiro') document.getElementById('total-hoje').innerText = contHoje;
+
+            // ATUALIZA PAINÉIS EXTRAS
+            if(usuario.cargo === 'enfermagem') {
+                document.getElementById('stat-pendente').innerText = cPendente;
+                document.getElementById('stat-curso').innerText = cCurso;
+                document.getElementById('stat-risco').innerText = cRisco;
+            }
+
+            if(usuario.cargo === 'maqueiro') {
+                document.getElementById('area-corrida-ativa').style.display = temAtivo ? 'block' : 'none';
+                
+                historico.forEach(p => {
+                    if(p.maqueiro_ida === usuario.nome || p.maqueiro_volta === usuario.nome) {
+                        contHoje++;
+                        mHist.innerHTML += `<div style="background:rgba(255,255,255,0.1); padding:10px; border-radius:8px; margin-bottom:10px; border-left:3px solid var(--success); display:flex; justify-content:space-between; align-items:center;">
+                            <div><b>${p.origem} ➔ ${p.destino}</b><br><span style="opacity:0.8">${p.paciente}</span></div>
+                            <i class="fa fa-check-circle" style="color:var(--success); font-size:1.2rem;"></i>
+                        </div>`;
+                    }
+                });
+                document.getElementById('total-hoje').innerText = contHoje;
+            }
+            
             document.getElementById('call-modal').style.display = callNow ? 'flex' : 'none';
         }
-        function abrirChat(id) { idChatAtivo = id; const p = pedidosAtivos.find(x => x.id === id); const box = document.getElementById('chat-box'); box.innerHTML = (p.chat_mensagens || []).map(m => `<div class="msg ${m.autor === usuario.nome ? 'meu' : 'outro'}"><b>${m.autor}:</b> ${m.texto}</div>`).join(''); const fr = usuario.cargo === 'maqueiro' ? ["Caminho livre", "Elevador lotado", "Paciente em banho"] : ["Aguarde no local", "Pode vir", "Finalizado"]; document.getElementById('quick-replies').innerHTML = fr.map(f => `<button class="btn" style="border:1px solid var(--primary); background:none; font-size:0.7rem;" onclick="enviarMensagem('${f}')">${f}</button>`).join(''); document.getElementById('chat-modal').style.display = 'flex'; box.scrollTop = box.scrollHeight; }
-        function enviarMensagem(texto) { socket.emit('enviar_mensagem', { idPedido: idChatAtivo, texto, autor: usuario.nome }); fecharChat(); }
-        function fecharChat() { document.getElementById('chat-modal').style.display = 'none'; idChatAtivo = null; }
-        function abrirQR(id) { document.getElementById('qr-modal').style.display = 'flex'; html5QrCode = new Html5Qrcode("qr-reader"); html5QrCode.start({ facingMode: "environment" }, { fps: 10, qrbox: 250 }, (txt) => { fecharQR(); socket.emit('cheguei_origem', id); }, () => {}); }
-        function fecharQR() { if(html5QrCode) html5QrCode.stop().then(() => html5QrCode.clear()); document.getElementById('qr-modal').style.display = 'none'; }
-        function ativarAudio() { document.getElementById('audio-alerta').play().then(() => { document.getElementById('audio-alerta').pause(); audioLigado = true; document.getElementById('btn-som').style.display='none'; }); }
-        document.getElementById('swipe-accept').addEventListener('input', function() { if(this.value > 85) { this.value = 0; pararAlarme(); socket.emit('aceitar_ida', {idPedido: idChamadoAtual, nomeMaqueiro: usuario.nome}); } });
+
+        // --- AÇÕES DO MAQUEIRO ---
+        function aceitarChamadoManual(id) {
+            socket.emit('aceitar_chamado', { idPedido: id, nomeMaqueiro: usuario.nome });
+        }
+
+        document.getElementById('swipe-accept').addEventListener('input', function() { 
+            if(this.value > 85) { this.value = 0; pararAlarme(); socket.emit('aceitar_chamado', {idPedido: idChamadoAtual, nomeMaqueiro: usuario.nome}); } 
+        });
+
         function passarVezCall() { pararAlarme(); socket.emit('rejeitar_pedido', idChamadoAtual); }
         function pararAlarme() { document.getElementById('audio-alerta').pause(); document.getElementById('audio-emergencia').pause(); }
+
+        // --- SISTEMAS DE APOIO ---
+        function abrirChat(id) {
+            idChatAtivo = id; const p = pedidosAtivos.find(x => x.id === id); const box = document.getElementById('chat-box');
+            box.innerHTML = (p.chat_mensagens || []).map(m => `<div class="msg ${m.autor === usuario.nome ? 'meu' : 'outro'}"><b>${m.autor}:</b> ${m.texto}</div>`).join('');
+            const fr = usuario.cargo === 'maqueiro' ? ["Chegando", "Elevador lotado", "Paciente não pronto"] : ["Aguarde", "Pode vir", "Tudo Certo"];
+            document.getElementById('quick-replies').innerHTML = fr.map(f => `<button class="btn" style="border:1px solid var(--primary); background:none; font-size:0.75rem;" onclick="enviarMensagem('${f}')">${f}</button>`).join('');
+            document.getElementById('chat-modal').style.display = 'flex'; box.scrollTop = box.scrollHeight;
+        }
+        function enviarMensagem(texto) { socket.emit('enviar_mensagem', { idPedido: idChatAtivo, texto, autor: usuario.nome }); document.getElementById('chat-modal').style.display='none'; idChatAtivo=null; }
+
+        function abrirQR(id) {
+            document.getElementById('qr-modal').style.display = 'flex';
+            html5QrCode = new Html5Qrcode("qr-reader");
+            html5QrCode.start({ facingMode: "environment" }, { fps: 10, qrbox: 250 }, (txt) => { fecharQR(); socket.emit('cheguei_origem', id); }, () => {});
+        }
+        function fecharQR() { if(html5QrCode) html5QrCode.stop().then(() => html5QrCode.clear()); document.getElementById('qr-modal').style.display = 'none'; }
+        function ativarAudio() { document.getElementById('audio-alerta').play().then(() => { document.getElementById('audio-alerta').pause(); audioLigado = true; document.getElementById('btn-som').style.display='none'; }); }
     </script>
 </body>
 </html>
