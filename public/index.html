@@ -205,26 +205,50 @@
             socket.emit('rejeitar_pedido', idChamadoAtual);
         }
 
-        // QR CODE
+        // --- SISTEMA DE QR CODE (CÂMERA TRASEIRA E HORA EXATA) ---
+        let html5QrCode; // Mudamos para a variável de controle manual
+
         function abrirCameraQR(idPedido) {
             idPedidoAtivoParaQR = idPedido;
             document.getElementById('qr-modal').style.display = 'flex';
-            html5QrcodeScanner = new Html5QrcodeScanner("reader", { fps: 10, qrbox: {width: 250, height: 250} }, false);
-            html5QrcodeScanner.render((text) => {
-                alert("✅ Validado: " + text);
-                fecharQR();
-                socket.emit('cheguei_origem', idPedidoAtivoParaQR);
-            }, () => {});
+            
+            // Instancia o leitor com controle avançado
+            html5QrCode = new Html5Qrcode("reader");
+            
+            // "facingMode: 'environment'" força o uso da câmera traseira do celular
+            html5QrCode.start(
+                { facingMode: "environment" }, 
+                { fps: 10, qrbox: { width: 250, height: 250 } },
+                (decodedText) => {
+                    // SUCESSO: Captura a hora exata do celular do maqueiro
+                    const horaExata = new Date().toLocaleTimeString('pt-BR');
+                    
+                    alert(`✅ Leito Validado!\n📍 Local: ${decodedText}\n⏰ Horário: ${horaExata}`);
+                    
+                    fecharQR();
+                    socket.emit('cheguei_origem', idPedidoAtivoParaQR);
+                },
+                (errorMessage) => {
+                    // Ignora os erros normais de "não achei um QR code neste frame"
+                }
+            ).catch((err) => {
+                console.log("Erro de permissão ou câmera:", err);
+                alert("Erro ao acessar a câmera traseira. Verifique as permissões do navegador.");
+            });
         }
-        function fecharQR() { if(html5QrcodeScanner) html5QrcodeScanner.clear(); document.getElementById('qr-modal').style.display = 'none'; }
 
-        // ENVIAR PEDIDO
-        function enviarPedido() {
-            const d = { origem: document.getElementById('origem').value, destino: document.getElementById('destino').value, urgencia: document.getElementById('urgencia').value, tipo: 'Maca' };
-            if(!d.origem || !d.destino) return alert("Preencha origem e destino!");
-            socket.emit('novo_pedido', d);
-            changeScreen('screen-nurse');
-            document.getElementById('origem').value = ""; document.getElementById('destino').value = "";
+        function fecharQR() {
+            if (html5QrCode) {
+                // Para a câmera corretamente antes de fechar o modal
+                html5QrCode.stop().then(() => {
+                    html5QrCode.clear();
+                    document.getElementById('qr-modal').style.display = 'none';
+                }).catch(err => {
+                    document.getElementById('qr-modal').style.display = 'none';
+                });
+            } else {
+                document.getElementById('qr-modal').style.display = 'none';
+            }
         }
 
         // ATUALIZAR LISTA E MOSTRAR TELA DE CHAMADA
