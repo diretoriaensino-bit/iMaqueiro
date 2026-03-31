@@ -17,15 +17,19 @@ app.use(express.static(path.join(__dirname, 'public')));
 let maqueirosOnline = []; 
 
 async function atualizarTodos() {
-    const { data: pedidos } = await supabase.from('pedidos').select('*').neq('status', 'finalizado').order('id', { ascending: false });
-    io.emit('atualizar_lista', pedidos);
+    // Busca pedidos ativos
+    const { data: ativos } = await supabase.from('pedidos').select('*').neq('status', 'finalizado').order('id', { ascending: false });
+    // Busca as últimas 50 finalizadas para o histórico
+    const { data: historico } = await supabase.from('pedidos').select('*').eq('status', 'finalizado').order('finalizado_at', { ascending: false }).limit(50);
+    
+    io.emit('atualizar_lista', { ativos, historico });
 }
 
 io.on('connection', async (socket) => {
     socket.on('fazer_login', async (dados) => {
         const { data, error } = await supabase.from('usuarios').select('*').eq('email', dados.email).eq('senha', dados.senha).single(); 
         if (error) {
-            socket.emit('login_erro', "E-mail ou senha incorretos.");
+            socket.emit('login_erro', "Credenciais inválidas.");
         } else if (data) {
             if (data.cargo === 'maqueiro') {
                 maqueirosOnline = maqueirosOnline.filter(m => m.nome !== data.nome);
@@ -69,10 +73,14 @@ io.on('connection', async (socket) => {
         let historico = pedido.chat_mensagens || [];
         historico.push({ texto, autor, hora: new Date().toLocaleTimeString('pt-BR', {hour: '2-digit', minute:'2-digit'}) });
         await supabase.from('pedidos').update({ chat_mensagens: historico }).eq('id', idPedido);
+        
+        // Notifica todos para mostrar alerta de nova mensagem
+        io.emit('notificacao_mensagem', { idPedido, texto, autor });
         await atualizarTodos();
     });
 
     socket.on('rejeitar_pedido', async (id) => {
+        // Ao rejeitar, removemos o maqueiro sugerido para que o pedido apareça para todos
         await supabase.from('pedidos').update({ maqueiro_sugerido: null }).eq('id', id);
         await atualizarTodos();
     });
@@ -94,6 +102,7 @@ io.on('connection', async (socket) => {
     
     socket.on('entregue_destino', async (id) => {
         const { data } = await supabase.from('pedidos').select('trajeto').eq('id', id).single();
+        // Se for só ida, finaliza. Se for ida e volta, fica "no_destino" aguardando retorno
         const novoStatus = (data && data.trajeto === 'so_ida') ? 'finalizado' : 'no_destino';
         await supabase.from('pedidos').update({ 
             status: novoStatus, entrega_destino_at: new Date().toISOString(),
@@ -114,4 +123,4 @@ io.on('connection', async (socket) => {
 });
 
 const PORT = process.env.PORT || 3000;
-server.listen(PORT, () => console.log(`🚀 iMaqueiro rodando em http://localhost:${PORT}`));
+server.listen(PORT, () => console.log(`🚀 iMaqueiro Core rodando em http://localhost:${PORT}`));
