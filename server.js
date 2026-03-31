@@ -59,14 +59,20 @@ io.on('connection', async (socket) => {
             maqueirosOnline.push(m);
         }
 
+        // AGORA SALVA O TIPO DE TRAJETO (IDA E VOLTA ou SÓ IDA)
         await supabase.from('pedidos').insert([{ 
-            origem: dados.origem, destino: dados.destino, tipo: dados.tipo, 
-            urgencia: dados.urgencia, status: 'pendente', maqueiro_sugerido: sugerido
+            origem: dados.origem, 
+            destino: dados.destino, 
+            tipo: dados.tipo, 
+            urgencia: dados.urgencia, 
+            trajeto: dados.trajeto, 
+            status: 'pendente', 
+            maqueiro_sugerido: sugerido
         }]);
         await atualizarTodos();
     });
 
-    // --- PASSAR A VEZ (NOVIDADE) ---
+    // --- PASSAR A VEZ ---
     socket.on('rejeitar_pedido', async (id) => {
         // Se ele rejeitar, limpa o nome dele e joga para todos pegarem
         await supabase.from('pedidos').update({ maqueiro_sugerido: null }).eq('id', id);
@@ -78,31 +84,50 @@ io.on('connection', async (socket) => {
         await supabase.from('pedidos').update({ status: 'aceito', maqueiro_ida: dados.nomeMaqueiro, aceito_em: new Date().toISOString() }).eq('id', dados.idPedido);
         await atualizarTodos();
     });
+    
     socket.on('cheguei_origem', async (id) => {
         await supabase.from('pedidos').update({ status: 'na_origem', chegada_origem_at: new Date().toISOString() }).eq('id', id);
         await atualizarTodos();
     });
+    
     socket.on('iniciar_ida', async (id) => {
         await supabase.from('pedidos').update({ status: 'em_transito_ida', inicio_transporte_at: new Date().toISOString() }).eq('id', id);
         await atualizarTodos();
     });
+    
+    // --- ENTREGUE NO DESTINO (AGORA VERIFICA SE É SÓ IDA) ---
     socket.on('entregue_destino', async (id) => {
-        await supabase.from('pedidos').update({ status: 'no_destino', entrega_destino_at: new Date().toISOString() }).eq('id', id);
+        // 1. Pergunta pro banco qual foi o trajeto escolhido pela enfermagem
+        const { data } = await supabase.from('pedidos').select('trajeto').eq('id', id).single();
+        
+        // 2. Se for Só Ida, já finaliza. Se não, fica no destino esperando retorno.
+        const novoStatus = (data && data.trajeto === 'so_ida') ? 'finalizado' : 'no_destino';
+
+        await supabase.from('pedidos').update({ 
+            status: novoStatus, 
+            entrega_destino_at: new Date().toISOString(),
+            finalizado_at: novoStatus === 'finalizado' ? new Date().toISOString() : null
+        }).eq('id', id);
+        
         await atualizarTodos();
     });
+
     socket.on('pedir_retorno', async (id) => {
         await supabase.from('pedidos').update({ status: 'aguardando_retorno', pedido_retorno_at: new Date().toISOString() }).eq('id', id);
         await atualizarTodos();
     });
+    
     socket.on('aceitar_retorno', async (dados) => {
         await supabase.from('pedidos').update({ status: 'aceito_retorno', maqueiro_volta: dados.nomeMaqueiro, aceito_retorno_at: new Date().toISOString() }).eq('id', dados.idPedido);
         await atualizarTodos();
     });
+    
     socket.on('finalizar_geral', async (id) => {
         await supabase.from('pedidos').update({ status: 'finalizado', finalizado_at: new Date().toISOString() }).eq('id', id);
         await atualizarTodos();
     });
 });
 
-const PORT = 3000;
+// --- PORTA DINÂMICA PARA O RENDER ---
+const PORT = process.env.PORT || 3000;
 server.listen(PORT, () => console.log(`🚀 iMaqueiro rodando com Roleta Inteligente em http://localhost:${PORT}`));
