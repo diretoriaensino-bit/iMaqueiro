@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>iMaqueiro - Premium</title>
+    <title>iMaqueiro - Hospital Seguro</title>
     
     <link rel="manifest" href="/manifest.json">
     <meta name="theme-color" content="#0056b3">
@@ -13,366 +13,278 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     
     <style>
-        :root { --primary: #0056b3; --success: #28a745; --light: #f4f7f6; --white: #fff; --dark: #343a40; --warning: #ffc107; --gray: #6c757d;}
-        body { font-family: 'Segoe UI', sans-serif; background: var(--light); margin: 0; user-select: none; }
+        :root { --primary: #0056b3; --success: #28a745; --light: #f4f7f6; --white: #fff; --dark: #343a40; --warning: #ffc107; --danger: #dc3545; --gray: #6c757d;}
+        body { font-family: 'Segoe UI', sans-serif; background: var(--light); margin: 0; user-select: none; overflow-x: hidden;}
         .app-shell { max-width: 450px; min-height: 100vh; background: var(--white); margin: 0 auto; box-shadow: 0 0 20px rgba(0,0,0,0.1); position: relative;}
-        .screen { display: none; padding: 25px; flex-direction: column; min-height: 100vh; box-sizing: border-box; }
+        .screen { display: none; padding: 20px; flex-direction: column; min-height: 100vh; box-sizing: border-box; }
         .active { display: flex; }
-        header { background: var(--primary); color: white; padding: 20px; text-align: center; margin-bottom: 20px; border-radius: 0 0 20px 20px;}
-        .card { background: white; border-radius: 12px; padding: 15px; margin-bottom: 15px; border-left: 8px solid #ddd; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        header { background: var(--primary); color: white; padding: 20px; text-align: center; border-radius: 0 0 20px 20px;}
+        
+        .card { background: white; border-radius: 12px; padding: 15px; margin-bottom: 15px; border-left: 8px solid #ddd; box-shadow: 0 2px 5px rgba(0,0,0,0.1); position: relative;}
         .btn { padding: 16px; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; width: 100%; margin-top: 10px; font-size: 1rem; }
         .btn-main { background: var(--primary); color: white; }
-        .btn-success { background: var(--success); color: white; }
-        input:not([type="range"]), select { padding: 14px; margin-bottom: 15px; border: 1px solid #ddd; border-radius: 10px; width: 100%; box-sizing: border-box; }
+        
+        input:not([type="range"]), select { 
+            -webkit-appearance: none; -moz-appearance: none; appearance: none; 
+            padding: 14px; margin-bottom: 15px; border: 1px solid #ddd; border-radius: 10px; 
+            width: 100%; box-sizing: border-box; font-size: 1rem; background-color: white;
+        }
+        
         .user-bar { background: #eee; padding: 10px; font-size: 0.8rem; border-radius: 5px; margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center; }
-        
-        /* FILTROS E TELA VAZIA */
-        .filter-bar { display: flex; gap: 8px; margin-bottom: 15px; overflow-x: auto; padding-bottom: 5px; }
-        .filter-btn { padding: 8px 15px; border: 1px solid #ddd; border-radius: 20px; background: white; color: var(--gray); cursor: pointer; font-size: 0.85rem; font-weight: bold; white-space: nowrap; transition: 0.2s; }
-        .filter-btn.active { background: var(--primary); color: white; border-color: var(--primary); }
-        
-        .empty-state { text-align: center; padding: 40px 20px; color: var(--gray); margin-top: 20px; }
-        .empty-state i { font-size: 3.5rem; color: #ced4da; margin-bottom: 15px; display: block; }
-        .empty-state h3 { margin: 0 0 5px 0; color: var(--dark); }
-        .empty-state p { margin: 0; font-size: 0.9rem; }
+        .badge-risco { background: var(--danger); color: white; font-size: 10px; padding: 3px 8px; border-radius: 10px; font-weight: bold; animation: blink 1s infinite; }
+        @keyframes blink { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
 
-        /* QR CODE MODAL */
-        #qr-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 999; flex-direction: column; justify-content: center; align-items: center; padding: 20px; box-sizing: border-box; }
-        #reader { width: 100%; max-width: 400px; background: white; border-radius: 10px; overflow: hidden; }
+        .chat-container { display: flex; flex-direction: column; gap: 10px; max-height: 300px; overflow-y: auto; margin-bottom: 20px; padding: 10px; background: #f9f9f9; border-radius: 10px; }
+        .msg { padding: 8px 12px; border-radius: 15px; font-size: 0.85rem; max-width: 80%; line-height: 1.4; }
+        .msg.meu { align-self: flex-end; background: var(--primary); color: white; border-bottom-right-radius: 2px; }
+        .msg.outro { align-self: flex-start; background: #e2e2e2; color: #333; border-bottom-left-radius: 2px; }
+        .quick-replies { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+        .btn-quick { background: white; border: 1px solid var(--primary); color: var(--primary); padding: 8px; border-radius: 8px; font-size: 0.75rem; font-weight: bold; cursor: pointer; }
 
-        /* TELA DE CHAMADA ANIMADA */
-        #call-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(30, 30, 30, 0.95); z-index: 1000; flex-direction: column; justify-content: center; align-items: center; color: white; box-sizing: border-box; padding: 20px; text-align: center; }
-        .pulse-ring { width: 100px; height: 100px; border-radius: 50%; background: var(--success); animation: pulse 1.5s infinite; display: flex; align-items: center; justify-content: center; font-size: 2.5rem; margin-bottom: 20px; box-shadow: 0 0 20px var(--success); }
-        @keyframes pulse { 0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(40, 167, 69, 0.7); } 70% { transform: scale(1); box-shadow: 0 0 0 25px rgba(40, 167, 69, 0); } 100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(40, 167, 69, 0); } }
+        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 999; flex-direction: column; justify-content: center; align-items: center; padding: 20px; box-sizing: border-box; }
+        .modal-content { background: white; width: 100%; max-width: 400px; border-radius: 15px; padding: 20px; box-sizing: border-box; }
         
-        .swipe-container { width: 100%; max-width: 320px; height: 60px; background: #444; border-radius: 35px; position: relative; overflow: hidden; margin-top: 40px; display: flex; align-items: center; justify-content: center; box-shadow: inset 0 0 10px rgba(0,0,0,0.5); }
-        .swipe-text { position: absolute; color: #aaa; font-weight: bold; pointer-events: none; z-index: 1; font-size: 1rem; }
-        .swipe-slider { -webkit-appearance: none; appearance: none; width: 100%; background: transparent; position: absolute; z-index: 2; height: 100%; outline: none; margin: 0; }
-        .swipe-slider::-webkit-slider-thumb { -webkit-appearance: none; appearance: none; width: 60px; height: 60px; border-radius: 50%; background: var(--success); cursor: pointer; display: flex; align-items: center; justify-content: center; background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="white" viewBox="0 0 24 24"><path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z"/></svg>'); background-size: 50%; background-repeat: no-repeat; background-position: center; box-shadow: 2px 0 10px rgba(0,0,0,0.3); }
-        .btn-passar { background: var(--warning); color: #000; font-weight: bold; border: none; padding: 15px 40px; border-radius: 30px; margin-top: 25px; cursor: pointer; font-size: 1rem; box-shadow: 0 4px 10px rgba(255, 193, 7, 0.3); }
+        #call-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(20, 20, 20, 0.98); z-index: 1000; flex-direction: column; justify-content: center; align-items: center; color: white; padding: 20px; text-align: center; }
+        .pulse-ring { width: 90px; height: 90px; border-radius: 50%; animation: pulse 1.5s infinite; display: flex; align-items: center; justify-content: center; font-size: 2rem; margin-bottom: 20px; }
+        @keyframes pulse { 0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(255,255,255, 0.7); } 70% { transform: scale(1); box-shadow: 0 0 0 20px rgba(255,255,255, 0); } 100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(255,255,255, 0); } }
         
-        /* Oculta scrollbar na barra de filtros */
-        .filter-bar::-webkit-scrollbar { display: none; }
+        .swipe-container { width: 100%; max-width: 300px; height: 60px; background: #333; border-radius: 30px; position: relative; margin-top: 30px; display: flex; align-items: center; justify-content: center; }
+        .swipe-slider { -webkit-appearance: none; -moz-appearance: none; appearance: none; width: 100%; background: transparent; position: absolute; z-index: 2; height: 100%; cursor: pointer; outline: none; }
+        .swipe-slider::-webkit-slider-thumb { -webkit-appearance: none; appearance: none; width: 60px; height: 60px; border-radius: 50%; background: var(--success); box-shadow: 0 0 10px rgba(0,0,0,0.5); }
+        .swipe-slider::-moz-range-thumb { -moz-appearance: none; appearance: none; width: 60px; height: 60px; border-radius: 50%; background: var(--success); border: none; box-shadow: 0 0 10px rgba(0,0,0,0.5); }
+        
+        .filter-bar { display: flex; gap: 8px; margin-bottom: 15px; overflow-x: auto; }
+        .filter-btn { padding: 8px 15px; border: 1px solid #ddd; border-radius: 20px; background: white; font-size: 0.8rem; white-space: nowrap; }
+        .filter-btn.active { background: var(--primary); color: white; }
+
+        .btn-chat-card { position: absolute; right: 15px; top: 15px; background: #f0f0f0; border-radius: 50%; width: 35px; height: 35px; display: flex; align-items: center; justify-content: center; border: none; cursor: pointer; color: var(--primary); }
+        .chat-notif { position: absolute; top: -2px; right: -2px; background: var(--danger); width: 12px; height: 12px; border-radius: 50%; border: 2px solid white; }
     </style>
 </head>
 <body>
 
     <div class="app-shell">
-        
         <div id="screen-login" class="screen active">
             <header>
+                <img src="/logo_2.png" alt="Logo Hospital" style="width: 100px; height: auto; margin-bottom: 10px;">
                 <h1>🚑 iMaqueiro</h1>
-                <p>Acesse o sistema hospitalar</p>
+                <p>Hospital Seguro</p>
             </header>
-            <div style="margin-top: 20px;">
-                <input type="email" id="login-email" placeholder="E-mail (ex: maqueiro@hospital.com)">
-                <input type="password" id="login-senha" placeholder="Sua senha">
-                <button class="btn btn-main" onclick="tentarLogin()">ENTRAR NO SISTEMA</button>
+            <div style="margin-top: 30px;">
+                <input type="email" id="login-email" placeholder="E-mail">
+                <input type="password" id="login-senha" placeholder="Senha">
+                <button class="btn btn-main" onclick="tentarLogin()">ENTRAR</button>
             </div>
-            <p id="login-msg" style="color:red; text-align:center; font-size: 0.9rem; margin-top:15px;"></p>
+            <p id="login-msg" style="color:red; text-align:center; margin-top:10px;"></p>
         </div>
 
         <div id="screen-nurse" class="screen">
-            <div class="user-bar">
-                <span id="user-name-nurse"></span> 
-                <button class="btn" style="width:auto; padding:5px 10px; margin:0; background:#ddd;" onclick="logout()">Sair</button>
-            </div>
-            
+            <div class="user-bar"><span id="user-name-nurse"></span><button onclick="location.reload()">Sair</button></div>
             <div class="filter-bar">
                 <button class="filter-btn active" onclick="mudarFiltro('todos', this)">Todos</button>
                 <button class="filter-btn" onclick="mudarFiltro('pendentes', this)">Aguardando</button>
-                <button class="filter-btn" onclick="mudarFiltro('em_andamento', this)">Em Trânsito</button>
             </div>
-
             <div id="nurse-list" style="flex:1; overflow-y:auto;"></div>
-            <button class="btn btn-main" onclick="changeScreen('screen-form')">+ Novo Pedido</button>
+            <button class="btn btn-main" onclick="changeScreen('screen-form')">+ NOVO PEDIDO</button>
         </div>
 
         <div id="screen-maqueiro" class="screen">
-            <div class="user-bar">
-                <span id="user-name-maq"></span> 
-                <button class="btn" style="width:auto; padding:5px 10px; margin:0; background:#ddd;" onclick="logout()">Sair</button>
-            </div>
-
-            <div class="filter-bar">
-                <button class="filter-btn active" onclick="mudarFiltro('todos', this)">Minhas Corridas</button>
-                <button class="filter-btn" onclick="mudarFiltro('pendentes', this)">Disponíveis</button>
-            </div>
-
-            <button class="btn btn-success" id="btn-som" onclick="ativarAudio()" style="margin-bottom:15px; margin-top:0;"><i class="fa fa-volume-up"></i> LIGAR ALARME</button>
-            
+            <div class="user-bar"><span id="user-name-maq"></span><button onclick="location.reload()">Sair</button></div>
+            <button class="btn" id="btn-som" onclick="ativarAudio()" style="background:var(--success); color:white; margin-bottom:15px;">🔔 LIGAR ALARME</button>
             <div id="maqueiro-list" style="flex:1; overflow-y:auto;"></div>
         </div>
 
         <div id="screen-form" class="screen">
             <h3>Nova Solicitação</h3>
-            <input type="text" id="origem" placeholder="Leito Origem">
+            <input type="text" id="paciente" placeholder="Nome do Paciente">
+            <input type="text" id="origem" placeholder="Origem">
             <input type="text" id="destino" placeholder="Destino">
-            
             <select id="urgencia">
                 <option value="Verde">Verde (Rotina)</option>
                 <option value="Amarelo">Amarelo (Urgente)</option>
                 <option value="Vermelho">Vermelho (Emergência)</option>
             </select>
-
             <select id="trajeto">
-                <option value="ida_volta">🔁 Ida e Volta (Ex: Exames)</option>
-                <option value="so_ida">➡️ Somente Ida (Ex: Internação / PA para Ala)</option>
+                <option value="ida_volta">Ida e Volta</option>
+                <option value="so_ida">Somente Ida</option>
             </select>
-
-            <button class="btn btn-main" onclick="enviarPedido()">SOLICITAR MACA</button>
+            <select id="risco">
+                <option value="Nenhum">Nenhum Risco</option>
+                <option value="Contato">Isolamento Contato</option>
+                <option value="Gotículas">Isolamento Gotículas</option>
+                <option value="Aerosol">Isolamento Aerosol</option>
+            </select>
+            <button class="btn btn-main" onclick="enviarPedido()">SOLICITAR</button>
             <button class="btn" style="background:#eee" onclick="changeScreen('screen-nurse')">Voltar</button>
         </div>
+    </div>
 
+    <div id="chat-modal" class="modal-overlay">
+        <div class="modal-content">
+            <h3>Comunicador Rápido</h3>
+            <div class="chat-container" id="chat-box"></div>
+            <div class="quick-replies" id="replies-container"></div>
+            <button class="btn" style="background:#eee; margin-top:15px;" onclick="fecharChat()">Fechar Chat</button>
+        </div>
     </div>
 
     <div id="call-modal">
+        <div id="call-risco-banner" style="background:var(--danger); width:100%; padding:10px; position:absolute; top:0; display:none;">⚠️ ATENÇÃO: ISOLAMENTO!</div>
         <div class="pulse-ring" id="call-icon"><i class="fa fa-ambulance"></i></div>
-        <h2 style="margin: 0; font-size: 1.8rem; letter-spacing: 1px;">NOVO CHAMADO</h2>
-        <h1 id="call-origem-destino" style="margin: 10px 0; color: #ffc107; font-size: 2.2rem;">...</h1>
-        <p id="call-urgencia" style="color: #ccc; font-size: 1.1rem; margin: 0;">...</p>
+        <h2 id="call-paciente"></h2><h1 id="call-rota"></h1>
         <div class="swipe-container">
-            <span class="swipe-text">Deslize para Aceitar ➔</span>
+            <span style="color:#666; font-weight:bold;">Deslize para Aceitar ➔</span>
             <input type="range" min="0" max="100" value="0" class="swipe-slider" id="swipe-accept">
         </div>
-        <button class="btn-passar" onclick="passarVezCall()"><i class="fa fa-times-circle"></i> Passar a Vez</button>
+        <button onclick="passarVezCall()" style="background:none; border:none; color:var(--warning); margin-top:20px; font-weight:bold;">PASSAR A VEZ</button>
     </div>
 
-    <div id="qr-modal">
-        <h3 style="color:white; text-align:center;">Escaneie a Pulseira ou Leito</h3>
-        <p style="color:#aaa; text-align:center; font-size:12px;">Posicione o QR Code na câmera</p>
-        <div id="reader"></div>
-        <button class="btn" style="background:#dc3545; color:white; max-width:400px; margin-top:20px;" onclick="fecharQR()">Cancelar</button>
-    </div>
+    <div id="qr-modal" class="modal-overlay"><div id="reader" style="width: 300px;"></div><button class="btn" style="background:var(--danger); color:white;" onclick="fecharQR()">Cancelar</button></div>
 
     <audio id="audio-alerta" src="https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3" loop></audio>
     <audio id="audio-emergencia" src="https://assets.mixkit.co/active_storage/sfx/951/951-preview.mp3" loop></audio>
 
     <script>
         const socket = io();
-        let usuario = null;
-        let audioLigado = false;
-        let html5QrCode;
-        let idPedidoAtivoParaQR = null;
-        let idChamadoAtual = null; 
-        let pedidosGlobais = []; // Guarda os pedidos para o filtro
-        let filtroAtual = 'todos';
-
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => navigator.serviceWorker.register('/sw.js').catch(()=>{}));
-        }
+        let usuario, audioLigado = false, html5QrCode, pedidosGlobais = [], filtroAtual = 'todos', idChamadoAtual, idChatAtivo;
 
         function changeScreen(id) {
             document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
             document.getElementById(id).classList.add('active');
         }
 
-        // --- SISTEMA DE FILTROS ---
-        function mudarFiltro(tipo, botaoMclicado) {
-            filtroAtual = tipo;
-            // Remove a classe active de todos os botões da mesma barra
-            const barra = botaoMclicado.parentElement;
-            barra.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
-            botaoMclicado.classList.add('active');
-            
-            // Re-desenha a lista com o filtro novo
-            renderizarPedidos();
-        }
-
         function tentarLogin() {
             const email = document.getElementById('login-email').value;
             const senha = document.getElementById('login-senha').value;
-            if(!email || !senha) return document.getElementById('login-msg').innerText = "Preencha e-mail e senha!";
-            document.getElementById('login-msg').innerText = "Conectando...";
             socket.emit('fazer_login', { email, senha });
         }
 
-        socket.on('login_sucesso', (u) => {
+        socket.on('login_sucesso', u => {
             usuario = u;
-            if (u.cargo === 'enfermagem') {
-                document.getElementById('user-name-nurse').innerHTML = "<b>" + u.nome + "</b>";
-                changeScreen('screen-nurse');
-            } else if (u.cargo === 'maqueiro') {
-                document.getElementById('user-name-maq').innerHTML = "<b>" + u.nome + "</b>";
-                changeScreen('screen-maqueiro');
-            } else if (u.cargo === 'adm') window.location.href = "admin.html";
+            changeScreen(u.cargo === 'enfermagem' ? 'screen-nurse' : 'screen-maqueiro');
+            document.getElementById(u.cargo === 'enfermagem' ? 'user-name-nurse' : 'user-name-maq').innerText = u.nome;
             socket.emit('solicitar_lista');
         });
 
-        socket.on('login_erro', (msg) => document.getElementById('login-msg').innerText = msg);
-        function logout() { location.reload(); }
+        socket.on('login_erro', m => document.getElementById('login-msg').innerText = m);
 
         function ativarAudio() {
             document.getElementById('audio-alerta').play().then(() => {
                 document.getElementById('audio-alerta').pause();
                 audioLigado = true;
                 document.getElementById('btn-som').style.display = 'none';
-                alert("Alarme ativado!");
-            }).catch(e => console.log("Erro de áudio."));
+            });
         }
 
-        function pararAlarme() {
-            document.getElementById('audio-alerta').pause();
-            document.getElementById('audio-emergencia').pause();
-        }
-
-        // DESLIZE PARA ACEITAR
         const slider = document.getElementById('swipe-accept');
         slider.addEventListener('input', function() { if(this.value > 85) aceitarChamadoCall(); });
         slider.addEventListener('touchend', () => { if(slider.value <= 85) slider.value = 0; });
-        slider.addEventListener('mouseup', () => { if(slider.value <= 85) slider.value = 0; });
 
         function aceitarChamadoCall() {
-            pararAlarme();
+            document.getElementById('audio-alerta').pause();
+            document.getElementById('audio-emergencia').pause();
             document.getElementById('call-modal').style.display = 'none';
-            document.getElementById('swipe-accept').value = 0;
+            slider.value = 0;
             socket.emit('aceitar_ida', {idPedido: idChamadoAtual, nomeMaqueiro: usuario.nome});
         }
 
         function passarVezCall() {
-            pararAlarme();
+            document.getElementById('audio-alerta').pause();
+            document.getElementById('audio-emergencia').pause();
             document.getElementById('call-modal').style.display = 'none';
-            document.getElementById('swipe-accept').value = 0;
             socket.emit('rejeitar_pedido', idChamadoAtual);
         }
 
-        // CÂMERA (QR CODE MANUAL - Câmera Traseira e Hora)
-        function abrirCameraQR(idPedido) {
-            idPedidoAtivoParaQR = idPedido;
-            document.getElementById('qr-modal').style.display = 'flex';
+        const frasesMaqueiro = ["Estou a caminho!", "Elevador lotado.", "Paciente não está pronto.", "Cheguei na porta.", "Dúvida no trajeto."];
+        const frasesEnf = ["Paciente liberado.", "Aguardar 5 min.", "Trazer maca maior.", "Urgência máxima!", "Documentação pronta."];
+
+        function abrirChat(id) {
+            idChatAtivo = id;
+            const p = pedidosGlobais.find(x => x.id === id);
+            const box = document.getElementById('chat-box');
+            const replies = document.getElementById('replies-container');
+            box.innerHTML = (p.chat_mensagens || []).map(m => `
+                <div class="msg ${m.autor === usuario.nome ? 'meu' : 'outro'}">
+                    <small><b>${m.autor}</b></small><br>${m.texto}<br><small style="font-size:9px; opacity:0.7">${m.hora}</small>
+                </div>
+            `).join('');
+            replies.innerHTML = (usuario.cargo === 'maqueiro' ? frasesMaqueiro : frasesEnf).map(f => `
+                <button class="btn-quick" onclick="enviarMensagemRapida('${f}')">${f}</button>
+            `).join('');
+            document.getElementById('chat-modal').style.display = 'flex';
+            box.scrollTop = box.scrollHeight;
+        }
+
+        function enviarMensagemRapida(texto) {
+            socket.emit('enviar_mensagem', { idPedido: idChatAtivo, texto, autor: usuario.nome });
+            setTimeout(() => abrirChat(idChatAtivo), 500); 
+        }
+
+        function fecharChat() { document.getElementById('chat-modal').style.display = 'none'; }
+
+        function abrirCameraQR(id) {
+            document.getElementById('qr-modal').style.display='flex';
             html5QrCode = new Html5Qrcode("reader");
-            
-            html5QrCode.start({ facingMode: "environment" }, { fps: 10, qrbox: { width: 250, height: 250 } },
-                (decodedText) => {
-                    const horaExata = new Date().toLocaleTimeString('pt-BR');
-                    alert(`✅ Validado: ${decodedText}\n⏰ ${horaExata}`);
-                    fecharQR();
-                    socket.emit('cheguei_origem', idPedidoAtivoParaQR);
-                },
-                (errorMessage) => { }
-            ).catch(err => { alert("Erro ao acessar a câmera."); });
+            html5QrCode.start({ facingMode: "environment" }, { fps: 10, qrbox: 250 }, (txt) => {
+                fecharQR();
+                socket.emit('cheguei_origem', id);
+            }, () => {});
         }
+        function fecharQR() { if(html5QrCode) html5QrCode.stop(); document.getElementById('qr-modal').style.display='none'; }
 
-        function fecharQR() {
-            if (html5QrCode) {
-                html5QrCode.stop().then(() => { html5QrCode.clear(); document.getElementById('qr-modal').style.display = 'none'; }).catch(err => document.getElementById('qr-modal').style.display = 'none');
-            } else { document.getElementById('qr-modal').style.display = 'none'; }
-        }
-
-        // ENVIAR PEDIDO
         function enviarPedido() {
-            const d = { 
-                origem: document.getElementById('origem').value, 
-                destino: document.getElementById('destino').value, 
-                urgencia: document.getElementById('urgencia').value, 
+            const d = {
+                paciente: document.getElementById('paciente').value,
+                origem: document.getElementById('origem').value,
+                destino: document.getElementById('destino').value,
+                urgencia: document.getElementById('urgencia').value,
                 trajeto: document.getElementById('trajeto').value,
-                tipo: 'Maca' 
+                risco_assistencial: document.getElementById('risco').value,
+                tipo: 'Maca'
             };
-            if(!d.origem || !d.destino) return alert("Preencha origem e destino!");
             socket.emit('novo_pedido', d);
             changeScreen('screen-nurse');
-            document.getElementById('origem').value = ""; document.getElementById('destino').value = "";
         }
 
-        // RECEBER PEDIDOS
-        socket.on('atualizar_lista', (pedidos) => {
-            pedidosGlobais = pedidos;
-            renderizarPedidos();
-        });
+        socket.on('atualizar_lista', l => { pedidosGlobais = l; renderizarPedidos(); });
 
-        // DESENHAR TELA
         function renderizarPedidos() {
-            const nurseDiv = document.getElementById('nurse-list');
-            const maqDiv = document.getElementById('maqueiro-list');
+            const nList = document.getElementById('nurse-list'), mList = document.getElementById('maqueiro-list');
             if(!usuario) return;
-
-            let htmlNurse = "";
-            let htmlMaq = "";
-            let temChamadaParaMim = false;
-            let qutPendentes = 0;
+            nList.innerHTML = ""; mList.innerHTML = "";
+            let callNow = false;
 
             pedidosGlobais.forEach(p => {
-                let statusTxt = p.status.toUpperCase().replace(/_/g, ' ');
-                let color = p.urgencia === 'Vermelho' ? 'red' : (p.urgencia === 'Amarelo' ? 'orange' : 'green');
-                let badgeTrajeto = p.trajeto === 'so_ida' ? '<span style="background:#e9ecef; color:#495057; font-size:10px; padding:3px 8px; border-radius:10px; margin-left:10px;">➡️ SÓ IDA</span>' : '<span style="background:#e9ecef; color:#495057; font-size:10px; padding:3px 8px; border-radius:10px; margin-left:10px;">🔁 IDA/VOLTA</span>';
-                
-                let infoCard = `
-                    <div style="display:flex; justify-content:space-between; align-items:center;">
-                        <strong>${p.origem} ➔ ${p.destino}</strong> ${badgeTrajeto}
+                let color = p.urgencia === 'Vermelho' ? 'var(--danger)' : (p.urgencia === 'Amarelo' ? 'var(--warning)' : 'var(--success)');
+                let notifChat = (p.chat_mensagens && p.chat_mensagens.length > 0) ? `<div class="chat-notif"></div>` : "";
+                let cardHtml = `
+                    <div class="card" style="border-left-color:${color}">
+                        <button class="btn-chat-card" onclick="abrirChat(${p.id})"><i class="fa fa-comment-dots"></i>${notifChat}</button>
+                        <b>${p.origem} ➔ ${p.destino}</b><br>👤 ${p.paciente || 'Sem nome'}<br><small>Status: ${p.status.replace(/_/g, ' ')}</small>
                     </div>
-                    <small style="color:#666">Status: <b>${statusTxt}</b></small><br>
                 `;
-
-                // --- LÓGICA DE FILTRO ---
-                let mostrarNoFiltro = true;
-                if(filtroAtual === 'pendentes' && (p.status !== 'pendente' && p.status !== 'aguardando_retorno')) mostrarNoFiltro = false;
-                if(filtroAtual === 'em_andamento' && (p.status === 'pendente' || p.status === 'aguardando_retorno')) mostrarNoFiltro = false;
-
-                // TELA DA ENFERMAGEM
-                if(usuario.cargo === 'enfermagem' && mostrarNoFiltro) {
-                    let btnN = p.status === 'no_destino' ? `<button class="btn btn-main" style="margin-top:10px" onclick="socket.emit('pedir_retorno', ${p.id})">SOLICITAR RETORNO</button>` : "";
-                    if(p.maqueiro_sugerido && p.status === 'pendente') infoCard += `<small style="color:#0056b3"><i class="fa fa-robot"></i> Direcionado a: ${p.maqueiro_sugerido}</small>`;
-                    htmlNurse += `<div class="card" style="border-left-color: ${color}">${infoCard}${btnN}</div>`;
+                if(usuario.cargo === 'enfermagem') {
+                    nList.innerHTML += cardHtml + (p.status === 'no_destino' ? `<button class="btn btn-main" onclick="socket.emit('pedir_retorno', ${p.id})">Pedir Retorno</button>` : "");
                 }
-
-                // TELA DO MAQUEIRO
                 if(usuario.cargo === 'maqueiro') {
-                    let btnM = "";
-                    
-                    // Dispara a tela animada se houver chamada
-                    if((p.status === 'pendente' || p.status === 'aguardando_retorno') && (p.maqueiro_sugerido === usuario.nome || !p.maqueiro_sugerido)) {
-                        temChamadaParaMim = true;
-                        idChamadoAtual = p.id;
-                        document.getElementById('call-origem-destino').innerText = p.origem + " ➔ " + p.destino;
-                        document.getElementById('call-urgencia').innerText = "Urgência: " + p.urgencia;
-                        let iconColor = p.urgencia === 'Vermelho' ? '#dc3545' : (p.urgencia === 'Amarelo' ? '#ffc107' : '#28a745');
-                        document.getElementById('call-icon').style.backgroundColor = iconColor;
-                        document.getElementById('call-icon').style.boxShadow = `0 0 20px ${iconColor}`;
-                        
+                    if((p.status === 'pendente' || p.status === 'aguardando_retorno') && (!p.maqueiro_sugerido || p.maqueiro_sugerido === usuario.nome)) {
+                        callNow = true; idChamadoAtual = p.id;
+                        document.getElementById('call-paciente').innerText = p.paciente;
+                        document.getElementById('call-rota').innerText = p.origem + " ➔ " + p.destino;
+                        document.getElementById('call-risco-banner').style.display = (p.risco_assistencial !== 'Nenhum' ? 'block' : 'none');
                         if(audioLigado) p.urgencia === 'Vermelho' ? document.getElementById('audio-emergencia').play() : document.getElementById('audio-alerta').play();
-                    } 
-                    
-                    else if(p.status === 'pendente' && p.maqueiro_sugerido !== usuario.nome) {
-                        btnM = `<p style="color:#f39c12; font-size:12px; text-align:center;"><i class="fa fa-clock"></i> Aguardando aceite de: <b>${p.maqueiro_sugerido}</b></p>`;
-                    } else if(p.status === 'aceito' && p.maqueiro_ida === usuario.nome) {
-                        btnM = `<button class="btn btn-main" style="background:#17a2b8" onclick="abrirCameraQR(${p.id})"><i class="fa fa-qrcode"></i> ESCANEAR LEITO</button>`;
-                    } else if(p.status === 'na_origem' && p.maqueiro_ida === usuario.nome) {
-                        btnM = `<button class="btn btn-main" style="background:#ffc107; color:black" onclick="socket.emit('iniciar_ida', ${p.id})">SAIR COM PACIENTE</button>`;
-                    } else if(p.status === 'em_transito_ida' && p.maqueiro_ida === usuario.nome) {
-                        btnM = `<button class="btn btn-main" style="background:#343a40" onclick="socket.emit('entregue_destino', ${p.id})">ENTREGUEI NO DESTINO</button>`;
-                    } else if(p.status === 'aceito_retorno' && p.maqueiro_volta === usuario.nome) {
-                        btnM = `<button class="btn btn-main" onclick="socket.emit('finalizar_geral', ${p.id})">FINALIZAR VOLTA</button>`;
                     }
-                    
-                    // Lógica para mostrar o card no filtro do maqueiro
-                    let pertenceAoMaqueiro = (p.maqueiro_ida === usuario.nome || p.maqueiro_volta === usuario.nome || p.status === 'pendente' || p.status === 'aguardando_retorno');
-                    if (pertenceAoMaqueiro && mostrarNoFiltro) {
-                         if (btnM !== "" || p.status === 'pendente' || p.status === 'aguardando_retorno') {
-                             htmlMaq += `<div class="card" style="border-left-color: ${color}">${infoCard}${btnM}</div>`;
-                         }
+                    let btn = "";
+                    if(p.maqueiro_ida === usuario.nome || p.maqueiro_volta === usuario.nome) {
+                        if(p.status === 'aceito') btn = `<button class="btn btn-main" onclick="abrirCameraQR(${p.id})">Validar Leito</button>`;
+                        if(p.status === 'na_origem') btn = `<button class="btn" style="background:var(--warning);" onclick="socket.emit('iniciar_ida', ${p.id})">Iniciar Transporte</button>`;
+                        if(p.status === 'em_transito_ida') btn = `<button class="btn" style="background:var(--dark); color:white;" onclick="socket.emit('entregue_destino', ${p.id})">Entregue no Destino</button>`;
+                        if(p.status === 'aceito_retorno') btn = `<button class="btn btn-main" onclick="socket.emit('finalizar_geral', ${p.id})">Finalizar Volta</button>`;
                     }
+                    if(btn || p.status === 'pendente' || p.status === 'aguardando_retorno') mList.innerHTML += cardHtml + btn;
                 }
             });
-
-            // --- INJETAR EMPTY STATE SE NÃO TIVER NADA ---
-            const estadoVazioHtml = `
-                <div class="empty-state">
-                    <i class="fa fa-satellite-dish fa-beat-fade" style="--fa-animation-duration: 2s; color: var(--primary); opacity:0.6;"></i>
-                    <h3>Aguardando Transportes</h3>
-                    <p>Nenhum chamado ativo nesta categoria.</p>
-                </div>
-            `;
-
-            nurseDiv.innerHTML = htmlNurse === "" ? estadoVazioHtml : htmlNurse;
-            maqDiv.innerHTML = htmlMaq === "" ? estadoVazioHtml : htmlMaq;
-
-            // Mostra ou esconde a Tela Animada (Uber)
-            if(temChamadaParaMim && usuario.cargo === 'maqueiro') {
-                document.getElementById('call-modal').style.display = 'flex';
-            } else {
-                document.getElementById('call-modal').style.display = 'none';
-                pararAlarme();
-            }
+            document.getElementById('call-modal').style.display = callNow ? 'flex' : 'none';
         }
     </script>
 </body>

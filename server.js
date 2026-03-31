@@ -14,7 +14,6 @@ const io = new Server(server);
 
 app.use(express.static(path.join(__dirname, 'public')));
 
-// LISTA DE MAQUEIROS ONLINE PARA A ROLETA
 let maqueirosOnline = []; 
 
 async function atualizarTodos() {
@@ -24,62 +23,54 @@ async function atualizarTodos() {
 
 io.on('connection', async (socket) => {
     
-    // --- LOGIN E CONTROLE DE FILA ---
     socket.on('fazer_login', async (dados) => {
         const { data, error } = await supabase.from('usuarios').select('*').eq('email', dados.email).eq('senha', dados.senha).single(); 
         if (error) {
             socket.emit('login_erro', "E-mail ou senha incorretos.");
         } else if (data) {
-            // Se for maqueiro, entra na fila da roleta!
             if (data.cargo === 'maqueiro') {
-                maqueirosOnline = maqueirosOnline.filter(m => m.nome !== data.nome); // Evita duplicatas
+                maqueirosOnline = maqueirosOnline.filter(m => m.nome !== data.nome);
                 maqueirosOnline.push({ id: socket.id, nome: data.nome });
-                console.log("Fila de Maqueiros atualizada:", maqueirosOnline.map(m => m.nome));
             }
             socket.emit('login_sucesso', data);
         }
     });
 
     socket.on('disconnect', () => {
-        // Se o maqueiro fechar o app, sai da fila
         maqueirosOnline = maqueirosOnline.filter(m => m.id !== socket.id);
     });
 
     socket.on('solicitar_lista', () => atualizarTodos());
 
-    // --- NOVO PEDIDO COM INTELIGÊNCIA ---
     socket.on('novo_pedido', async (dados) => {
         let sugerido = null;
-        
-        // Se tiver maqueiros online, pega o primeiro da fila
         if (maqueirosOnline.length > 0) {
             sugerido = maqueirosOnline[0].nome;
-            // Joga esse maqueiro pro final da fila (Round Robin)
             const m = maqueirosOnline.shift();
             maqueirosOnline.push(m);
         }
-
-        // AGORA SALVA O TIPO DE TRAJETO (IDA E VOLTA ou SÓ IDA)
         await supabase.from('pedidos').insert([{ 
-            origem: dados.origem, 
-            destino: dados.destino, 
-            tipo: dados.tipo, 
-            urgencia: dados.urgencia, 
-            trajeto: dados.trajeto, 
-            status: 'pendente', 
-            maqueiro_sugerido: sugerido
+            paciente: dados.paciente, origem: dados.origem, destino: dados.destino, 
+            tipo: dados.tipo, urgencia: dados.urgencia, trajeto: dados.trajeto, 
+            risco_assistencial: dados.risco_assistencial, status: 'pendente', maqueiro_sugerido: sugerido
         }]);
         await atualizarTodos();
     });
 
-    // --- PASSAR A VEZ ---
+    socket.on('enviar_mensagem', async (dados) => {
+        const { idPedido, texto, autor } = dados;
+        const { data: pedido } = await supabase.from('pedidos').select('chat_mensagens').eq('id', idPedido).single();
+        let historico = pedido.chat_mensagens || [];
+        historico.push({ texto, autor, hora: new Date().toLocaleTimeString('pt-BR', {hour: '2-digit', minute:'2-digit'}) });
+        await supabase.from('pedidos').update({ chat_mensagens: historico }).eq('id', idPedido);
+        await atualizarTodos();
+    });
+
     socket.on('rejeitar_pedido', async (id) => {
-        // Se ele rejeitar, limpa o nome dele e joga para todos pegarem
         await supabase.from('pedidos').update({ maqueiro_sugerido: null }).eq('id', id);
         await atualizarTodos();
     });
 
-    // --- O RESTO DOS PASSOS ---
     socket.on('aceitar_ida', async (dados) => {
         await supabase.from('pedidos').update({ status: 'aceito', maqueiro_ida: dados.nomeMaqueiro, aceito_em: new Date().toISOString() }).eq('id', dados.idPedido);
         await atualizarTodos();
@@ -95,30 +86,18 @@ io.on('connection', async (socket) => {
         await atualizarTodos();
     });
     
-    // --- ENTREGUE NO DESTINO (AGORA VERIFICA SE É SÓ IDA) ---
     socket.on('entregue_destino', async (id) => {
-        // 1. Pergunta pro banco qual foi o trajeto escolhido pela enfermagem
         const { data } = await supabase.from('pedidos').select('trajeto').eq('id', id).single();
-        
-        // 2. Se for Só Ida, já finaliza. Se não, fica no destino esperando retorno.
         const novoStatus = (data && data.trajeto === 'so_ida') ? 'finalizado' : 'no_destino';
-
         await supabase.from('pedidos').update({ 
-            status: novoStatus, 
-            entrega_destino_at: new Date().toISOString(),
+            status: novoStatus, entrega_destino_at: new Date().toISOString(),
             finalizado_at: novoStatus === 'finalizado' ? new Date().toISOString() : null
         }).eq('id', id);
-        
         await atualizarTodos();
     });
 
     socket.on('pedir_retorno', async (id) => {
         await supabase.from('pedidos').update({ status: 'aguardando_retorno', pedido_retorno_at: new Date().toISOString() }).eq('id', id);
-        await atualizarTodos();
-    });
-    
-    socket.on('aceitar_retorno', async (dados) => {
-        await supabase.from('pedidos').update({ status: 'aceito_retorno', maqueiro_volta: dados.nomeMaqueiro, aceito_retorno_at: new Date().toISOString() }).eq('id', dados.idPedido);
         await atualizarTodos();
     });
     
@@ -128,6 +107,5 @@ io.on('connection', async (socket) => {
     });
 });
 
-// --- PORTA DINÂMICA PARA O RENDER ---
 const PORT = process.env.PORT || 3000;
-server.listen(PORT, () => console.log(`🚀 iMaqueiro rodando com Roleta Inteligente em http://localhost:${PORT}`));
+server.listen(PORT, () => console.log(`🚀 iMaqueiro rodando em http://localhost:${PORT}`));
