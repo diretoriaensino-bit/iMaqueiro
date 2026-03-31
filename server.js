@@ -35,6 +35,13 @@ io.on('connection', async (socket) => {
         }
     });
 
+    socket.on('relogar_maqueiro', (data) => {
+        if (data && data.cargo === 'maqueiro') {
+            maqueirosOnline = maqueirosOnline.filter(m => m.nome !== data.nome);
+            maqueirosOnline.push({ id: socket.id, nome: data.nome });
+        }
+    });
+
     socket.on('disconnect', () => {
         maqueirosOnline = maqueirosOnline.filter(m => m.id !== socket.id);
     });
