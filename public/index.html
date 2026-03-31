@@ -48,11 +48,12 @@
             -webkit-appearance: none;
             -moz-appearance: none;
             appearance: none; 
-            width: 100%; padding: 12px; margin-bottom: 15px; 
+            width: 100%; padding: 12px; margin-bottom: 12px; 
             border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; background: white;
+            font-size: 0.9rem;
         }
 
-        label { font-size: 0.8rem; font-weight: bold; color: var(--gray); display: block; margin-bottom: 5px; }
+        label { font-size: 0.75rem; font-weight: bold; color: var(--gray); display: block; margin-bottom: 3px; }
 
         .stats-bar { display: flex; gap: 15px; margin-bottom: 20px; }
         .stat-item { background: white; padding: 15px; border-radius: 10px; flex: 1; text-align: center; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
@@ -61,7 +62,7 @@
         .badge-risco { background: var(--danger); color: white; font-size: 10px; padding: 3px 8px; border-radius: 10px; font-weight: bold; animation: blink 1s infinite; }
         @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.6; } }
 
-        /* CHAT */
+        /* MODAL E CHAT */
         .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 999; justify-content: center; align-items: center; }
         .modal-content { background: white; width: 90%; max-width: 400px; border-radius: 15px; padding: 20px; }
         .chat-box { height: 250px; overflow-y: auto; background: #f8f9fa; padding: 10px; border-radius: 10px; margin-bottom: 15px; display: flex; flex-direction: column; gap: 8px; }
@@ -69,34 +70,16 @@
         .msg.meu { align-self: flex-end; background: var(--primary); color: white; }
         .msg.outro { align-self: flex-start; background: #ddd; }
 
-        /* TELA CHAMADA (MAQUEIRO) COM APARÊNCIA NO SLIDER */
         #call-modal { display: none; position: fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.9); z-index:1000; color:white; flex-direction:column; justify-content:center; align-items:center; text-align:center; padding:20px;}
         .pulse { width: 80px; height: 80px; border-radius: 50%; animation: pulse-anim 1.5s infinite; margin-bottom: 20px; }
         @keyframes pulse-anim { 0% { box-shadow: 0 0 0 0 rgba(255,255,255,0.7); } 70% { box-shadow: 0 0 0 20px rgba(255,255,255,0); } 100% { box-shadow: 0 0 0 0 rgba(255,255,255,0); } }
 
         #swipe-accept { 
-            -webkit-appearance: none;
-            -moz-appearance: none;
-            appearance: none;
-            width: 100%; 
-            background: transparent; 
-            position: absolute; 
-            height: 100%; 
-            cursor: pointer;
-            outline: none;
+            -webkit-appearance: none; -moz-appearance: none; appearance: none;
+            width: 100%; background: transparent; position: absolute; height: 100%; cursor: pointer; outline: none;
         }
-
-        #swipe-accept::-webkit-slider-thumb { 
-            -webkit-appearance: none; 
-            appearance: none;
-            width: 60px; height: 60px; border-radius: 50%; background: var(--success); 
-        }
-        
-        #swipe-accept::-moz-range-thumb { 
-            -moz-appearance: none; 
-            appearance: none;
-            width: 60px; height: 60px; border-radius: 50%; background: var(--success); border: none;
-        }
+        #swipe-accept::-webkit-slider-thumb { -webkit-appearance: none; appearance: none; width: 60px; height: 60px; border-radius: 50%; background: var(--success); }
+        #swipe-accept::-moz-range-thumb { -moz-appearance: none; appearance: none; width: 60px; height: 60px; border-radius: 50%; background: var(--success); border: none; }
     </style>
 </head>
 <body>
@@ -105,12 +88,11 @@
         
         <div id="screen-login" class="screen active">
             <div class="login-box">
-                <img src="/logo_2.png" alt="Logo" style="width: 80px; margin-bottom: 15px;">
+                <img src="/logo-hospital.png" alt="Logo" style="width: 80px; margin-bottom: 15px;">
                 <h1 style="margin:0; color:var(--primary)">iMaqueiro</h1>
-                <p style="color:var(--gray)">Painel Logístico Hospitalar</p>
                 <input type="email" id="login-email" placeholder="E-mail profissional">
                 <input type="password" id="login-senha" placeholder="Senha">
-                <button class="btn btn-main" onclick="tentarLogin()">ACESSAR SISTEMA</button>
+                <button class="btn btn-main" onclick="tentarLogin()">ACESSAR</button>
                 <p id="login-msg" style="color:red; font-size:0.8rem; margin-top:10px;"></p>
             </div>
         </div>
@@ -118,7 +100,7 @@
         <div id="screen-nurse" class="screen" style="flex-direction: column; padding: 0;">
             <header>
                 <div style="display:flex; align-items:center; gap:15px;">
-                    <img src="/logo_2.png" style="width:40px; filter: brightness(0) invert(1);">
+                    <img src="/logo-hospital.png" style="width:40px; filter: brightness(0) invert(1);">
                     <h2 style="margin:0">Painel Enfermagem</h2>
                 </div>
                 <div style="display:flex; align-items:center; gap:20px;">
@@ -134,9 +116,23 @@
                     <input type="text" id="paciente" placeholder="Nome completo">
                     
                     <div style="display:flex; gap:10px;">
-                        <div style="flex:1"><label>Origem</label><input type="text" id="origem" placeholder="UTI 01"></div>
-                        <div style="flex:1"><label>Destino</label><input type="text" id="destino" placeholder="Raio-X"></div>
+                        <div style="flex:1"><label>Origem</label><input type="text" id="origem" placeholder="Ex: UTI 01"></div>
+                        <div style="flex:1"><label>Destino</label><input type="text" id="destino" placeholder="Ex: Raio-X"></div>
                     </div>
+
+                    <label>Equipamento de Transporte</label>
+                    <select id="tipo">
+                        <option value="Maca (Padrão)">Maca (Padrão)</option>
+                        <option value="Maca com O2">Maca com O2</option>
+                        <option value="Maca Bariátrica">Maca Bariátrica</option>
+                        <option value="Cadeira de Rodas">Cadeira de Rodas</option>
+                        <option value="Cadeira de Rodas com O2">Cadeira de Rodas com O2</option>
+                        <option value="Cadeira Bariátrica">Cadeira Bariátrica</option>
+                        <option value="Cama Hospitalar">Cama Hospitalar (Leito)</option>
+                        <option value="Incubadora">Incubadora</option>
+                        <option value="Berço">Berço</option>
+                        <option value="Poltrona">Poltrona</option>
+                    </select>
 
                     <label>Urgência</label>
                     <select id="urgencia">
@@ -159,7 +155,7 @@
                         <option value="Aerosol">Aerosol</option>
                     </select>
 
-                    <button class="btn btn-main" style="padding:15px" onclick="enviarPedido()">SOLICITAR MAQUEIRO</button>
+                    <button class="btn btn-main" style="padding:15px" onclick="enviarPedido()">SOLICITAR AGORA</button>
                 </div>
 
                 <div class="main-panel">
@@ -231,10 +227,10 @@
                 paciente: document.getElementById('paciente').value,
                 origem: document.getElementById('origem').value,
                 destino: document.getElementById('destino').value,
+                tipo: document.getElementById('tipo').value, // <--- NOVO
                 urgencia: document.getElementById('urgencia').value,
                 trajeto: document.getElementById('trajeto').value,
-                risco_assistencial: document.getElementById('risco').value,
-                tipo: 'Maca'
+                risco_assistencial: document.getElementById('risco').value
             };
             if(!d.paciente || !d.origem || !d.destino) return alert("Preencha todos os campos!");
             socket.emit('novo_pedido', d);
@@ -259,10 +255,11 @@
                 const cardHtml = `
                     <div class="card" style="border-left-color:${color}">
                         <div style="display:flex; justify-content:space-between; align-items:start; margin-bottom:8px;">
-                            <b style="font-size:1.1rem">${p.origem} ➔ ${p.destino}</b>
+                            <b style="font-size:1rem">${p.origem} ➔ ${p.destino}</b>
                             ${badgeRisco}
                         </div>
-                        <div style="color:var(--dark); margin-bottom:5px;">👤 <b>${p.paciente}</b></div>
+                        <div style="font-size:0.9rem; margin-bottom:5px;">👤 <b>${p.paciente}</b></div>
+                        <div style="font-size:0.8rem; margin-bottom:3px;">🚑 <b>Equip.:</b> ${p.tipo}</div>
                         <div style="font-size:0.85rem; color:var(--gray);">Status: <b style="color:var(--primary)">${p.status.toUpperCase()}</b></div>
                         <div style="font-size:0.8rem; color:var(--gray); margin-top:5px;">Maqueiro: ${p.maqueiro_ida || '---'}</div>
                         <button onclick="abrirChat(${p.id})" style="position:absolute; right:10px; bottom:10px; border:none; background:#f0f0f0; border-radius:50%; width:35px; height:35px; cursor:pointer;"><i class="fa fa-comment"></i></button>
@@ -283,12 +280,12 @@
                     }
                     let btn = "";
                     if(p.maqueiro_ida === usuario.nome || p.maqueiro_volta === usuario.nome) {
-                        if(p.status === 'aceito') btn = `<button class="btn btn-main" onclick="socket.emit('cheguei_origem', ${p.id})">Cheguei no Quarto</button>`;
-                        if(p.status === 'na_origem') btn = `<button class="btn" style="background:var(--warning); width:100%" onclick="socket.emit('iniciar_ida', ${p.id})">Iniciar Trajeto</button>`;
-                        if(p.status === 'em_transito_ida') btn = `<button class="btn" style="background:var(--dark); color:white; width:100%" onclick="socket.emit('entregue_destino', ${p.id})">Entregue</button>`;
+                        if(p.status === 'aceito') btn = `<button class="btn btn-main" onclick="socket.emit('cheguei_origem', ${p.id})">Cheguei na Origem</button>`;
+                        if(p.status === 'na_origem') btn = `<button class="btn" style="background:var(--warning); width:100%" onclick="socket.emit('iniciar_ida', ${p.id})">Sair com Paciente</button>`;
+                        if(p.status === 'em_transito_ida') btn = `<button class="btn" style="background:var(--dark); color:white; width:100%" onclick="socket.emit('entregue_destino', ${p.id})">Entregue no Destino</button>`;
                         if(p.status === 'aceito_retorno') btn = `<button class="btn btn-main" onclick="socket.emit('finalizar_geral', ${p.id})">Finalizar Volta</button>`;
                     }
-                    if(btn || p.status === 'pendente') mList.innerHTML += cardHtml + btn;
+                    if(btn || p.status === 'pendente' || p.status === 'aguardando_retorno') mList.innerHTML += cardHtml + btn;
                 }
             });
 
