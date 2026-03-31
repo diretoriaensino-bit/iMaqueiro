@@ -60,7 +60,7 @@ io.on('connection', async (socket) => {
             urgencia: d.urgencia, trajeto: d.trajeto, risco_assistencial: d.risco_assistencial,
             status: 'pendente', maqueiro_sugerido: sugerido
         }]);
-        atualizarTodos();
+        await atualizarTodos();
     });
 
     socket.on('rejeitar_pedido', async (id) => {
@@ -95,7 +95,10 @@ io.on('connection', async (socket) => {
     socket.on('entregue_destino', async (id) => {
         const { data } = await supabase.from('pedidos').select('trajeto').eq('id', id).single();
         const final = (data && data.trajeto === 'so_ida') ? 'finalizado' : 'no_destino';
-        await supabase.from('pedidos').update({ status: final, entrega_destino_at: new Date().toISOString(), finalizado_at: final === 'finalizado' ? new Date().toISOString() : null }).eq('id', id);
+        await supabase.from('pedidos').update({ 
+            status: final, entrega_destino_at: new Date().toISOString(),
+            finalizado_at: final === 'finalizado' ? new Date().toISOString() : null
+        }).eq('id', id);
         atualizarTodos();
     });
 
@@ -106,7 +109,7 @@ io.on('connection', async (socket) => {
     
     socket.on('finalizar_geral', async (id) => {
         await supabase.from('pedidos').update({ status: 'finalizado', finalizado_at: new Date().toISOString() }).eq('id', id);
-        atualizarTodos();
+        await atualizarTodos();
     });
 });
 

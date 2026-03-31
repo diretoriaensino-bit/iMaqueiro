@@ -10,86 +10,149 @@
     <style>
         :root { --primary: #0056b3; --success: #28a745; --light: #f4f7f6; --white: #fff; --dark: #343a40; --warning: #ffc107; --danger: #dc3545; --gray: #6c757d;}
         body { font-family: 'Segoe UI', sans-serif; background: var(--light); margin: 0; user-select: none; }
-        .app-shell { width: 100%; min-height: 100vh; display: flex; flex-direction: column; }
-        @media (max-width: 900px) { .app-shell { max-width: 450px; margin: 0 auto; background: white; } .dashboard-container { flex-direction: column !important; height: auto !important; } .sidebar-form { width: 100% !important; margin-bottom: 20px; } }
+        .app-shell { width: 100%; min-height: 100vh; display: flex; flex-direction: column; transition: all 0.3s; }
+        @media (max-width: 900px) {
+            .app-shell { max-width: 450px; margin: 0 auto; background: white; box-shadow: 0 0 20px rgba(0,0,0,0.1); }
+            .dashboard-container { flex-direction: column !important; height: auto !important; padding: 10px !important; }
+            .sidebar-form { width: 100% !important; margin-bottom: 20px; box-shadow: none !important; border: 1px solid #eee; }
+            header { padding: 10px 15px !important; } header h2 { font-size: 1.1rem; }
+            .stats-bar { gap: 10px; } .stat-item { padding: 10px !important; } .stat-item h2 { font-size: 1.2rem; }
+        }
         .screen { display: none; padding: 20px; box-sizing: border-box; flex: 1; flex-direction: column; }
         .active { display: flex; }
-        header { background: var(--primary); color: white; padding: 15px 30px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
-        .dashboard-container { display: flex; gap: 20px; width: 100%; padding: 20px; box-sizing: border-box; height: calc(100vh - 80px); }
-        .sidebar-form { width: 350px; background: white; padding: 20px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); overflow-y: auto; flex-shrink: 0; }
-        .main-panel { flex: 1; overflow-y: auto; }
+        header { background: var(--primary); color: white; padding: 15px 30px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        .dashboard-container { display: flex; gap: 20px; width: 100%; padding: 20px; box-sizing: border-box; height: calc(100vh - 100px); }
+        @media (min-width: 901px) {
+            .app-shell { max-width: 100%; margin: 0; }
+            .dashboard-container { max-width: 1400px; margin: 0 auto; height: calc(100vh - 120px); }
+            .sidebar-form { width: 350px; background: white; padding: 20px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); overflow-y: auto; flex-shrink: 0; }
+            .main-panel { flex: 1; background: #eef2f5; padding: 20px; border-radius: 15px; overflow-y: auto; }
+        }
         .cards-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 15px; }
         .card { background: white; border-radius: 12px; padding: 15px; border-left: 8px solid #ddd; box-shadow: 0 2px 5px rgba(0,0,0,0.05); position: relative; }
-        .btn { padding: 12px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; -webkit-appearance: none; appearance: none; }
+        .btn { padding: 12px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 0.9rem; -webkit-appearance: none; appearance: none; }
         .btn-main { background: var(--primary); color: white; width: 100%; }
-        input, select { width: 100%; padding: 12px; margin-bottom: 12px; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; background: white; }
+        input:not([type="range"]), select { 
+            -webkit-appearance: none; -moz-appearance: none; appearance: none; 
+            width: 100%; padding: 12px; margin-bottom: 12px; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; background: white; font-size: 0.9rem;
+        }
+        label { font-size: 0.75rem; font-weight: bold; color: var(--gray); display: block; margin-bottom: 3px; }
+        .stats-bar { display: flex; gap: 10px; margin-bottom: 20px; }
+        .stat-item { background: white; padding: 12px; border-radius: 10px; flex: 1; text-align: center; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+        .stat-item h2 { margin: 0; color: var(--primary); font-size: 1.5rem; }
+        .stat-item span { font-size: 0.7rem; color: var(--gray); font-weight: bold; text-transform: uppercase; }
+        .badge-risco { background: var(--danger); color: white; font-size: 10px; padding: 3px 8px; border-radius: 10px; font-weight: bold; animation: blink 1s infinite; }
+        @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.6; } }
         .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 999; justify-content: center; align-items: center; padding: 20px; }
-        .modal-content { background: white; width: 100%; max-width: 400px; border-radius: 15px; padding: 20px; position: relative; }
-        .chat-box { height: 250px; overflow-y: auto; background: #f8f9fa; padding: 10px; border-radius: 10px; display: flex; flex-direction: column; gap: 8px; }
+        .modal-content { background: white; width: 90%; max-width: 400px; border-radius: 15px; padding: 20px; }
+        .chat-box { height: 250px; overflow-y: auto; background: #f8f9fa; padding: 10px; border-radius: 10px; margin-bottom: 15px; display: flex; flex-direction: column; gap: 8px; }
         .msg { padding: 8px 12px; border-radius: 12px; font-size: 0.85rem; max-width: 80%; }
         .msg.meu { align-self: flex-end; background: var(--primary); color: white; }
         .msg.outro { align-self: flex-start; background: #ddd; }
         #call-modal { display: none; position: fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.95); z-index:1500; color:white; flex-direction:column; justify-content:center; align-items:center; text-align:center; padding:20px;}
-        #swipe-accept { -webkit-appearance: none; appearance: none; width: 100%; background: transparent; position: absolute; height: 100%; cursor: pointer; outline: none; z-index: 10; }
-        #swipe-accept::-webkit-slider-thumb { -webkit-appearance: none; appearance: none; width: 65px; height: 65px; border-radius: 50%; background: var(--success); }
-        .toast-notif { position: fixed; top: 20px; right: 20px; background: var(--dark); color: white; padding: 15px; border-radius: 10px; z-index: 2000; display: none; box-shadow: 0 5px 15px rgba(0,0,0,0.3); }
+        .pulse { width: 80px; height: 80px; border-radius: 50%; animation: pulse-anim 1.5s infinite; margin-bottom: 20px; display: flex; align-items: center; justify-content: center; font-size: 2rem; }
+        @keyframes pulse-anim { 0% { box-shadow: 0 0 0 0 rgba(255,255,255,0.7); } 70% { box-shadow: 0 0 0 20px rgba(255,255,255,0); } 100% { box-shadow: 0 0 0 0 rgba(255,255,255,0); } }
+        #swipe-accept { -webkit-appearance: none; -moz-appearance: none; appearance: none; width: 100%; background: transparent; position: absolute; height: 100%; cursor: pointer; outline: none; z-index: 10; }
+        #swipe-accept::-webkit-slider-thumb { -webkit-appearance: none; appearance: none; width: 60px; height: 60px; border-radius: 50%; background: var(--success); }
+        #swipe-accept::-moz-range-thumb { -moz-appearance: none; appearance: none; width: 60px; height: 60px; border-radius: 50%; background: var(--success); border: none; }
+        .toast-notif { position: fixed; top: 20px; right: 20px; background: var(--dark); color: white; padding: 15px; border-radius: 10px; z-index: 2000; display: none; }
+
+        /* NOVA ANIMAÇÃO DE LOGIN (MACA) */
+        .login-animation-overlay {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 86, 179, 0.95); z-index: 9999; flex-direction: column;
+            justify-content: center; align-items: center; color: white; text-align: center;
+        }
+        .maca-icon {
+            font-size: 5rem; color: white;
+            animation: macaAndando 2s linear infinite;
+        }
+        @keyframes macaAndando {
+            0% { transform: translateX(-150%) scaleX(-1); }
+            100% { transform: translateX(150%) scaleX(-1); }
+        }
     </style>
 </head>
 <body>
     <div class="app-shell">
+        
         <div id="screen-login" class="screen active">
             <div style="text-align:center; background:white; padding:30px; border-radius:20px; box-shadow:0 10px 30px rgba(0,0,0,0.1); width:100%; max-width:350px; margin: auto;">
                 <img src="/logo-hospital.png" style="width:80px; margin-bottom:10px;">
-                <h2 style="color:var(--primary); margin:0;">iMaqueiro</h2>
-                <input type="email" id="login-email" placeholder="E-mail">
+                <h1 style="color:var(--primary); margin:0;">iMaqueiro</h1>
+                <p style="color:var(--gray); font-size:0.9rem; margin-bottom: 20px;">Painel Logístico Hospitalar</p>
+                <input type="email" id="login-email" placeholder="E-mail profissional">
                 <input type="password" id="login-senha" placeholder="Senha">
-                <button class="btn btn-main" onclick="tentarLogin()">ENTRAR</button>
-                <p id="login-msg" style="color:red; font-size:0.8rem;"></p>
+                <button class="btn btn-main" onclick="tentarLogin()">ACESSAR</button>
+                <p id="login-msg" style="color:red; font-size:0.8rem; margin-top:10px;"></p>
             </div>
         </div>
 
-        <div id="screen-nurse" class="screen" style="padding:0;">
+        <div id="screen-nurse" class="screen" style="flex-direction: column; padding: 0;">
             <header>
-                <h3 style="margin:0">Painel Enfermagem</h3>
+                <div style="display:flex; align-items:center; gap:12px;">
+                    <img src="/logo-hospital.png" style="width:35px; filter: brightness(0) invert(1);">
+                    <h2 style="margin:0">Enfermagem</h2>
+                </div>
                 <div style="display:flex; align-items:center; gap:15px;">
-                    <span id="user-name-nurse" style="font-weight:bold"></span>
-                    <button class="btn" style="background:#fff3; color:white;" onclick="fazerLogout()">Sair</button>
+                    <span id="user-name-nurse" style="font-weight:bold; font-size: 0.85rem;"></span>
+                    <button class="btn" style="background:rgba(255,255,255,0.2); color:white; padding: 5px 10px;" onclick="fazerLogout()">Sair</button>
                 </div>
             </header>
             <div class="dashboard-container">
                 <div class="sidebar-form">
-                    <h3 style="margin:0 0 15px 0">Novo Pedido</h3>
-                    <input type="text" id="paciente" placeholder="Nome do Paciente">
-                    <input type="text" id="origem" placeholder="Origem">
-                    <input type="text" id="destino" placeholder="Destino">
-                    <select id="tipo"><option value="Maca">Maca</option><option value="Cadeira de Rodas">Cadeira de Rodas</option><option value="Maca com O2">Maca com O2</option></select>
-                    <select id="urgencia"><option value="Verde">Rotina</option><option value="Amarelo">Urgência</option><option value="Vermelho">Emergência</option></select>
-                    <select id="trajeto"><option value="ida_volta">Ida e Volta</option><option value="so_ida">Somente Ida</option></select>
-                    <select id="risco"><option value="Nenhum">Sem Risco</option><option value="Contato">Isolamento Contato</option><option value="Gotículas">Isolamento Gotículas</option></select>
+                    <h3 style="margin-top:0"><i class="fa fa-plus-circle"></i> Novo Pedido</h3>
+                    <label>Paciente</label>
+                    <input type="text" id="paciente" placeholder="Nome completo">
+                    <div style="display:flex; gap:10px;">
+                        <div style="flex:1"><label>Origem</label><input type="text" id="origem" placeholder="Ex: UTI 01"></div>
+                        <div style="flex:1"><label>Destino</label><input type="text" id="destino" placeholder="Ex: Raio-X"></div>
+                    </div>
+                    <label>Equipamento</label>
+                    <select id="tipo">
+                        <option value="Maca">Maca</option><option value="Cadeira">Cadeira de Rodas</option>
+                    </select>
+                    <label>Urgência</label>
+                    <select id="urgencia">
+                        <option value="Verde">Rotina (Verde)</option>
+                        <option value="Amarelo">Urgente (Amarelo)</option>
+                        <option value="Vermelho">Emergência (Vermelho)</option>
+                    </select>
+                    <label>Trajeto</label>
+                    <select id="trajeto">
+                        <option value="ida_volta">Ida e Volta</option>
+                        <option value="so_ida">Somente Ida</option>
+                    </select>
+                    <label>Risco / Isolamento</label>
+                    <select id="risco">
+                        <option value="Nenhum">Sem Risco</option>
+                        <option value="Contato">Contato</option>
+                    </select>
                     <button class="btn btn-main" onclick="enviarPedido()">SOLICITAR MAQUEIRO</button>
                 </div>
-                <div class="main-panel"><div class="cards-grid" id="nurse-list"></div></div>
+                <div class="main-panel">
+                    <div class="stats-bar">
+                        <div class="stat-item"><h2 id="stat-pendente">0</h2><span>Aguardando</span></div>
+                        <div class="stat-item"><h2 id="stat-curso">0</h2><span>Em curso</span></div>
+                        <div class="stat-item"><h2 id="stat-risco" style="color:var(--danger)">0</h2><span>Riscos</span></div>
+                    </div>
+                    <div class="cards-grid" id="nurse-list"></div>
+                </div>
             </div>
         </div>
 
         <div id="screen-maqueiro" class="screen">
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
-                <h3 id="user-name-maq" style="margin:0"></h3>
-                <button class="btn" style="background:#eee" onclick="fazerLogout()">Sair</button>
-            </div>
-            <div style="display:flex; gap:10px; margin-bottom:15px;">
-                <div style="flex:1; background:white; padding:15px; border-radius:10px; text-align:center;">
-                    <h2 id="total-hoje" style="margin:0; color:var(--primary);">0</h2><small>Hoje</small>
-                </div>
-                <div style="flex:1; background:var(--success); color:white; padding:15px; border-radius:10px; text-align:center;">
-                    <h2 style="margin:0;">ON</h2><small>Disponível</small>
-                </div>
-            </div>
-            <button class="btn" id="btn-som" onclick="ativarAudio()" style="background:var(--success); color:white; margin-bottom:20px;">🔔 LIGAR ALARME</button>
+            <div class="user-bar"><span id="user-name-maq" style="font-weight:bold"></span><button onclick="fazerLogout()">Sair</button></div>
+            <button class="btn" id="btn-som" onclick="ativarAudio()" style="background:var(--success); color:white; margin-bottom:15px;">🔔 ATIVAR ALERTAS</button>
             <div id="maqueiro-list"></div>
-            <h4 style="margin:20px 0 10px 0">Histórico Recente</h4>
+            <h4 style="margin:20px 0 10px 0">Meus Transportes Hoje</h4>
             <div id="maqueiro-history"></div>
         </div>
+    </div>
+
+    <div id="login-animation" class="login-animation-overlay">
+        <i class="fa fa-bed maca-icon"></i>
+        <p style="margin-top: 20px; font-size: 1.2rem; font-weight: bold;">Validando credenciais...</p>
     </div>
 
     <div id="chat-modal" class="modal-overlay">
@@ -104,24 +167,24 @@
     <div id="qr-modal" class="modal-overlay">
         <div class="modal-content">
             <h3>Validar Leito</h3>
-            <div id="qr-reader" style="width:100%;"></div>
+            <div id="qr-reader"></div>
             <button class="btn" style="background:var(--danger); color:white; width:100%; margin-top:15px;" onclick="fecharQR()">Cancelar</button>
         </div>
     </div>
 
     <div id="call-modal">
         <div id="call-risco" style="background:var(--danger); width:100%; padding:10px; position:absolute; top:0; font-weight:bold; display:none;">⚠️ ISOLAMENTO!</div>
-        <h2 id="call-paciente" style="margin:0"></h2>
+        <div class="pulse" id="call-icon" style="background:var(--success);"><i class="fa fa-ambulance"></i></div>
+        <h2 id="call-paciente" style="margin:0; font-size: 1.4rem;"></h2>
         <h1 id="call-rota" style="margin:10px 0;"></h1>
-        <div style="width:300px; height:70px; background:#333; border-radius:35px; position:relative; display:flex; align-items:center; justify-content:center; margin-top:30px;">
-            <span style="color:#666; font-weight:bold;">DESLIZE PARA ACEITAR</span>
+        <div style="width:280px; height:60px; background:#333; border-radius:30px; position:relative; display:flex; align-items:center; justify-content:center; margin-top:30px;">
+            <span style="color:#888; font-weight:bold; font-size: 0.9rem;">Deslize para aceitar ➔</span>
             <input type="range" min="0" max="100" value="0" id="swipe-accept">
         </div>
-        <button onclick="passarVezCall()" style="background:none; border:none; color:var(--warning); margin-top:30px; font-weight:bold; cursor:pointer;">PASSAR A VEZ</button>
+        <button onclick="passarVezCall()" style="background:none; border:none; color:var(--warning); margin-top:20px; font-weight:bold; cursor:pointer;">PASSAR A VEZ</button>
     </div>
 
     <div id="toast" class="toast-notif" onclick="this.style.display='none'"><b>Chat:</b> <span id="toast-msg"></span></div>
-
     <audio id="audio-alerta" src="https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3" loop></audio>
     <audio id="audio-emergencia" src="https://assets.mixkit.co/active_storage/sfx/951/951-preview.mp3" loop></audio>
 
@@ -142,102 +205,54 @@
             socket.emit('fazer_login', { email: document.getElementById('login-email').value, senha: document.getElementById('login-senha').value });
         }
 
-        socket.on('login_sucesso', u => { usuario = u; localStorage.setItem('imaqueiro_user', JSON.stringify(u)); abrirPainel(u); });
-        socket.on('login_erro', m => document.getElementById('login-msg').innerText = m);
+        socket.on('login_sucesso', u => {
+            usuario = u;
+            localStorage.setItem('imaqueiro_user', JSON.stringify(u));
+            
+            // MOSTRA ANIMAÇÃO
+            const animEl = document.getElementById('login-animation');
+            animEl.style.display = 'flex';
 
-        function abrirPainel(u) {
-            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-            document.getElementById(u.cargo === 'enfermagem' ? 'screen-nurse' : 'screen-maqueiro').classList.add('active');
-            document.getElementById(u.cargo === 'enfermagem' ? 'user-name-nurse' : 'user-name-maq').innerText = u.nome;
-            socket.emit('solicitar_lista');
-        }
-
-        function fazerLogout() { localStorage.removeItem('imaqueiro_user'); location.reload(); }
-
-        function enviarPedido() {
-            const d = { paciente: document.getElementById('paciente').value, origem: document.getElementById('origem').value, destino: document.getElementById('destino').value, tipo: document.getElementById('tipo').value, urgencia: document.getElementById('urgencia').value, trajeto: document.getElementById('trajeto').value, risco_assistencial: document.getElementById('risco').value };
-            if(!d.paciente || !d.origem || !d.destino) return alert("Preencha origem e destino!");
-            socket.emit('novo_pedido', d);
-            document.getElementById('paciente').value = ""; document.getElementById('origem').value = ""; document.getElementById('destino').value = "";
-        }
-
-        socket.on('atualizar_lista', data => { pedidosAtivos = data.ativos; renderizar(data.ativos, data.historico); });
-
-        socket.on('notificacao_mensagem', d => {
-            if(d.autor !== usuario.nome && idChatAtivo !== d.idPedido) {
-                document.getElementById('toast-msg').innerText = `${d.autor}: ${d.texto}`;
-                document.getElementById('toast').style.display = 'block';
-                setTimeout(() => document.getElementById('toast').style.display='none', 4000);
-            }
+            // AGUARDA 2 SEGUNDOS E ABRE O PAINEL
+            setTimeout(() => {
+                animEl.style.display = 'none';
+                abrirPainel(u);
+            }, 2000);
         });
+
+        socket.on('login_erro', m => document.getElementById('login-msg').innerText = m);
+        function abrirPainel(u) { document.querySelectorAll('.screen').forEach(s => s.classList.remove('active')); document.getElementById(u.cargo === 'enfermagem' ? 'screen-nurse' : 'screen-maqueiro').classList.add('active'); document.getElementById(u.cargo === 'enfermagem' ? 'user-name-nurse' : 'user-name-maq').innerText = u.nome; socket.emit('solicitar_lista'); }
+        function fazerLogout() { localStorage.removeItem('imaqueiro_user'); location.reload(); }
+        function enviarPedido() { const d = { paciente: document.getElementById('paciente').value, origem: document.getElementById('origem').value, destino: document.getElementById('destino').value, tipo: document.getElementById('tipo').value, urgencia: document.getElementById('urgencia').value, trajeto: document.getElementById('trajeto').value, risco_assistencial: document.getElementById('risco').value }; if(!d.paciente || !d.origem || !d.destino) return alert("Preencha origem e destino!"); socket.emit('novo_pedido', d); document.getElementById('paciente').value = ""; document.getElementById('origem').value = ""; document.getElementById('destino').value = ""; }
+        socket.on('atualizar_lista', data => { pedidosAtivos = data.ativos; renderizar(data.ativos, data.historico); });
+        socket.on('notificacao_mensagem', d => { if(d.autor !== usuario.nome && idChatAtivo !== d.idPedido) { document.getElementById('toast-msg').innerText = `${d.autor}: ${d.texto}`; document.getElementById('toast').style.display = 'block'; setTimeout(() => document.getElementById('toast').style.display='none', 4000); } });
 
         function renderizar(ativos, historico) {
             const nList = document.getElementById('nurse-list'), mList = document.getElementById('maqueiro-list'), mHist = document.getElementById('maqueiro-history');
             if(!usuario) return;
             nList.innerHTML = ""; mList.innerHTML = ""; mHist.innerHTML = "";
-            let callNow = false; let contHoje = 0;
-
+            let callNow = false; contHoje = 0;
             ativos.forEach(p => {
                 const color = p.urgencia === 'Vermelho' ? 'var(--danger)' : (p.urgencia === 'Amarelo' ? 'var(--warning)' : 'var(--success)');
                 const badgeRisco = p.risco_assistencial !== 'Nenhum' ? `<span style="background:red; color:white; font-size:9px; padding:2px 5px; border-radius:5px;">ISOLAMENTO</span>` : "";
-                const card = `
-                    <div class="card" style="border-left-color:${color}">
-                        <div style="display:flex; justify-content:space-between; align-items:start;"><b>${p.origem} ➔ ${p.destino}</b> ${badgeRisco}</div>
-                        <div style="font-size:0.9rem; margin:5px 0;">👤 ${p.paciente}</div>
-                        <div style="font-size:0.8rem; color:var(--gray);">${p.tipo} | ${p.status.toUpperCase()}</div>
-                        <button onclick="abrirChat(${p.id})" style="position:absolute; right:10px; bottom:10px; border:none; background:#f0f0f0; width:30px; height:30px; border-radius:50%;"><i class="fa fa-comment"></i></button>
-                    </div>`;
-
-                if(usuario.cargo === 'enfermagem') {
-                    nList.innerHTML += `<div>${card}${p.status === 'no_destino' && p.trajeto === 'ida_volta' ? `<button class="btn btn-main" style="margin-top:5px; background:var(--success)" onclick="socket.emit('pedir_retorno', ${p.id})">Pedir Retorno</button>` : ""}</div>`;
-                }
+                const card = `<div class="card" style="border-left-color:${color}"><div style="display:flex; justify-content:space-between; align-items:start;"><b>${p.origem} ➔ ${p.destino}</b> ${badgeRisco}</div><div style="font-size:0.9rem; margin:5px 0;">👤 ${p.paciente}</div><div style="font-size:0.8rem; color:var(--gray);">${p.tipo} | ${p.status.toUpperCase().replace(/_/g, ' ')}</div><button onclick="abrirChat(${p.id})" style="position:absolute; right:10px; bottom:10px; border:none; background:#f0f0f0; width:30px; height:30px; border-radius:50%;"><i class="fa fa-comment"></i></button></div>`;
+                if(usuario.cargo === 'enfermagem') nList.innerHTML += `<div>${card}${p.status === 'no_destino' && p.trajeto === 'ida_volta' ? `<button class="btn btn-main" style="margin-top:5px; background:var(--success); font-size:0.8rem; padding:8px;" onclick="socket.emit('pedir_retorno', ${p.id})">Solicitar Retorno</button>` : ""}</div>`;
                 if(usuario.cargo === 'maqueiro') {
-                    if((p.status === 'pendente' || p.status === 'aguardando_retorno') && (!p.maqueiro_sugerido || p.maqueiro_sugerido === usuario.nome)) {
-                        callNow = true; idChamadoAtual = p.id;
-                        document.getElementById('call-paciente').innerText = p.paciente;
-                        document.getElementById('call-rota').innerText = p.origem + " ➔ " + p.destino;
-                        document.getElementById('call-risco').style.display = (p.risco_assistencial !== 'Nenhum' ? 'block' : 'none');
-                        if(audioLigado) p.urgencia === 'Vermelho' ? document.getElementById('audio-emergencia').play() : document.getElementById('audio-alerta').play();
-                    }
+                    if((p.status === 'pendente' || p.status === 'aguardando_retorno') && (!p.maqueiro_sugerido || p.maqueiro_sugerido === usuario.nome)) { callNow = true; idChamadoAtual = p.id; document.getElementById('call-paciente').innerText = p.paciente; document.getElementById('call-rota').innerText = p.origem + " ➔ " + p.destino; document.getElementById('call-risco').style.display = (p.risco_assistencial !== 'Nenhum' ? 'block' : 'none'); if(audioLigado) p.urgencia === 'Vermelho' ? document.getElementById('audio-emergencia').play() : document.getElementById('audio-alerta').play(); }
                     let b = "";
-                    if(p.maqueiro_ida === usuario.nome || p.maqueiro_volta === usuario.nome) {
-                        if(p.status === 'aceito' || p.status === 'aceito_retorno') b = `<button class="btn btn-main" onclick="abrirQR(${p.id})">Confirmar Leito (QR)</button>`;
-                        else if(p.status === 'na_origem') b = `<button class="btn" style="background:var(--warning); width:100%" onclick="socket.emit('iniciar_ida', ${p.id})">Iniciar Trajeto</button>`;
-                        else if(p.status === 'em_transito_ida') b = `<button class="btn" style="background:var(--dark); color:white; width:100%" onclick="socket.emit('entregue_destino', ${p.id})">Entregue</button>`;
-                    }
+                    if(p.maqueiro_ida === usuario.nome || p.maqueiro_volta === usuario.nome) { if(p.status === 'aceito' || p.status === 'aceito_retorno') b = `<button class="btn btn-main" onclick="abrirQR(${p.id})">Confirmar Leito (QR)</button>`; else if(p.status === 'na_origem') b = `<button class="btn" style="background:var(--warning); width:100%" onclick="socket.emit('iniciar_ida', ${p.id})">Iniciar Trajeto</button>`; else if(p.status === 'em_transito_ida') b = `<button class="btn" style="background:var(--dark); color:white; width:100%" onclick="socket.emit('entregue_destino', ${p.id})">Finalizar</button>`; }
                     if(b || p.status === 'pendente') mList.innerHTML += card + b;
                 }
             });
-
-            historico.forEach(p => {
-                if(p.maqueiro_ida === usuario.nome || p.maqueiro_volta === usuario.nome) {
-                    contHoje++;
-                    mHist.innerHTML += `<div style="background:white; padding:10px; border-radius:8px; margin-bottom:8px; font-size:0.8rem; border-left:4px solid #ccc;"><b>${p.origem} ➔ ${p.destino}</b> | ${p.paciente}</div>`;
-                }
-            });
+            historico.forEach(p => { if(p.maqueiro_ida === usuario.nome || p.maqueiro_volta === usuario.nome) { contHoje++; mHist.innerHTML += `<div style="background:white; padding:10px; border-radius:8px; margin-bottom:8px; font-size:0.8rem; border-left:4px solid #ccc;"><b>${p.origem} ➔ ${p.destino}</b> | ${p.paciente}</div>`; } });
             if(usuario.cargo === 'maqueiro') document.getElementById('total-hoje').innerText = contHoje;
             document.getElementById('call-modal').style.display = callNow ? 'flex' : 'none';
         }
-
-        function abrirChat(id) {
-            idChatAtivo = id; const p = pedidosAtivos.find(x => x.id === id);
-            const box = document.getElementById('chat-box');
-            box.innerHTML = (p.chat_mensagens || []).map(m => `<div class="msg ${m.autor === usuario.nome ? 'meu' : 'outro'}"><b>${m.autor}:</b> ${m.texto}</div>`).join('');
-            const fr = usuario.cargo === 'maqueiro' ? ["Caminho livre", "Elevador em manutenção", "Paciente em banho"] : ["Aguarde no local", "Pode vir", "Pronto"];
-            document.getElementById('quick-replies').innerHTML = fr.map(f => `<button class="btn" style="border:1px solid var(--primary); background:none; font-size:0.7rem;" onclick="enviarMensagem('${f}')">${f}</button>`).join('');
-            document.getElementById('chat-modal').style.display = 'flex';
-            box.scrollTop = box.scrollHeight;
-        }
+        function abrirChat(id) { idChatAtivo = id; const p = pedidosAtivos.find(x => x.id === id); const box = document.getElementById('chat-box'); box.innerHTML = (p.chat_mensagens || []).map(m => `<div class="msg ${m.autor === usuario.nome ? 'meu' : 'outro'}"><b>${m.autor}:</b> ${m.texto}</div>`).join(''); const fr = usuario.cargo === 'maqueiro' ? ["Caminho livre", "Elevador lotado", "Paciente em banho"] : ["Aguarde no local", "Pode vir", "Finalizado"]; document.getElementById('quick-replies').innerHTML = fr.map(f => `<button class="btn" style="border:1px solid var(--primary); background:none; font-size:0.7rem;" onclick="enviarMensagem('${f}')">${f}</button>`).join(''); document.getElementById('chat-modal').style.display = 'flex'; box.scrollTop = box.scrollHeight; }
         function enviarMensagem(texto) { socket.emit('enviar_mensagem', { idPedido: idChatAtivo, texto, autor: usuario.nome }); fecharChat(); }
         function fecharChat() { document.getElementById('chat-modal').style.display = 'none'; idChatAtivo = null; }
-
-        function abrirQR(id) {
-            document.getElementById('qr-modal').style.display = 'flex';
-            html5QrCode = new Html5Qrcode("qr-reader");
-            html5QrCode.start({ facingMode: "environment" }, { fps: 10, qrbox: 250 }, (txt) => { fecharQR(); socket.emit('cheguei_origem', id); }, () => {});
-        }
+        function abrirQR(id) { document.getElementById('qr-modal').style.display = 'flex'; html5QrCode = new Html5Qrcode("qr-reader"); html5QrCode.start({ facingMode: "environment" }, { fps: 10, qrbox: 250 }, (txt) => { fecharQR(); socket.emit('cheguei_origem', id); }, () => {}); }
         function fecharQR() { if(html5QrCode) html5QrCode.stop().then(() => html5QrCode.clear()); document.getElementById('qr-modal').style.display = 'none'; }
-
         function ativarAudio() { document.getElementById('audio-alerta').play().then(() => { document.getElementById('audio-alerta').pause(); audioLigado = true; document.getElementById('btn-som').style.display='none'; }); }
         document.getElementById('swipe-accept').addEventListener('input', function() { if(this.value > 85) { this.value = 0; pararAlarme(); socket.emit('aceitar_ida', {idPedido: idChamadoAtual, nomeMaqueiro: usuario.nome}); } });
         function passarVezCall() { pararAlarme(); socket.emit('rejeitar_pedido', idChamadoAtual); }
