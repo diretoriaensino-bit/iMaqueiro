@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>iMaqueiro - Painel de Gestão</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root { --primary: #0056b3; --dark: #2c3e50; --light: #f4f7f6; --white: #fff; --success: #28a745; --danger: #dc3545;}
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; background: var(--light); display: flex; height: 100vh; overflow: hidden; }
+        
+        /* Menu Lateral */
+        .sidebar { width: 260px; background: var(--dark); color: white; display: flex; flex-direction: column; }
+        .sidebar-header { padding: 20px; background: rgba(0,0,0,0.2); text-align: center; }
+        .sidebar-header h2 { margin: 0; font-size: 1.5rem; }
+        .sidebar-menu { flex: 1; padding: 20px 0; }
+        .menu-item { padding: 15px 25px; color: #adb5bd; text-decoration: none; display: block; transition: 0.3s; border-left: 4px solid transparent; }
+        .menu-item:hover, .menu-item.active { background: rgba(255,255,255,0.05); color: white; border-left-color: var(--primary); }
+        .menu-item i { margin-right: 10px; width: 20px; text-align: center; }
+        
+        /* Conteúdo Principal */
+        .main-content { flex: 1; padding: 30px; overflow-y: auto; }
+        .header-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
+        .btn-logout { background: #dc3545; color: white; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-weight: bold; }
+        
+        /* Cards de Indicadores (KPIs) */
+        .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 20px; margin-bottom: 30px; }
+        .kpi-card { background: var(--white); padding: 20px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); display: flex; align-items: center; border-bottom: 4px solid var(--primary); }
+        .kpi-icon { width: 60px; height: 60px; border-radius: 12px; background: rgba(0,86,179,0.1); color: var(--primary); display: flex; align-items: center; justify-content: center; font-size: 1.8rem; margin-right: 15px; }
+        .kpi-info h3 { margin: 0; font-size: 0.9rem; color: #6c757d; text-transform: uppercase; }
+        .kpi-info p { margin: 5px 0 0; font-size: 1.8rem; font-weight: bold; color: var(--dark); }
+
+        /* Gráficos e Tabelas */
+        .dashboard-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        .panel { background: var(--white); padding: 20px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
+        .panel h3 { margin-top: 0; color: var(--dark); border-bottom: 1px solid #eee; padding-bottom: 10px; margin-bottom: 20px; }
+        
+        table { width: 100%; border-collapse: collapse; text-align: left; }
+        th, td { padding: 12px 10px; border-bottom: 1px solid #eee; font-size: 0.9rem; }
+        th { color: #6c757d; font-weight: 600; }
+        .badge { padding: 4px 10px; border-radius: 50px; font-size: 0.75rem; font-weight: bold; background: #eee; }
+        
+        /* Ajuste para telas menores */
+        @media (max-width: 900px) { .dashboard-grid { grid-template-columns: 1fr; } }
+    </style>
+</head>
+<body>
+
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <h2>🚑 iMaqueiro</h2>
+            <small style="color:#adb5bd">Painel Executivo</small>
+        </div>
+        <div class="sidebar-menu">
+            <a href="#" class="menu-item active"><i class="fa fa-chart-pie"></i> Visão Geral</a>
+            <a href="#" class="menu-item"><i class="fa fa-users"></i> Equipe Logística</a>
+            <a href="#" class="menu-item"><i class="fa fa-history"></i> Histórico Completo</a>
+        </div>
+    </div>
+
+    <div class="main-content">
+        <div class="header-top">
+            <div>
+                <h2 style="margin:0; color:var(--dark);">Dashboard de Operações</h2>
+                <p style="margin:5px 0 0; color:#6c757d;">Acompanhamento em tempo real dos transportes hospitalares.</p>
+            </div>
+            <button class="btn-logout" onclick="sair()"><i class="fa fa-sign-out-alt"></i> Sair do Painel</button>
+        </div>
+
+        <div class="kpi-grid">
+            <div class="kpi-card" style="border-bottom-color: var(--primary);">
+                <div class="kpi-icon"><i class="fa fa-bed"></i></div>
+                <div class="kpi-info">
+                    <h3>Total de Chamados</h3>
+                    <p id="kpi-total">0</p>
+                </div>
+            </div>
+            <div class="kpi-card" style="border-bottom-color: var(--danger);">
+                <div class="kpi-icon" style="background: rgba(220,53,69,0.1); color: var(--danger);"><i class="fa fa-hourglass-half"></i></div>
+                <div class="kpi-info">
+                    <h3>Espera Média (Ida)</h3>
+                    <p id="kpi-espera">0m</p>
+                </div>
+            </div>
+            <div class="kpi-card" style="border-bottom-color: var(--success);">
+                <div class="kpi-icon" style="background: rgba(40,167,69,0.1); color: var(--success);"><i class="fa fa-route"></i></div>
+                <div class="kpi-info">
+                    <h3>Tempo Médio Trajeto</h3>
+                    <p id="kpi-trajeto">0m</p>
+                </div>
+            </div>
+            <div class="kpi-card" style="border-bottom-color: #ffc107;">
+                <div class="kpi-icon" style="background: rgba(255,193,7,0.1); color: #ffc107;"><i class="fa fa-user-check"></i></div>
+                <div class="kpi-info">
+                    <h3>Maqueiros Ativos</h3>
+                    <p id="kpi-maqueiros">0</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="dashboard-grid">
+            <div class="panel">
+                <h3>Produtividade por Maqueiro</h3>
+                <canvas id="graficoProdutividade"></canvas>
+            </div>
+            <div class="panel">
+                <h3>Últimos Chamados Registrados</h3>
+                <table id="tabela-logs">
+                    <thead>
+                        <tr>
+                            <th>Origem ➔ Destino</th>
+                            <th>Maqueiro (Ida)</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // CONEXÃO COM O SEU SUPABASE
+        const supabaseUrl = 'https://yleinvhlnsgozeyajeom.supabase.co';
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlsZWludmhsbnNnb3pleWFqZW9tIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ5NDY3MDQsImV4cCI6MjA5MDUyMjcwNH0.EdvC4eM8ZG-RSh1zDExmIRd-kJLtCyAOpgbxBef6ebk';
+        const supabase = supabase.createClient(supabaseUrl, supabaseKey);
+
+        let grafico;
+
+        function sair() {
+            window.location.href = "index.html"; // Volta pra tela de login
+        }
+
+        async function carregarDados() {
+            // Busca todos os pedidos
+            const { data: pedidos, error } = await supabase.from('pedidos').select('*').order('id', { ascending: false });
+            
+            if (error) {
+                console.error("Erro ao carregar dados:", error);
+                return;
+            }
+
+            // 1. TOTAL DE CHAMADOS
+            document.getElementById('kpi-total').innerText = pedidos.length;
+
+            // 2. CÁLCULOS DE TEMPO (MÉDIAS)
+            let somaEspera = 0; let qtdEspera = 0;
+            let somaTrajeto = 0; let qtdTrajeto = 0;
+            let maqueirosSet = new Set();
+
+            pedidos.forEach(p => {
+                // Conta maqueiros únicos
+                if (p.maqueiro_ida) maqueirosSet.add(p.maqueiro_ida);
+                if (p.maqueiro_volta) maqueirosSet.add(p.maqueiro_volta);
+
+                // Calcula Espera (Diferença entre criação e aceite)
+                if (p.created_at && p.aceito_em) {
+                    let min = Math.floor((new Date(p.aceito_em) - new Date(p.created_at)) / 60000);
+                    somaEspera += (min >= 0 ? min : 0);
+                    qtdEspera++;
+                }
+
+                // Calcula Trajeto (Diferença entre Início Transporte e Entrega Destino)
+                if (p.inicio_transporte_at && p.entrega_destino_at) {
+                    let min = Math.floor((new Date(p.entrega_destino_at) - new Date(p.inicio_transporte_at)) / 60000);
+                    somaTrajeto += (min >= 0 ? min : 0);
+                    qtdTrajeto++;
+                }
+            });
+
+            const mediaEspera = qtdEspera > 0 ? Math.round(somaEspera / qtdEspera) : 0;
+            const mediaTrajeto = qtdTrajeto > 0 ? Math.round(somaTrajeto / qtdTrajeto) : 0;
+
+            document.getElementById('kpi-espera').innerText = mediaEspera + 'm';
+            document.getElementById('kpi-trajeto').innerText = mediaTrajeto + 'm';
+            document.getElementById('kpi-maqueiros').innerText = maqueirosSet.size;
+
+            // 3. PREENCHER TABELA (Mostra os últimos 6)
+            const tbody = document.querySelector('#tabela-logs tbody');
+            tbody.innerHTML = "";
+            pedidos.slice(0, 6).forEach(p => {
+                let statusColor = p.status === 'finalizado' ? 'green' : (p.status === 'pendente' ? 'red' : '#0056b3');
+                tbody.innerHTML += `
+                    <tr>
+                        <td><b>${p.origem}</b> <i class="fa fa-arrow-right" style="color:#ccc; font-size:10px;"></i> ${p.destino}</td>
+                        <td>${p.maqueiro_ida || '<span style="color:#999">Aguardando...</span>'}</td>
+                        <td><span class="badge" style="color:white; background:${statusColor}">${p.status.toUpperCase().replace(/_/g, ' ')}</span></td>
+                    </tr>
+                `;
+            });
+
+            // 4. GRÁFICO (Corridas por Maqueiro)
+            const contagemMaqueiros = {};
+            pedidos.forEach(p => {
+                if(p.maqueiro_ida) contagemMaqueiros[p.maqueiro_ida] = (contagemMaqueiros[p.maqueiro_ida] || 0) + 1;
+            });
+
+            const labels = Object.keys(contagemMaqueiros);
+            const dadosGrafico = Object.values(contagemMaqueiros);
+
+            renderizarGrafico(labels, dadosGrafico);
+        }
+
+        function renderizarGrafico(labels, data) {
+            const ctx = document.getElementById('graficoProdutividade').getContext('2d');
+            
+            if(grafico) grafico.destroy(); // Apaga o gráfico antigo antes de atualizar
+
+            grafico = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Transportes Iniciados',
+                        data: data,
+                        backgroundColor: '#0056b3',
+                        borderRadius: 6
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: { y: { beginAtZero: true, ticks: { precision: 0 } } }
+                }
+            });
+        }
+
+        // Carrega os dados ao abrir a tela
+        carregarDados();
+
+        // Atualiza a tela sozinho a cada 10 segundos
+        setInterval(carregarDados, 10000);
+    </script>
+</body>
+</html> 

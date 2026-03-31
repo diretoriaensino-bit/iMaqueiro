@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>iMaqueiro - Premium</title>
+    
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#0056b3">
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    <style>
+        :root { --primary: #0056b3; --success: #28a745; --light: #f4f7f6; --white: #fff; --dark: #343a40; --warning: #ffc107;}
+        body { font-family: 'Segoe UI', sans-serif; background: var(--light); margin: 0; user-select: none; }
+        .app-shell { max-width: 450px; min-height: 100vh; background: var(--white); margin: 0 auto; box-shadow: 0 0 20px rgba(0,0,0,0.1); position: relative;}
+        .screen { display: none; padding: 25px; flex-direction: column; min-height: 100vh; box-sizing: border-box; }
+        .active { display: flex; }
+        header { background: var(--primary); color: white; padding: 20px; text-align: center; margin-bottom: 20px; border-radius: 0 0 20px 20px;}
+        .card { background: white; border-radius: 12px; padding: 15px; margin-bottom: 15px; border-left: 8px solid #ddd; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        .btn { padding: 16px; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; width: 100%; margin-top: 10px; font-size: 1rem; }
+        .btn-main { background: var(--primary); color: white; }
+        .btn-success { background: var(--success); color: white; }
+        input:not([type="range"]), select { padding: 14px; margin-bottom: 15px; border: 1px solid #ddd; border-radius: 10px; width: 100%; box-sizing: border-box; }
+        .user-bar { background: #eee; padding: 10px; font-size: 0.8rem; border-radius: 5px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; }
+        
+        /* Modal do Scanner de QR Code */
+        #qr-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 999; flex-direction: column; justify-content: center; align-items: center; padding: 20px; box-sizing: border-box; }
+        #reader { width: 100%; max-width: 400px; background: white; border-radius: 10px; overflow: hidden; }
+
+        /* === TELA DE CHAMADA ANIMADA (ESTILO UBER) === */
+        #call-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(30, 30, 30, 0.95); z-index: 1000; flex-direction: column; justify-content: center; align-items: center; color: white; box-sizing: border-box; padding: 20px; text-align: center; }
+        
+        .pulse-ring { width: 100px; height: 100px; border-radius: 50%; background: var(--success); animation: pulse 1.5s infinite; display: flex; align-items: center; justify-content: center; font-size: 2.5rem; margin-bottom: 20px; box-shadow: 0 0 20px var(--success); }
+        @keyframes pulse { 0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(40, 167, 69, 0.7); } 70% { transform: scale(1); box-shadow: 0 0 0 25px rgba(40, 167, 69, 0); } 100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(40, 167, 69, 0); } }
+        
+        /* Deslizar para Aceitar */
+        .swipe-container { width: 100%; max-width: 320px; height: 60px; background: #444; border-radius: 35px; position: relative; overflow: hidden; margin-top: 40px; display: flex; align-items: center; justify-content: center; box-shadow: inset 0 0 10px rgba(0,0,0,0.5); }
+        .swipe-text { position: absolute; color: #aaa; font-weight: bold; pointer-events: none; z-index: 1; font-size: 1rem; }
+        .swipe-slider { -webkit-appearance: none; appearance: none; width: 100%; background: transparent; position: absolute; z-index: 2; height: 100%; outline: none; margin: 0; }
+        .swipe-slider::-webkit-slider-thumb { -webkit-appearance: none; appearance: none; width: 60px; height: 60px; border-radius: 50%; background: var(--success); cursor: pointer; display: flex; align-items: center; justify-content: center; background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="white" viewBox="0 0 24 24"><path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z"/></svg>'); background-size: 50%; background-repeat: no-repeat; background-position: center; box-shadow: 2px 0 10px rgba(0,0,0,0.3); }
+        
+        .btn-passar { background: var(--warning); color: #000; font-weight: bold; border: none; padding: 15px 40px; border-radius: 30px; margin-top: 25px; cursor: pointer; font-size: 1rem; box-shadow: 0 4px 10px rgba(255, 193, 7, 0.3); }
+    </style>
+</head>
+<body>
+
+    <div class="app-shell">
+        
+        <div id="screen-login" class="screen active">
+            <header>
+                <h1>🚑 iMaqueiro</h1>
+                <p>Acesse o sistema hospitalar</p>
+            </header>
+            <div style="margin-top: 20px;">
+                <input type="email" id="login-email" placeholder="E-mail (ex: maqueiro@hospital.com)">
+                <input type="password" id="login-senha" placeholder="Sua senha">
+                <button class="btn btn-main" onclick="tentarLogin()">ENTRAR NO SISTEMA</button>
+            </div>
+            <p id="login-msg" style="color:red; text-align:center; font-size: 0.9rem; margin-top:15px;"></p>
+        </div>
+
+        <div id="screen-nurse" class="screen">
+            <div class="user-bar">
+                <span id="user-name-nurse"></span> 
+                <button class="btn" style="width:auto; padding:5px 10px; margin:0; background:#ddd;" onclick="logout()">Sair</button>
+            </div>
+            <h3>Pedidos do Setor</h3>
+            <div id="nurse-list" style="flex:1"></div>
+            <button class="btn btn-main" onclick="changeScreen('screen-form')">+ Novo Pedido</button>
+        </div>
+
+        <div id="screen-maqueiro" class="screen">
+            <div class="user-bar">
+                <span id="user-name-maq"></span> 
+                <button class="btn" style="width:auto; padding:5px 10px; margin:0; background:#ddd;" onclick="logout()">Sair</button>
+            </div>
+            <button class="btn btn-success" id="btn-som" onclick="ativarAudio()" style="margin-bottom:15px;"><i class="fa fa-volume-up"></i> LIGAR ALERTAS SONOROS</button>
+            <div id="maqueiro-list" style="flex:1"></div>
+        </div>
+
+        <div id="screen-form" class="screen">
+            <h3>Nova Solicitação</h3>
+            <input type="text" id="origem" placeholder="Leito Origem">
+            <input type="text" id="destino" placeholder="Destino">
+            <select id="urgencia">
+                <option value="Verde">Verde (Rotina)</option>
+                <option value="Amarelo">Amarelo (Urgente)</option>
+                <option value="Vermelho">Vermelho (Emergência)</option>
+            </select>
+            <button class="btn btn-main" onclick="enviarPedido()">SOLICITAR</button>
+            <button class="btn" style="background:#eee" onclick="changeScreen('screen-nurse')">Voltar</button>
+        </div>
+
+    </div>
+
+    <div id="call-modal">
+        <div class="pulse-ring" id="call-icon"><i class="fa fa-ambulance"></i></div>
+        <h2 style="margin: 0; font-size: 1.8rem; letter-spacing: 1px;">NOVO CHAMADO</h2>
+        <h1 id="call-origem-destino" style="margin: 10px 0; color: #ffc107; font-size: 2.2rem;">UTI 202 ➔ Raio-X</h1>
+        <p id="call-urgencia" style="color: #ccc; font-size: 1.1rem; margin: 0;">Urgência: Verde</p>
+
+        <div class="swipe-container">
+            <span class="swipe-text">Deslize para Aceitar ➔</span>
+            <input type="range" min="0" max="100" value="0" class="swipe-slider" id="swipe-accept">
+        </div>
+
+        <button class="btn-passar" onclick="passarVezCall()"><i class="fa fa-times-circle"></i> Passar a Vez</button>
+    </div>
+
+    <div id="qr-modal">
+        <h3 style="color:white; text-align:center;">Escaneie a Pulseira ou Leito</h3>
+        <p style="color:#aaa; text-align:center; font-size:12px;">Posicione o QR Code na câmera</p>
+        <div id="reader"></div>
+        <button class="btn" style="background:#dc3545; color:white; max-width:400px; margin-top:20px;" onclick="fecharQR()">Cancelar Escaneamento</button>
+    </div>
+
+    <audio id="audio-alerta" src="https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3" loop></audio>
+    <audio id="audio-emergencia" src="https://assets.mixkit.co/active_storage/sfx/951/951-preview.mp3" loop></audio>
+
+    <script>
+        const socket = io();
+        let usuario = null;
+        let audioLigado = false;
+        let html5QrcodeScanner;
+        let idPedidoAtivoParaQR = null;
+        let idChamadoAtual = null; // Guarda o ID do pedido que está tocando agora
+
+        // REGISTRO DO PWA
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => navigator.serviceWorker.register('/sw.js').catch(()=>{}));
+        }
+
+        function changeScreen(id) {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.getElementById(id).classList.add('active');
+        }
+
+        // LOGIN
+        function tentarLogin() {
+            const email = document.getElementById('login-email').value;
+            const senha = document.getElementById('login-senha').value;
+            if(!email || !senha) return document.getElementById('login-msg').innerText = "Preencha e-mail e senha!";
+            document.getElementById('login-msg').innerText = "Conectando...";
+            socket.emit('fazer_login', { email, senha });
+        }
+
+        socket.on('login_sucesso', (u) => {
+            usuario = u;
+            if (u.cargo === 'enfermagem') {
+                document.getElementById('user-name-nurse').innerHTML = "<b>" + u.nome + "</b>";
+                changeScreen('screen-nurse');
+            } else if (u.cargo === 'maqueiro') {
+                document.getElementById('user-name-maq').innerHTML = "<b>" + u.nome + "</b>";
+                changeScreen('screen-maqueiro');
+            } else if (u.cargo === 'adm') window.location.href = "admin.html";
+            socket.emit('solicitar_lista');
+        });
+
+        socket.on('login_erro', (msg) => document.getElementById('login-msg').innerText = msg);
+        function logout() { location.reload(); }
+
+        // ÁUDIO E ALARMES
+        function ativarAudio() {
+            document.getElementById('audio-alerta').play().then(() => {
+                document.getElementById('audio-alerta').pause();
+                audioLigado = true;
+                document.getElementById('btn-som').style.display = 'none';
+                alert("Sons ativados!");
+            }).catch(e => console.log("Erro de áudio."));
+        }
+
+        function pararAlarme() {
+            document.getElementById('audio-alerta').pause();
+            document.getElementById('audio-emergencia').pause();
+        }
+
+        // LÓGICA DO SLIDER (DESLIZE PARA ACEITAR)
+        const slider = document.getElementById('swipe-accept');
+        
+        // Quando o maqueiro arrasta o dedo
+        slider.addEventListener('input', function() {
+            if(this.value > 85) { // Se arrastou mais de 85% para a direita
+                aceitarChamadoCall();
+            }
+        });
+        
+        // Se ele soltar o dedo no meio do caminho, o botão volta pro início (snap back)
+        slider.addEventListener('touchend', () => { if(slider.value <= 85) slider.value = 0; });
+        slider.addEventListener('mouseup', () => { if(slider.value <= 85) slider.value = 0; });
+
+        function aceitarChamadoCall() {
+            pararAlarme();
+            document.getElementById('call-modal').style.display = 'none';
+            document.getElementById('swipe-accept').value = 0; // Reseta o slider
+            socket.emit('aceitar_ida', {idPedido: idChamadoAtual, nomeMaqueiro: usuario.nome});
+        }
+
+        function passarVezCall() {
+            pararAlarme();
+            document.getElementById('call-modal').style.display = 'none';
+            document.getElementById('swipe-accept').value = 0; // Reseta o slider
+            socket.emit('rejeitar_pedido', idChamadoAtual);
+        }
+
+        // QR CODE
+        function abrirCameraQR(idPedido) {
+            idPedidoAtivoParaQR = idPedido;
+            document.getElementById('qr-modal').style.display = 'flex';
+            html5QrcodeScanner = new Html5QrcodeScanner("reader", { fps: 10, qrbox: {width: 250, height: 250} }, false);
+            html5QrcodeScanner.render((text) => {
+                alert("✅ Validado: " + text);
+                fecharQR();
+                socket.emit('cheguei_origem', idPedidoAtivoParaQR);
+            }, () => {});
+        }
+        function fecharQR() { if(html5QrcodeScanner) html5QrcodeScanner.clear(); document.getElementById('qr-modal').style.display = 'none'; }
+
+        // ENVIAR PEDIDO
+        function enviarPedido() {
+            const d = { origem: document.getElementById('origem').value, destino: document.getElementById('destino').value, urgencia: document.getElementById('urgencia').value, tipo: 'Maca' };
+            if(!d.origem || !d.destino) return alert("Preencha origem e destino!");
+            socket.emit('novo_pedido', d);
+            changeScreen('screen-nurse');
+            document.getElementById('origem').value = ""; document.getElementById('destino').value = "";
+        }
+
+        // ATUALIZAR LISTA E MOSTRAR TELA DE CHAMADA
+        socket.on('atualizar_lista', (pedidos) => {
+            const nurseDiv = document.getElementById('nurse-list');
+            const maqDiv = document.getElementById('maqueiro-list');
+            if(!usuario) return;
+
+            nurseDiv.innerHTML = ""; maqDiv.innerHTML = "";
+            let temChamadaParaMim = false;
+
+            pedidos.forEach(p => {
+                let statusTxt = p.status.toUpperCase().replace(/_/g, ' ');
+                let color = p.urgencia === 'Vermelho' ? 'red' : (p.urgencia === 'Amarelo' ? 'orange' : 'green');
+                let infoCard = `<strong>${p.origem} ➔ ${p.destino}</strong><br><small style="color:#666">Status: <b>${statusTxt}</b></small><br>`;
+
+                if(usuario.cargo === 'enfermagem') {
+                    let btnN = p.status === 'no_destino' ? `<button class="btn btn-main" style="margin-top:10px" onclick="socket.emit('pedir_retorno', ${p.id})">SOLICITAR RETORNO</button>` : "";
+                    if(p.maqueiro_sugerido && p.status === 'pendente') infoCard += `<small style="color:#0056b3"><i class="fa fa-robot"></i> Direcionado a: ${p.maqueiro_sugerido}</small>`;
+                    nurseDiv.innerHTML += `<div class="card" style="border-left-color: ${color}">${infoCard}${btnN}</div>`;
+                }
+
+                if(usuario.cargo === 'maqueiro') {
+                    let btnM = "";
+                    
+                    // --- VERIFICA SE TEM CHAMADA NOVA PARA ESSE MAQUEIRO ---
+                    if((p.status === 'pendente' || p.status === 'aguardando_retorno') && (p.maqueiro_sugerido === usuario.nome || !p.maqueiro_sugerido)) {
+                        temChamadaParaMim = true;
+                        idChamadoAtual = p.id;
+                        
+                        // Configura a tela animada
+                        document.getElementById('call-origem-destino').innerText = p.origem + " ➔ " + p.destino;
+                        document.getElementById('call-urgencia').innerText = "Urgência: " + p.urgencia;
+                        
+                        // Muda a cor do ícone pulsante dependendo da urgência
+                        let iconColor = p.urgencia === 'Vermelho' ? '#dc3545' : (p.urgencia === 'Amarelo' ? '#ffc107' : '#28a745');
+                        document.getElementById('call-icon').style.backgroundColor = iconColor;
+                        document.getElementById('call-icon').style.boxShadow = `0 0 20px ${iconColor}`;
+                        
+                        // Escolhe qual áudio tocar
+                        if(audioLigado) {
+                            p.urgencia === 'Vermelho' ? document.getElementById('audio-emergencia').play() : document.getElementById('audio-alerta').play();
+                        }
+                    } else if(p.status === 'pendente' && p.maqueiro_sugerido !== usuario.nome) {
+                        btnM = `<p style="color:#f39c12; font-size:12px; text-align:center;"><i class="fa fa-clock"></i> Aguardando aceite de: <b>${p.maqueiro_sugerido}</b></p>`;
+                    } else if(p.status === 'aceito' && p.maqueiro_ida === usuario.nome) {
+                        btnM = `<button class="btn btn-main" style="background:#17a2b8" onclick="abrirCameraQR(${p.id})"><i class="fa fa-qrcode"></i> ESCANEAR LEITO</button>`;
+                    } else if(p.status === 'na_origem' && p.maqueiro_ida === usuario.nome) {
+                        btnM = `<button class="btn btn-main" style="background:#ffc107; color:black" onclick="socket.emit('iniciar_ida', ${p.id})">SAIR COM PACIENTE</button>`;
+                    } else if(p.status === 'em_transito_ida' && p.maqueiro_ida === usuario.nome) {
+                        btnM = `<button class="btn btn-main" style="background:#343a40" onclick="socket.emit('entregue_destino', ${p.id})">ENTREGUEI NO DESTINO</button>`;
+                    } else if(p.status === 'aceito_retorno' && p.maqueiro_volta === usuario.nome) {
+                        btnM = `<button class="btn btn-main" onclick="socket.emit('finalizar_geral', ${p.id})">FINALIZAR VOLTA</button>`;
+                    }
+                    
+                    if (btnM !== "" || (p.status === 'pendente' && p.maqueiro_sugerido !== usuario.nome)) {
+                         maqDiv.innerHTML += `<div class="card" style="border-left-color: ${color}">${infoCard}${btnM}</div>`;
+                    }
+                }
+            });
+
+            // Mostra ou esconde a Tela Animada
+            if(temChamadaParaMim && usuario.cargo === 'maqueiro') {
+                document.getElementById('call-modal').style.display = 'flex';
+            } else {
+                document.getElementById('call-modal').style.display = 'none';
+                pararAlarme(); // Se alguém pegou ou passou a vez, para a música
+            }
+        });
+    </script>
+</body>
+</html>
