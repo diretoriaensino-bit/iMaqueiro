@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>iMaqueiro Pro</title>
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#0056b3">
     <script src="/socket.io/socket.io.js"></script>
     <script src="https://unpkg.com/html5-qrcode"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
@@ -46,7 +48,7 @@
             -webkit-appearance: none; appearance: none; width: 100%; padding: 12px; margin-bottom: 12px; border: 1px solid #ddd; border-radius: 8px; background: white; font-size: 0.9rem;
         }
 
-        input[type="checkbox"] { -webkit-appearance: auto !important; appearance: auto !important; width: 16px; height: 16px; margin: 0; cursor: pointer; }
+        input[type="checkbox"] { -webkit-appearance: auto !important; appearance: auto !important; width: 18px; height: 18px; margin: 0; cursor: pointer; accent-color: var(--primary); }
 
         .stat-item { background: white; padding: 15px; border-radius: 10px; flex: 1; text-align: center; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
         .stats-bar { display: flex; gap: 10px; margin-bottom: 20px; }
@@ -69,15 +71,20 @@
         #swipe-accept::-webkit-slider-thumb { -webkit-appearance: none; appearance: none; width: 65px; height: 65px; border-radius: 50%; background: var(--success); box-shadow: 0 0 15px var(--success);}
         
         #img-aviso-risco { display: none; max-width: 200px; max-height: 200px; border-radius: 15px; border: 3px solid var(--danger); box-shadow: 0 0 20px rgba(220, 53, 69, 0.5); margin-top: 15px; margin-bottom: 15px; background: white; padding: 5px; object-fit: contain;}
+
+        /* FAIXA OFFLINE */
+        #offline-banner { display: none; background: var(--warning); color: #000; text-align: center; padding: 10px; font-weight: bold; font-size: 0.9rem; z-index: 10000; position: sticky; top: 0; width: 100%; }
     </style>
 </head>
 <body>
+
+    <div id="offline-banner"><i class="fa fa-wifi" style="text-decoration: line-through;"></i> Sem conexão. Salvando ações no modo offline...</div>
 
     <div class="app-shell">
         
         <div id="screen-login" class="screen active" style="justify-content:center; align-items:center; background:var(--primary); padding: 0;">
             <div style="background:white; padding:40px 30px; border-radius:20px; box-shadow:0 10px 30px rgba(0,0,0,0.2); width:90%; max-width:350px; text-align:center;">
-                <img src="/logo-hospital.png" style="width:70px; margin-bottom:15px;">
+                <img src="/logo-hospital.png" style="width:70px; margin-bottom:15px;" onerror="this.style.display='none'">
                 <h2 style="color:var(--primary); margin:0 0 20px 0; font-size: 1.8rem;">iMaqueiro</h2>
                 <input type="email" id="login-email" placeholder="E-mail corporativo">
                 <input type="password" id="login-senha" placeholder="Senha">
@@ -88,7 +95,7 @@
 
         <div id="screen-nurse" class="screen" style="padding: 0;">
             <header>
-                <div style="display:flex; align-items:center; gap:10px;"><img src="/logo-hospital.png" style="width:30px; filter: brightness(0) invert(1);"><h3 style="margin:0">Enfermagem</h3></div>
+                <div style="display:flex; align-items:center; gap:10px;"><img src="/logo-hospital.png" style="width:30px; filter: brightness(0) invert(1);" onerror="this.style.display='none'"><h3 style="margin:0">Enfermagem</h3></div>
                 <div style="display:flex; align-items:center; gap:15px;"><span id="user-name-nurse" style="font-weight:bold; font-size:0.9rem;"></span><button class="btn" style="background:rgba(255,255,255,0.2); color:white; padding:8px 15px;" onclick="fazerLogout()">Sair</button></div>
             </header>
 
@@ -175,6 +182,28 @@
             <button class="btn" style="width:100%; margin-top:15px; background:#eee" onclick="document.getElementById('details-modal').style.display='none'">Fechar</button>
         </div>
     </div>
+    
+    <div id="checklist-modal" class="modal-overlay">
+        <div class="modal-content" style="max-width: 380px;">
+            <h3 style="color:var(--warning); margin-top:0; border-bottom: 2px solid var(--warning); padding-bottom: 10px;">
+                <i class="fa fa-clipboard-check"></i> Handover de Segurança
+            </h3>
+            <p style="font-size:0.9rem; color:var(--gray); margin-bottom:20px;">Confirme os itens de segurança antes de movimentar o paciente:</p>
+
+            <label style="display:flex; align-items:center; gap:10px; margin-bottom:10px; font-size:0.95rem; background:#f9f9f9; padding:12px; border-radius:8px; border: 1px solid #ddd;">
+                <input type="checkbox" class="check-seguranca" onchange="validarChecklist()"> Pulseira de Identificação conferida
+            </label>
+            <label style="display:flex; align-items:center; gap:10px; margin-bottom:10px; font-size:0.95rem; background:#f9f9f9; padding:12px; border-radius:8px; border: 1px solid #ddd;">
+                <input type="checkbox" class="check-seguranca" onchange="validarChecklist()"> Prontuário / Documentos em mãos
+            </label>
+            <label style="display:flex; align-items:center; gap:10px; margin-bottom:20px; font-size:0.95rem; background:#f9f9f9; padding:12px; border-radius:8px; border: 1px solid #ddd;">
+                <input type="checkbox" class="check-seguranca" onchange="validarChecklist()"> Dispositivos (Sondas, Acessos, O2) seguros
+            </label>
+
+            <button id="btn-iniciar-viagem" class="btn btn-main" style="width:100%; opacity:0.5; cursor:not-allowed; background: var(--success);" disabled onclick="confirmarChecklist()">INICIAR TRAJETO SEGURO</button>
+            <button class="btn" style="width:100%; margin-top:10px; background:#eee;" onclick="fecharChecklist()">Cancelar</button>
+        </div>
+    </div>
 
     <div id="login-animation" class="login-animation-overlay"><i class="fa fa-bed maca-icon"></i><h2 style="margin-top:20px;">iMaqueiro</h2><p>Conectando...</p></div>
 
@@ -197,11 +226,8 @@
 
     <div id="call-modal">
         <div id="call-risco-faixa" style="background:var(--danger); width:100%; padding:15px; position:absolute; top:0; font-weight:bold; font-size:1.2rem; display:none; letter-spacing: 1px; text-transform: uppercase;">⚠️ AVISO DE ISOLAMENTO</div>
-        
         <i id="icone-sirene" class="fa fa-bell fa-shake" style="font-size: 3.5rem; color: var(--warning); margin-bottom: 5px;"></i>
-        
         <img id="img-aviso-risco" src="" alt="Aviso EPI" onerror="this.style.display='none'; document.getElementById('icone-sirene').style.display='block';">
-
         <h2 id="call-paciente" style="margin:0; font-size: 1.5rem; color: #fff;"></h2>
         <h1 id="call-rota" style="margin:5px 0 10px 0; font-size: 2.5rem; color: var(--warning);"></h1>
         <p id="call-equip" style="color: #ccc; font-size: 1.1rem; margin-bottom: 20px;"></p>
@@ -219,11 +245,28 @@
     <audio id="audio-emergencia" src="https://assets.mixkit.co/active_storage/sfx/951/951-preview.mp3" loop></audio>
 
     <script>
+        // --- INSTALAÇÃO DO SERVICE WORKER (MODO OFFLINE) ---
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/sw.js')
+                .then((reg) => console.log('Elevador blindado! Service Worker OK.', reg))
+                .catch((err) => console.log('Erro no Service Worker:', err));
+            });
+        }
+
+        // --- DETECÇÃO DE QUEDA DE INTERNET ---
+        window.addEventListener('offline', () => {
+            document.getElementById('offline-banner').style.display = 'block';
+        });
+        window.addEventListener('online', () => {
+            document.getElementById('offline-banner').style.display = 'none';
+        });
+
+        // --- LÓGICA DO APP (SOCKET.IO) ---
         const socket = io();
         let usuario, audioLigado = false, pedidosAtivos = [], historicoGlobal = [], idChamadoAtual, idChatAtivo, html5QrCode;
-        
-        // Memória de chamados que este maqueiro já rejeitou
         let chamadosRejeitados = [];
+        let idChecklistAtual = null;
 
         window.onload = () => {
             const salvo = localStorage.getItem('imaqueiro_user');
@@ -304,20 +347,13 @@
         function ativarAudio() {
             document.getElementById('audio-alerta').play().then(() => document.getElementById('audio-alerta').pause());
             document.getElementById('audio-emergencia').play().then(() => document.getElementById('audio-emergencia').pause());
-            
-            if ('speechSynthesis' in window) {
-                let msgSilenciosa = new SpeechSynthesisUtterance('');
-                window.speechSynthesis.speak(msgSilenciosa);
-            }
-
-            audioLigado = true;
-            document.getElementById('btn-som').style.display = 'none';
+            if ('speechSynthesis' in window) window.speechSynthesis.speak(new SpeechSynthesisUtterance(''));
+            audioLigado = true; document.getElementById('btn-som').style.display = 'none';
         }
 
         function falarAvisoRisco(risco) {
             if (!('speechSynthesis' in window)) return;
             window.speechSynthesis.cancel(); 
-            
             let texto = "";
             if (risco === 'Contato') texto = "Atenção maqueiro. Risco de Contato. Por favor, paramente-se com luvas e avental antes do transporte.";
             else if (risco === 'Gotículas') texto = "Atenção maqueiro. Risco de Gotículas. Por favor, coloque máscara cirúrgica para o transporte.";
@@ -325,9 +361,29 @@
 
             if (texto) {
                 let locutor = new SpeechSynthesisUtterance(texto);
-                locutor.lang = 'pt-BR';
-                window.speechSynthesis.speak(locutor);
+                locutor.lang = 'pt-BR'; window.speechSynthesis.speak(locutor);
             }
+        }
+
+        function abrirChecklist(id) {
+            idChecklistAtual = id;
+            document.querySelectorAll('.check-seguranca').forEach(cb => cb.checked = false);
+            validarChecklist();
+            document.getElementById('checklist-modal').style.display = 'flex';
+        }
+
+        function fecharChecklist() { document.getElementById('checklist-modal').style.display = 'none'; idChecklistAtual = null; }
+
+        function validarChecklist() {
+            const checkboxes = document.querySelectorAll('.check-seguranca');
+            const todasMarcadas = Array.from(checkboxes).every(cb => cb.checked);
+            const btn = document.getElementById('btn-iniciar-viagem');
+            if(todasMarcadas) { btn.style.opacity = '1'; btn.style.cursor = 'pointer'; btn.disabled = false; } 
+            else { btn.style.opacity = '0.5'; btn.style.cursor = 'not-allowed'; btn.disabled = true; }
+        }
+
+        function confirmarChecklist() {
+            if(idChecklistAtual) { socket.emit('iniciar_ida', idChecklistAtual); fecharChecklist(); }
         }
 
         function renderizar(ativos, historico) {
@@ -365,50 +421,28 @@
                     const isMeu = p.maqueiro_ida === usuario.nome || p.maqueiro_volta === usuario.nome;
 
                     if(isPendente) {
-                        // NOVA TRAVA: Só mostra a tela preta se ele não estiver na lista de rejeitados
                         if((!p.maqueiro_sugerido || p.maqueiro_sugerido === usuario.nome) && !chamadosRejeitados.includes(p.id)) {
                             callNow = true; idChamadoAtual = p.id;
-                            document.getElementById('call-paciente').innerText = p.paciente; 
-                            document.getElementById('call-rota').innerText = p.origem + " ➔ " + p.destino; 
-                            document.getElementById('call-equip').innerText = p.tipo; 
+                            document.getElementById('call-paciente').innerText = p.paciente; document.getElementById('call-rota').innerText = p.origem + " ➔ " + p.destino; document.getElementById('call-equip').innerText = p.tipo; 
                             
-                            const faixaRisco = document.getElementById('call-risco-faixa');
-                            const imgRisco = document.getElementById('img-aviso-risco');
-                            const iconeSirene = document.getElementById('icone-sirene');
-
+                            const faixaRisco = document.getElementById('call-risco-faixa'); const imgRisco = document.getElementById('img-aviso-risco'); const iconeSirene = document.getElementById('icone-sirene');
                             if (p.risco_assistencial !== 'Nenhum') {
-                                faixaRisco.style.display = 'block';
-                                imgRisco.style.display = 'block';
-                                iconeSirene.style.display = 'none';
-
-                                if(p.risco_assistencial === 'Contato') imgRisco.src = '/img-contato.png';
-                                else if (p.risco_assistencial === 'Gotículas') imgRisco.src = '/img-goticulas.png';
-                                else if (p.risco_assistencial === 'Aerosol') imgRisco.src = '/img-aerosol.png';
-                                
-                            } else {
-                                faixaRisco.style.display = 'none';
-                                imgRisco.style.display = 'none';
-                                iconeSirene.style.display = 'block';
-                            }
+                                faixaRisco.style.display = 'block'; imgRisco.style.display = 'block'; iconeSirene.style.display = 'none';
+                                if(p.risco_assistencial === 'Contato') imgRisco.src = '/img-contato.png'; else if (p.risco_assistencial === 'Gotículas') imgRisco.src = '/img-goticulas.png'; else if (p.risco_assistencial === 'Aerosol') imgRisco.src = '/img-aerosol.png';
+                            } else { faixaRisco.style.display = 'none'; imgRisco.style.display = 'none'; iconeSirene.style.display = 'block'; }
 
                             if(audioLigado) {
-                                if (p.urgencia === 'Vermelho') document.getElementById('audio-emergencia').play();
-                                else document.getElementById('audio-alerta').play();
-                                
-                                if (p.risco_assistencial !== 'Nenhum') {
-                                    setTimeout(() => falarAvisoRisco(p.risco_assistencial), 1000);
-                                }
+                                if (p.urgencia === 'Vermelho') document.getElementById('audio-emergencia').play(); else document.getElementById('audio-alerta').play();
+                                if (p.risco_assistencial !== 'Nenhum') setTimeout(() => falarAvisoRisco(p.risco_assistencial), 1000);
                             }
                         }
-                        
-                        // O card vai aparecer na lista com o botão Aceitar mesmo que ele tenha rejeitado a chamada de tela preta
                         let btnAceitar = `<button class="btn btn-main" style="background:var(--success); margin-top:15px; width:100%;" onclick="aceitarChamadoManual(${p.id})">ACEITAR CHAMADO</button>`;
                         mPendentes.innerHTML += `${cardBase}${btnAceitar}</div>`;
                     } 
                     else if (isMeu) {
                         temAtivo = true; let btnAcao = "";
                         if(p.status === 'aceito' || p.status === 'aceito_retorno') btnAcao = `<button class="btn btn-main" style="margin-top:15px; width:100%;" onclick="abrirQR(${p.id})"><i class="fa fa-qrcode"></i> LER QR CODE LEITO</button>`;
-                        else if(p.status === 'na_origem') btnAcao = `<button class="btn" style="background:var(--warning); margin-top:15px; width:100%;" onclick="socket.emit('iniciar_ida', ${p.id})"><i class="fa fa-play"></i> INICIAR TRAJETO</button>`;
+                        else if(p.status === 'na_origem') btnAcao = `<button class="btn" style="background:var(--warning); margin-top:15px; width:100%;" onclick="abrirChecklist(${p.id})"><i class="fa fa-play"></i> INICIAR TRAJETO</button>`;
                         else if(p.status === 'em_transito_ida') btnAcao = `<button class="btn" style="background:var(--dark); color:white; margin-top:15px; width:100%;" onclick="socket.emit('entregue_destino', ${p.id})"><i class="fa fa-check"></i> ENTREGUE NO DESTINO</button>`;
                         mAtivo.innerHTML += `${cardBase}${btnAcao}</div>`;
                     }
@@ -433,28 +467,9 @@
         }
 
         function aceitarChamadoManual(id) { socket.emit('aceitar_chamado', { idPedido: id, nomeMaqueiro: usuario.nome }); }
-        
-        document.getElementById('swipe-accept').addEventListener('input', function() { 
-            if(this.value > 85) { 
-                this.value = 0; 
-                pararAlarme(); 
-                socket.emit('aceitar_chamado', {idPedido: idChamadoAtual, nomeMaqueiro: usuario.nome}); 
-            } 
-        });
-
-        // AQUI ESTÁ A CORREÇÃO DE PASSAR A VEZ
-        function passarVezCall() { 
-            pararAlarme(); 
-            chamadosRejeitados.push(idChamadoAtual); // Salva que este maqueiro recusou
-            document.getElementById('call-modal').style.display = 'none'; // Esconde na hora
-            socket.emit('rejeitar_pedido', idChamadoAtual); // Informa o servidor
-        }
-
-        function pararAlarme() { 
-            document.getElementById('audio-alerta').pause(); 
-            document.getElementById('audio-emergencia').pause(); 
-            if('speechSynthesis' in window) window.speechSynthesis.cancel(); 
-        }
+        document.getElementById('swipe-accept').addEventListener('input', function() { if(this.value > 85) { this.value = 0; pararAlarme(); socket.emit('aceitar_chamado', {idPedido: idChamadoAtual, nomeMaqueiro: usuario.nome}); } });
+        function passarVezCall() { pararAlarme(); chamadosRejeitados.push(idChamadoAtual); document.getElementById('call-modal').style.display = 'none'; socket.emit('rejeitar_pedido', idChamadoAtual); }
+        function pararAlarme() { document.getElementById('audio-alerta').pause(); document.getElementById('audio-emergencia').pause(); window.speechSynthesis.cancel(); }
 
         function abrirChat(id) {
             idChatAtivo = id; const p = pedidosAtivos.find(x => x.id === id); const box = document.getElementById('chat-box');
