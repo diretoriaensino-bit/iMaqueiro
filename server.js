@@ -24,8 +24,9 @@ let maqueirosOnline = [];
 async function atualizarTodos() {
     try {
         const { data: ativos } = await supabase.from('pedidos').select('*').neq('status', 'finalizado').order('id', { ascending: false });
-        const { data: historico } = await supabase.from('pedidos').select('*').eq('status', 'finalizado').order('finalizado_at', { ascending: false }).limit(30);
-        io.emit('atualizar_lista', { ativos: ativos || [], historico: historico || [] });
+        // Aumentamos o limite para 100 para o Dashboard do Coordenador ter dados suficientes
+        const { data: historico } = await supabase.from('pedidos').select('*').eq('status', 'finalizado').order('finalizado_at', { ascending: false }).limit(100);
+        io.emit('atualizar_lista', { ativos: ativos || [], historico: historico || [], online: maqueirosOnline });
     } catch (e) { console.log("Erro:", e); }
 }
 
@@ -33,9 +34,7 @@ async function enviarPushNotificacao(maqueiroNome, titulo, corpo) {
     try {
         const { data } = await supabase.from('push_subscriptions').select('sub_info').eq('nome_maqueiro', maqueiroNome);
         if (data && data.length > 0) {
-            data.forEach(sub => {
-                webpush.sendNotification(sub.sub_info, JSON.stringify({ titulo, corpo })).catch(err => console.error("Erro Push:", err));
-            });
+            data.forEach(sub => { webpush.sendNotification(sub.sub_info, JSON.stringify({ titulo, corpo })).catch(err => console.error("Erro Push:", err)); });
         }
     } catch (e) { console.error(e); }
 }
@@ -44,39 +43,37 @@ io.on('connection', async (socket) => {
     socket.on('fazer_login', async (dados) => {
         const { data, error } = await supabase.from('usuarios').select('*').eq('email', dados.email).eq('senha', dados.senha).single(); 
         if (error) return socket.emit('login_erro', "Usuário ou senha inválidos.");
-        
-        // Só coloca na roleta se ele não estiver no intervalo
         if (data.cargo === 'maqueiro' && data.status_trabalho !== 'intervalo') {
             maqueirosOnline = maqueirosOnline.filter(m => m.nome !== data.nome);
-            maqueirosOnline.push({ id: socket.id, nome: data.nome });
+            maqueirosOnline.push({ id: socket.id, nome: data.nome, status: data.status_trabalho });
         }
         socket.emit('login_sucesso', data);
+        atualizarTodos();
     });
 
     socket.on('relogar_maqueiro', (u) => {
         if (u && u.cargo === 'maqueiro' && u.status_trabalho !== 'intervalo') {
             maqueirosOnline = maqueirosOnline.filter(m => m.nome !== u.nome);
-            maqueirosOnline.push({ id: socket.id, nome: u.nome });
+            maqueirosOnline.push({ id: socket.id, nome: u.nome, status: u.status_trabalho });
         }
+        atualizarTodos();
     });
 
-    // --- NOVA ROTA: ALTERAR STATUS ---
     socket.on('mudar_status', async (dados) => {
         const { email, nome, status } = dados;
         await supabase.from('usuarios').update({ status_trabalho: status }).eq('email', email);
-        
-        // Gerencia a roleta do servidor
         if (status === 'disponivel') {
-            if (!maqueirosOnline.find(m => m.nome === nome)) maqueirosOnline.push({ id: socket.id, nome: nome });
+            if (!maqueirosOnline.find(m => m.nome === nome)) maqueirosOnline.push({ id: socket.id, nome: nome, status });
         } else {
-            maqueirosOnline = maqueirosOnline.filter(m => m.nome !== nome); // Tira do intervalo
+            maqueirosOnline = maqueirosOnline.filter(m => m.nome !== nome);
         }
-        socket.emit('status_atualizado', status); // Retorna para o celular atualizar a cor
+        socket.emit('status_atualizado', status);
+        atualizarTodos();
     });
 
     socket.on('salvar_inscricao_push', async (d) => { await supabase.from('push_subscriptions').upsert([{ nome_maqueiro: d.nomeMaqueiro, sub_info: d.sub_info }], { onConflict: 'nome_maqueiro' }); });
     socket.on('atualizar_perfil', async (dados) => { const { email, telefone, foto } = dados; const { data, error } = await supabase.from('usuarios').update({ telefone, foto }).eq('email', email).select().single(); if (!error && data) socket.emit('perfil_atualizado', data); });
-    socket.on('disconnect', () => { maqueirosOnline = maqueirosOnline.filter(m => m.id !== socket.id); });
+    socket.on('disconnect', () => { maqueirosOnline = maqueirosOnline.filter(m => m.id !== socket.id); atualizarTodos(); });
     socket.on('solicitar_lista', atualizarTodos);
 
     socket.on('novo_pedido', async (d) => {
@@ -88,14 +85,7 @@ io.on('connection', async (socket) => {
     });
 
     socket.on('rejeitar_pedido', async (id) => { await supabase.from('pedidos').update({ maqueiro_sugerido: null }).eq('id', id); atualizarTodos(); });
-
-    socket.on('enviar_mensagem', async (d) => {
-        const { data: p } = await supabase.from('pedidos').select('*').eq('id', d.idPedido).single();
-        let h = p.chat_mensagens || []; h.push({ texto: d.texto, autor: d.autor, hora: new Date().toLocaleTimeString('pt-BR', {hour:'2-digit', minute:'2-digit'}) });
-        await supabase.from('pedidos').update({ chat_mensagens: h }).eq('id', d.idPedido);
-        io.emit('notificacao_mensagem', d); atualizarTodos();
-        if (p.maqueiro_ida && d.autor !== p.maqueiro_ida) enviarPushNotificacao(p.maqueiro_ida, "Mensagem da Enfermagem", d.texto);
-    });
+    socket.on('enviar_mensagem', async (d) => { const { data: p } = await supabase.from('pedidos').select('*').eq('id', d.idPedido).single(); let h = p.chat_mensagens || []; h.push({ texto: d.texto, autor: d.autor, hora: new Date().toLocaleTimeString('pt-BR', {hour:'2-digit', minute:'2-digit'}) }); await supabase.from('pedidos').update({ chat_mensagens: h }).eq('id', d.idPedido); io.emit('notificacao_mensagem', d); atualizarTodos(); if (p.maqueiro_ida && d.autor !== p.maqueiro_ida) enviarPushNotificacao(p.maqueiro_ida, "Mensagem da Enfermagem", d.texto); });
 
     socket.on('aceitar_chamado', async (dados) => {
         const { data: p } = await supabase.from('pedidos').select('status').eq('id', dados.idPedido).single();
