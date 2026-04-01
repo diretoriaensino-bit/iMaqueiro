@@ -58,7 +58,7 @@ io.on('connection', async (socket) => {
         await supabase.from('pedidos').insert([{ 
             paciente: d.paciente, origem: d.origem, destino: d.destino, tipo: d.tipo,
             urgencia: d.urgencia, trajeto: d.trajeto, risco_assistencial: d.risco_assistencial,
-            dispositivos: d.dispositivos, /* <-- NOVO CAMPO AQUI */
+            dispositivos: d.dispositivos,
             status: 'pendente', maqueiro_sugerido: sugerido
         }]);
         atualizarTodos();
