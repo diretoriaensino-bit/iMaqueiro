@@ -58,6 +58,7 @@ io.on('connection', async (socket) => {
         await supabase.from('pedidos').insert([{ 
             paciente: d.paciente, origem: d.origem, destino: d.destino, tipo: d.tipo,
             urgencia: d.urgencia, trajeto: d.trajeto, risco_assistencial: d.risco_assistencial,
+            dispositivos: d.dispositivos, /* <-- NOVO CAMPO AQUI */
             status: 'pendente', maqueiro_sugerido: sugerido
         }]);
         atualizarTodos();
@@ -77,11 +78,8 @@ io.on('connection', async (socket) => {
         atualizarTodos();
     });
 
-    // --- NOVA LÓGICA DE ACEITE INTELIGENTE ---
     socket.on('aceitar_chamado', async (dados) => {
-        // Primeiro verifica se é uma Ida ou uma Volta
         const { data: p } = await supabase.from('pedidos').select('status').eq('id', dados.idPedido).single();
-        
         if (p && p.status === 'pendente') {
             await supabase.from('pedidos').update({ status: 'aceito', maqueiro_ida: dados.nomeMaqueiro, aceito_em: new Date().toISOString() }).eq('id', dados.idPedido);
         } else if (p && p.status === 'aguardando_retorno') {

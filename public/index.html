@@ -13,7 +13,6 @@
         
         .app-shell { width: 100%; min-height: 100vh; display: flex; flex-direction: column; transition: all 0.3s; }
         
-        /* MOBILE */
         @media (max-width: 900px) {
             .app-shell { max-width: 450px; margin: 0 auto; background: white; box-shadow: 0 0 20px rgba(0,0,0,0.1); }
             .dashboard-container { flex-direction: column !important; height: auto !important; padding: 15px !important; }
@@ -24,7 +23,6 @@
             .cards-grid { grid-template-columns: 1fr !important; }
         }
 
-        /* DESKTOP */
         @media (min-width: 901px) {
             .app-shell { max-width: 100%; margin: 0; }
             .dashboard-container { display: flex; gap: 20px; width: 100%; max-width: 1400px; margin: 0 auto; height: calc(100vh - 100px); padding: 0 20px; }
@@ -44,30 +42,36 @@
         .btn:hover { opacity: 0.9; }
         .btn-main { background: var(--primary); color: white; width: 100%; }
         
-        input:not([type="range"]), select { 
+        input:not([type="range"]):not([type="checkbox"]), select { 
             -webkit-appearance: none; appearance: none; width: 100%; padding: 12px; margin-bottom: 12px; border: 1px solid #ddd; border-radius: 8px; background: white; font-size: 0.9rem;
+        }
+
+        /* CHECKBOX CUSTOMIZADO PARA FICAR VISÍVEL */
+        input[type="checkbox"] {
+            -webkit-appearance: auto !important;
+            appearance: auto !important;
+            width: 16px;
+            height: 16px;
+            margin: 0;
+            cursor: pointer;
         }
 
         .stat-item { background: white; padding: 15px; border-radius: 10px; flex: 1; text-align: center; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
         .stats-bar { display: flex; gap: 10px; margin-bottom: 20px; }
 
-        /* ANIMAÇÃO DE LOGIN */
         .login-animation-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--primary); z-index: 9999; flex-direction: column; justify-content: center; align-items: center; color: white; }
         .maca-icon { font-size: 5rem; animation: macaAndando 2s linear infinite; }
         @keyframes macaAndando { 0% { transform: translateX(-150%) scaleX(-1); } 100% { transform: translateX(150%) scaleX(-1); } }
 
-        /* MODAIS */
         .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 999; justify-content: center; align-items: center; padding: 20px; }
         .modal-content { background: white; width: 100%; max-width: 400px; border-radius: 15px; padding: 20px; position: relative; }
         
-        /* CHAT */
         .chat-box { height: 250px; overflow-y: auto; background: #f8f9fa; padding: 10px; border-radius: 10px; display: flex; flex-direction: column; gap: 8px; }
         .msg { padding: 8px 12px; border-radius: 12px; font-size: 0.85rem; max-width: 80%; }
         .msg.meu { align-self: flex-end; background: var(--primary); color: white; }
         .msg.outro { align-self: flex-start; background: #ddd; }
         .toast-notif { position: fixed; top: 20px; right: 20px; background: var(--dark); color: white; padding: 15px 25px; border-radius: 10px; z-index: 2000; display: none; box-shadow: 0 5px 15px rgba(0,0,0,0.3); font-size: 0.9rem; cursor: pointer; }
 
-        /* TELA CHAMADA MAQUEIRO (UBER STYLE) */
         #call-modal { display: none; position: fixed; top:0; left:0; width:100%; height:100%; background:rgba(20,20,20,0.98); z-index:1500; color:white; flex-direction:column; justify-content:center; align-items:center; text-align:center; padding:20px;}
         #swipe-accept { -webkit-appearance: none; appearance: none; width: 100%; background: transparent; position: absolute; height: 100%; cursor: pointer; outline: none; z-index: 10; }
         #swipe-accept::-webkit-slider-thumb { -webkit-appearance: none; appearance: none; width: 65px; height: 65px; border-radius: 50%; background: var(--success); box-shadow: 0 0 15px var(--success);}
@@ -110,12 +114,25 @@
                     </div>
                     <label>Equipamento</label>
                     <select id="tipo"><option value="Maca (Padrão)">Maca (Padrão)</option><option value="Cadeira de Rodas">Cadeira de Rodas</option><option value="Maca com O2">Maca com O2</option><option value="Incubadora">Incubadora</option></select>
+                    
+                    <label>Condições Clínicas / Dispositivos</label>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 10px; font-size: 0.85rem; background: #f9f9f9; padding: 10px; border-radius: 8px; border: 1px solid #eee;">
+                        <label style="display:flex; align-items:center; gap:5px; margin:0;"><input type="checkbox" class="cb-disp" value="SVD"> SVD</label>
+                        <label style="display:flex; align-items:center; gap:5px; margin:0;"><input type="checkbox" class="cb-disp" value="SNE/SNG"> SNE/SNG</label>
+                        <label style="display:flex; align-items:center; gap:5px; margin:0;"><input type="checkbox" class="cb-disp" value="Acesso Venoso"> Acesso Venoso</label>
+                        <label style="display:flex; align-items:center; gap:5px; margin:0;"><input type="checkbox" class="cb-disp" value="O2 Contínuo"> O2 Contínuo</label>
+                        <label style="display:flex; align-items:center; gap:5px; margin:0;"><input type="checkbox" class="cb-disp" value="Drenos"> Drenos</label>
+                        <label style="display:flex; align-items:center; gap:5px; margin:0;"><input type="checkbox" class="cb-disp" value="Confuso/Agitado"> Confuso</label>
+                    </div>
+                    <input type="text" id="obs" placeholder="Outras observações (Ex: Jejum, Dificuldade motora...)">
+
                     <label>Urgência</label>
                     <select id="urgencia"><option value="Verde">Verde (Rotina)</option><option value="Amarelo">Amarelo (Urgente)</option><option value="Vermelho">Vermelho (Emergência)</option></select>
                     <label>Trajeto</label>
                     <select id="trajeto"><option value="ida_volta">Ida e Volta</option><option value="so_ida">Somente Ida</option></select>
                     <label>Isolamento</label>
                     <select id="risco"><option value="Nenhum">Sem Risco</option><option value="Contato">Isolamento Contato</option><option value="Gotículas">Isolamento Gotículas</option></select>
+                    
                     <button class="btn btn-main" style="padding:15px; margin-top: 10px;" onclick="enviarPedido()">SOLICITAR AGORA</button>
                 </div>
 
@@ -133,32 +150,20 @@
 
         <div id="screen-maqueiro" class="screen" style="padding: 0;">
             <header style="background:var(--dark);">
-                <div style="display:flex; align-items:center; gap:10px;">
-                    <i class="fa fa-ambulance" style="font-size: 1.5rem;"></i>
-                    <h3 style="margin:0">Painel do Maqueiro</h3>
-                </div>
-                <div style="display:flex; align-items:center; gap:15px;">
-                    <span id="user-name-maq" style="font-weight:bold; font-size:0.9rem;"></span>
-                    <button class="btn" style="background:rgba(255,255,255,0.2); color:white; padding:8px 15px;" onclick="fazerLogout()">Sair</button>
-                </div>
+                <div style="display:flex; align-items:center; gap:10px;"><i class="fa fa-ambulance" style="font-size: 1.5rem;"></i><h3 style="margin:0">Painel do Maqueiro</h3></div>
+                <div style="display:flex; align-items:center; gap:15px;"><span id="user-name-maq" style="font-weight:bold; font-size:0.9rem;"></span><button class="btn" style="background:rgba(255,255,255,0.2); color:white; padding:8px 15px;" onclick="fazerLogout()">Sair</button></div>
             </header>
 
             <div class="dashboard-container">
                 <div class="sidebar-form" style="background:var(--primary); color:white;">
                     <div style="text-align: center; margin-bottom: 20px;">
-                        <i class="fa fa-user-circle" style="font-size: 4rem; opacity: 0.8; margin-bottom: 10px;"></i>
-                        <h3 style="margin:0;">Meu Desempenho</h3>
+                        <i class="fa fa-user-circle" style="font-size: 4rem; opacity: 0.8; margin-bottom: 10px;"></i><h3 style="margin:0;">Meu Desempenho</h3>
                     </div>
                     <div class="stats-bar" style="flex-direction: column;">
-                        <div class="stat-item" style="background:rgba(255,255,255,0.1); color:white; border:none; box-shadow:none;">
-                            <h2 id="total-hoje" style="color:white; font-size: 2.5rem;">0</h2><span>Corridas Finalizadas Hoje</span>
-                        </div>
-                        <div class="stat-item" style="background:var(--success); color:white; border:none; box-shadow:none;">
-                            <h2 style="color:white;">ON</h2><span>Status</span>
-                        </div>
+                        <div class="stat-item" style="background:rgba(255,255,255,0.1); color:white; border:none; box-shadow:none;"><h2 id="total-hoje" style="color:white; font-size: 2.5rem;">0</h2><span>Corridas Hoje</span></div>
+                        <div class="stat-item" style="background:var(--success); color:white; border:none; box-shadow:none;"><h2 style="color:white;">ON</h2><span>Status</span></div>
                     </div>
                     <button class="btn" id="btn-som" onclick="ativarAudio()" style="background:var(--warning); color:black; width:100%; margin-top:10px;"><i class="fa fa-volume-up"></i> Ativar Alertas Sonoros</button>
-                    
                     <h4 style="border-top: 1px solid rgba(255,255,255,0.2); padding-top: 20px; margin-top: 20px;"><i class="fa fa-history"></i> Histórico Recente</h4>
                     <div id="maqueiro-history" style="font-size: 0.85rem; opacity: 0.9;"></div>
                 </div>
@@ -168,7 +173,6 @@
                         <h3 style="color:var(--success); margin:0 0 10px 0;"><i class="fa fa-play-circle"></i> Minha Corrida Atual</h3>
                         <div class="cards-grid" id="maqueiro-ativo"></div>
                     </div>
-
                     <h3 style="color:var(--gray); margin:0 0 10px 0;"><i class="fa fa-list"></i> Chamados Disponíveis</h3>
                     <div class="cards-grid" id="maqueiro-pendentes"></div>
                 </div>
@@ -177,9 +181,15 @@
 
     </div>
 
-    <div id="login-animation" class="login-animation-overlay">
-        <i class="fa fa-bed maca-icon"></i><h2 style="margin-top:20px;">iMaqueiro</h2><p>Conectando...</p>
+    <div id="details-modal" class="modal-overlay">
+        <div class="modal-content">
+            <h3 style="margin-top:0; color:var(--primary);"><i class="fa fa-file-medical"></i> Dados Clínicos</h3>
+            <div id="details-body" style="font-size:0.9rem; line-height:1.6; color:var(--dark);"></div>
+            <button class="btn" style="width:100%; margin-top:15px; background:#eee" onclick="document.getElementById('details-modal').style.display='none'">Fechar</button>
+        </div>
     </div>
+
+    <div id="login-animation" class="login-animation-overlay"><i class="fa fa-bed maca-icon"></i><h2 style="margin-top:20px;">iMaqueiro</h2><p>Conectando...</p></div>
 
     <div id="chat-modal" class="modal-overlay">
         <div class="modal-content">
@@ -204,7 +214,6 @@
         <h2 id="call-paciente" style="margin:0; font-size: 1.5rem; color: #fff;"></h2>
         <h1 id="call-rota" style="margin:10px 0; font-size: 2.8rem; color: var(--warning);"></h1>
         <p id="call-equip" style="color: #ccc; font-size: 1.1rem; margin-bottom: 40px;"></p>
-        
         <div style="width:300px; height:70px; background:#222; border-radius:35px; position:relative; display:flex; align-items:center; justify-content:center; border: 2px solid #555;">
             <span style="color:#aaa; font-weight:bold;">DESLIZE PARA ACEITAR</span>
             <input type="range" min="0" max="100" value="0" id="swipe-accept">
@@ -219,7 +228,7 @@
 
     <script>
         const socket = io();
-        let usuario, audioLigado = false, pedidosAtivos = [], idChamadoAtual, idChatAtivo, html5QrCode;
+        let usuario, audioLigado = false, pedidosAtivos = [], historicoGlobal = [], idChamadoAtual, idChatAtivo, html5QrCode;
 
         window.onload = () => {
             const salvo = localStorage.getItem('imaqueiro_user');
@@ -230,13 +239,10 @@
             }
         };
 
-        function tentarLogin() {
-            socket.emit('fazer_login', { email: document.getElementById('login-email').value, senha: document.getElementById('login-senha').value });
-        }
-
+        function tentarLogin() { socket.emit('fazer_login', { email: document.getElementById('login-email').value, senha: document.getElementById('login-senha').value }); }
+        
         socket.on('login_sucesso', u => {
-            usuario = u;
-            localStorage.setItem('imaqueiro_user', JSON.stringify(u));
+            usuario = u; localStorage.setItem('imaqueiro_user', JSON.stringify(u));
             document.getElementById('login-animation').style.display = 'flex';
             setTimeout(() => { document.getElementById('login-animation').style.display = 'none'; abrirPainel(u); }, 2000);
         });
@@ -252,43 +258,75 @@
         }
 
         function enviarPedido() {
-            const d = { paciente: document.getElementById('paciente').value, origem: document.getElementById('origem').value, destino: document.getElementById('destino').value, tipo: document.getElementById('tipo').value, urgencia: document.getElementById('urgencia').value, trajeto: document.getElementById('trajeto').value, risco_assistencial: document.getElementById('risco').value };
+            // LÓGICA DE CAPTURA DOS DISPOSITIVOS
+            const checkboxes = document.querySelectorAll('.cb-disp:checked');
+            let selecionados = Array.from(checkboxes).map(cb => cb.value);
+            let obs = document.getElementById('obs').value;
+            
+            let dispositivosFinal = selecionados.join(', ');
+            if(obs) dispositivosFinal += (dispositivosFinal ? " | " : "") + obs;
+            if(!dispositivosFinal) dispositivosFinal = "Nenhuma observação reportada.";
+
+            const d = { 
+                paciente: document.getElementById('paciente').value, origem: document.getElementById('origem').value, destino: document.getElementById('destino').value, 
+                tipo: document.getElementById('tipo').value, urgencia: document.getElementById('urgencia').value, trajeto: document.getElementById('trajeto').value, 
+                risco_assistencial: document.getElementById('risco').value, 
+                dispositivos: dispositivosFinal // NOVO CAMPO SENDO ENVIADO
+            };
             if(!d.paciente || !d.origem || !d.destino) return alert("Preencha origem e destino!");
             socket.emit('novo_pedido', d);
-            document.getElementById('paciente').value = ""; document.getElementById('origem').value = ""; document.getElementById('destino').value = "";
+            
+            // Limpeza geral
+            document.getElementById('paciente').value = ""; document.getElementById('origem').value = ""; document.getElementById('destino').value = ""; document.getElementById('obs').value = "";
+            checkboxes.forEach(cb => cb.checked = false);
         }
 
-        socket.on('atualizar_lista', data => { pedidosAtivos = data.ativos; renderizar(data.ativos, data.historico); });
+        socket.on('atualizar_lista', data => { pedidosAtivos = data.ativos; historicoGlobal = data.historico; renderizar(data.ativos, data.historico); });
 
         socket.on('notificacao_mensagem', d => {
             if(d.autor !== usuario.nome && idChatAtivo !== d.idPedido) {
                 document.getElementById('toast-autor').innerText = d.autor; document.getElementById('toast-msg').innerText = d.texto;
-                document.getElementById('toast').style.display = 'flex';
-                setTimeout(() => document.getElementById('toast').style.display='none', 5000);
+                document.getElementById('toast').style.display = 'flex'; setTimeout(() => document.getElementById('toast').style.display='none', 5000);
             }
         });
 
+        function abrirDetalhes(id) {
+            const p = pedidosAtivos.find(x => x.id === id) || historicoGlobal.find(x => x.id === id);
+            if (!p) return;
+            const html = `
+                <div style="margin-bottom:15px;">
+                    <b>Paciente:</b> ${p.paciente}<br>
+                    <b>Trajeto:</b> ${p.origem} ➔ ${p.destino}<br>
+                    <b>Equipamento:</b> ${p.tipo}<br>
+                    <b>Urgência:</b> ${p.urgencia}<br>
+                    <b>Risco Biológico:</b> ${p.risco_assistencial}
+                </div>
+                <div style="background:#f4f4f4; padding:10px; border-left:4px solid var(--danger); border-radius:5px;">
+                    <b style="color:var(--danger)">Condições / Dispositivos:</b><br>
+                    ${p.dispositivos || 'Nenhuma observação reportada.'}
+                </div>
+            `;
+            document.getElementById('details-body').innerHTML = html;
+            document.getElementById('details-modal').style.display = 'flex';
+        }
+
         function renderizar(ativos, historico) {
-            const nList = document.getElementById('nurse-list');
-            const mPendentes = document.getElementById('maqueiro-pendentes');
-            const mAtivo = document.getElementById('maqueiro-ativo');
-            const mHist = document.getElementById('maqueiro-history');
-            
+            const nList = document.getElementById('nurse-list'); const mPendentes = document.getElementById('maqueiro-pendentes'); const mAtivo = document.getElementById('maqueiro-ativo'); const mHist = document.getElementById('maqueiro-history');
             if(!usuario) return;
             nList.innerHTML = ""; mPendentes.innerHTML = ""; mAtivo.innerHTML = ""; mHist.innerHTML = "";
-            let callNow = false; let contHoje = 0; let temAtivo = false;
-            let cPendente = 0, cCurso = 0, cRisco = 0;
+            let callNow = false; let contHoje = 0; let temAtivo = false; let cPendente = 0, cCurso = 0, cRisco = 0;
 
             ativos.forEach(p => {
                 const color = p.urgencia === 'Vermelho' ? 'var(--danger)' : (p.urgencia === 'Amarelo' ? 'var(--warning)' : 'var(--success)');
                 const badgeRisco = p.risco_assistencial !== 'Nenhum' ? `<span style="background:var(--danger); color:white; font-size:9px; padding:3px 6px; border-radius:5px; font-weight:bold;">${p.risco_assistencial.toUpperCase()}</span>` : "";
-                
                 if(p.risco_assistencial !== 'Nenhum') cRisco++;
                 if(p.status === 'pendente') cPendente++; else cCurso++;
 
+                // BOTÃO DE DADOS CLÍNICOS ADICIONADO AO CARD (NO CANTO SUPERIOR DIREITO)
                 const cardBase = `
                     <div class="card" style="border-left-color:${color}">
-                        <div style="display:flex; justify-content:space-between; align-items:start; margin-bottom:8px;">
+                        <button onclick="abrirDetalhes(${p.id})" style="position:absolute; right:15px; top:15px; border:none; background:none; cursor:pointer; font-size:1.2rem; color:var(--primary);"><i class="fa fa-info-circle"></i></button>
+                        <div style="display:flex; justify-content:space-between; align-items:start; margin-bottom:8px; padding-right:25px;">
                             <b style="font-size:1.05rem">${p.origem} ➔ ${p.destino}</b> ${badgeRisco}
                         </div>
                         <div style="font-size:0.95rem; margin-bottom:5px;">👤 ${p.paciente}</div>
@@ -297,97 +335,53 @@
                         <button onclick="abrirChat(${p.id})" style="position:absolute; right:15px; bottom:15px; border:none; background:#f0f0f0; width:35px; height:35px; border-radius:50%; cursor:pointer;"><i class="fa fa-comment" style="color:var(--primary)"></i></button>
                 `;
 
-                // TELA DA ENFERMAGEM
                 if(usuario.cargo === 'enfermagem') {
                     const infoMaq = `<div style="font-size:0.8rem; color:var(--gray); margin-top:5px;">Maqueiro: ${p.maqueiro_ida || '---'}</div>`;
                     const btnRetorno = (p.status === 'no_destino' && p.trajeto === 'ida_volta') ? `<button class="btn btn-main" style="margin-top:12px; background:var(--success);" onclick="socket.emit('pedir_retorno', ${p.id})"><i class="fa fa-undo"></i> Solicitar Retorno</button>` : "";
                     nList.innerHTML += `<div>${cardBase}${infoMaq}${btnRetorno}</div></div>`;
                 }
                 
-                // TELA DO MAQUEIRO
                 if(usuario.cargo === 'maqueiro') {
                     const isPendente = p.status === 'pendente' || p.status === 'aguardando_retorno';
                     const isMeu = p.maqueiro_ida === usuario.nome || p.maqueiro_volta === usuario.nome;
 
                     if(isPendente) {
-                        // Lógica da Roleta (Modal Tela Preta)
                         if(!p.maqueiro_sugerido || p.maqueiro_sugerido === usuario.nome) {
                             callNow = true; idChamadoAtual = p.id;
-                            document.getElementById('call-paciente').innerText = p.paciente;
-                            document.getElementById('call-rota').innerText = p.origem + " ➔ " + p.destino;
-                            document.getElementById('call-equip').innerText = p.tipo;
-                            document.getElementById('call-risco').style.display = (p.risco_assistencial !== 'Nenhum' ? 'block' : 'none');
+                            document.getElementById('call-paciente').innerText = p.paciente; document.getElementById('call-rota').innerText = p.origem + " ➔ " + p.destino; document.getElementById('call-equip').innerText = p.tipo; document.getElementById('call-risco').style.display = (p.risco_assistencial !== 'Nenhum' ? 'block' : 'none');
                             if(audioLigado) p.urgencia === 'Vermelho' ? document.getElementById('audio-emergencia').play() : document.getElementById('audio-alerta').play();
                         }
-                        
-                        // Lógica da Lista de Disponíveis (Botão Aceitar Manual)
                         let btnAceitar = `<button class="btn btn-main" style="background:var(--success); margin-top:15px; width:100%;" onclick="aceitarChamadoManual(${p.id})">ACEITAR CHAMADO</button>`;
                         mPendentes.innerHTML += `${cardBase}${btnAceitar}</div>`;
                     } 
                     else if (isMeu) {
-                        temAtivo = true;
-                        let btnAcao = "";
+                        temAtivo = true; let btnAcao = "";
                         if(p.status === 'aceito' || p.status === 'aceito_retorno') btnAcao = `<button class="btn btn-main" style="margin-top:15px; width:100%;" onclick="abrirQR(${p.id})"><i class="fa fa-qrcode"></i> LER QR CODE LEITO</button>`;
                         else if(p.status === 'na_origem') btnAcao = `<button class="btn" style="background:var(--warning); margin-top:15px; width:100%;" onclick="socket.emit('iniciar_ida', ${p.id})"><i class="fa fa-play"></i> INICIAR TRAJETO</button>`;
                         else if(p.status === 'em_transito_ida') btnAcao = `<button class="btn" style="background:var(--dark); color:white; margin-top:15px; width:100%;" onclick="socket.emit('entregue_destino', ${p.id})"><i class="fa fa-check"></i> ENTREGUE NO DESTINO</button>`;
-                        
                         mAtivo.innerHTML += `${cardBase}${btnAcao}</div>`;
                     }
                 }
             });
 
-            // ATUALIZA PAINÉIS EXTRAS
-            if(usuario.cargo === 'enfermagem') {
-                document.getElementById('stat-pendente').innerText = cPendente;
-                document.getElementById('stat-curso').innerText = cCurso;
-                document.getElementById('stat-risco').innerText = cRisco;
-            }
-
+            if(usuario.cargo === 'enfermagem') { document.getElementById('stat-pendente').innerText = cPendente; document.getElementById('stat-curso').innerText = cCurso; document.getElementById('stat-risco').innerText = cRisco; }
             if(usuario.cargo === 'maqueiro') {
                 document.getElementById('area-corrida-ativa').style.display = temAtivo ? 'block' : 'none';
-                
-                historico.forEach(p => {
-                    if(p.maqueiro_ida === usuario.nome || p.maqueiro_volta === usuario.nome) {
-                        contHoje++;
-                        mHist.innerHTML += `<div style="background:rgba(255,255,255,0.1); padding:10px; border-radius:8px; margin-bottom:10px; border-left:3px solid var(--success); display:flex; justify-content:space-between; align-items:center;">
-                            <div><b>${p.origem} ➔ ${p.destino}</b><br><span style="opacity:0.8">${p.paciente}</span></div>
-                            <i class="fa fa-check-circle" style="color:var(--success); font-size:1.2rem;"></i>
-                        </div>`;
-                    }
-                });
+                historico.forEach(p => { if(p.maqueiro_ida === usuario.nome || p.maqueiro_volta === usuario.nome) { contHoje++; mHist.innerHTML += `<div style="background:rgba(255,255,255,0.1); padding:10px; border-radius:8px; margin-bottom:10px; border-left:3px solid var(--success); display:flex; justify-content:space-between; align-items:center;"><div><b>${p.origem} ➔ ${p.destino}</b><br><span style="opacity:0.8">${p.paciente}</span></div><i class="fa fa-check-circle" style="color:var(--success); font-size:1.2rem;"></i></div>`; } });
                 document.getElementById('total-hoje').innerText = contHoje;
             }
-            
             document.getElementById('call-modal').style.display = callNow ? 'flex' : 'none';
         }
 
-        // --- AÇÕES DO MAQUEIRO ---
-        function aceitarChamadoManual(id) {
-            socket.emit('aceitar_chamado', { idPedido: id, nomeMaqueiro: usuario.nome });
-        }
-
-        document.getElementById('swipe-accept').addEventListener('input', function() { 
-            if(this.value > 85) { this.value = 0; pararAlarme(); socket.emit('aceitar_chamado', {idPedido: idChamadoAtual, nomeMaqueiro: usuario.nome}); } 
-        });
-
+        function aceitarChamadoManual(id) { socket.emit('aceitar_chamado', { idPedido: id, nomeMaqueiro: usuario.nome }); }
+        document.getElementById('swipe-accept').addEventListener('input', function() { if(this.value > 85) { this.value = 0; pararAlarme(); socket.emit('aceitar_chamado', {idPedido: idChamadoAtual, nomeMaqueiro: usuario.nome}); } });
         function passarVezCall() { pararAlarme(); socket.emit('rejeitar_pedido', idChamadoAtual); }
         function pararAlarme() { document.getElementById('audio-alerta').pause(); document.getElementById('audio-emergencia').pause(); }
 
-        // --- SISTEMAS DE APOIO ---
-        function abrirChat(id) {
-            idChatAtivo = id; const p = pedidosAtivos.find(x => x.id === id); const box = document.getElementById('chat-box');
-            box.innerHTML = (p.chat_mensagens || []).map(m => `<div class="msg ${m.autor === usuario.nome ? 'meu' : 'outro'}"><b>${m.autor}:</b> ${m.texto}</div>`).join('');
-            const fr = usuario.cargo === 'maqueiro' ? ["Chegando", "Elevador lotado", "Paciente não pronto"] : ["Aguarde", "Pode vir", "Tudo Certo"];
-            document.getElementById('quick-replies').innerHTML = fr.map(f => `<button class="btn" style="border:1px solid var(--primary); background:none; font-size:0.75rem;" onclick="enviarMensagem('${f}')">${f}</button>`).join('');
-            document.getElementById('chat-modal').style.display = 'flex'; box.scrollTop = box.scrollHeight;
-        }
+        function abrirChat(id) { idChatAtivo = id; const p = pedidosAtivos.find(x => x.id === id); const box = document.getElementById('chat-box'); box.innerHTML = (p.chat_mensagens || []).map(m => `<div class="msg ${m.autor === usuario.nome ? 'meu' : 'outro'}"><b>${m.autor}:</b> ${m.texto}</div>`).join(''); const fr = usuario.cargo === 'maqueiro' ? ["Chegando", "Elevador lotado", "Paciente não pronto"] : ["Aguarde", "Pode vir", "Tudo Certo"]; document.getElementById('quick-replies').innerHTML = fr.map(f => `<button class="btn" style="border:1px solid var(--primary); background:none; font-size:0.75rem;" onclick="enviarMensagem('${f}')">${f}</button>`).join(''); document.getElementById('chat-modal').style.display = 'flex'; box.scrollTop = box.scrollHeight; }
         function enviarMensagem(texto) { socket.emit('enviar_mensagem', { idPedido: idChatAtivo, texto, autor: usuario.nome }); document.getElementById('chat-modal').style.display='none'; idChatAtivo=null; }
 
-        function abrirQR(id) {
-            document.getElementById('qr-modal').style.display = 'flex';
-            html5QrCode = new Html5Qrcode("qr-reader");
-            html5QrCode.start({ facingMode: "environment" }, { fps: 10, qrbox: 250 }, (txt) => { fecharQR(); socket.emit('cheguei_origem', id); }, () => {});
-        }
+        function abrirQR(id) { document.getElementById('qr-modal').style.display = 'flex'; html5QrCode = new Html5Qrcode("qr-reader"); html5QrCode.start({ facingMode: "environment" }, { fps: 10, qrbox: 250 }, (txt) => { fecharQR(); socket.emit('cheguei_origem', id); }, () => {}); }
         function fecharQR() { if(html5QrCode) html5QrCode.stop().then(() => html5QrCode.clear()); document.getElementById('qr-modal').style.display = 'none'; }
         function ativarAudio() { document.getElementById('audio-alerta').play().then(() => { document.getElementById('audio-alerta').pause(); audioLigado = true; document.getElementById('btn-som').style.display='none'; }); }
     </script>
