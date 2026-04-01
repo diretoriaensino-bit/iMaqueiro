@@ -30,7 +30,7 @@
         
         body { font-family: 'Inter', sans-serif; background: var(--light-gray); margin: 0; user-select: none; color: var(--dark); overflow-x: hidden; -webkit-font-smoothing: antialiased; }
         
-        /* REMOVIDA A TRANSIÇÃO QUE CAUSAVA O PULO E O EFEITO ELÁSTICO */
+        /* REMOVIDA A TRANSIÇÃO PARA EVITAR PULO */
         .app-shell { width: 100%; min-height: 100vh; display: flex; flex-direction: column; }
         
         @media (max-width: 900px) {
@@ -97,7 +97,9 @@
         .ranking-badge { background: var(--light-gray); color: var(--gray); width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; border-radius: 50%; font-weight: bold; font-size: 1.1rem; border: 2px solid #E2E8F0; }
         .ranking-badge.top-1 { background: var(--warning-light); color: var(--warning-dark); border-color: var(--warning); box-shadow: 0 0 10px rgba(245, 158, 11, 0.2); }
 
-        .login-bg { background: linear-gradient(135deg, #0F172A 0%, #1E3A8A 100%); display: flex; justify-content: center; align-items: center; }
+        /* CORREÇÃO DO ERRO DA TELA SOBREPOSTA: APENAS BACKGROUND, SEM DISPLAY:FLEX FIXO AQUI */
+        .login-bg { background: linear-gradient(135deg, #0F172A 0%, #1E3A8A 100%); }
+        
         .login-box { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); padding: 40px; border-radius: 24px; box-shadow: var(--shadow-lg); width: 90%; max-width: 400px; text-align: center; border: 1px solid rgba(255,255,255,0.2); }
         .login-box img { width: 80px; margin-bottom: 20px; filter: drop-shadow(0 4px 6px rgba(0,0,0,0.1)); }
 
@@ -127,7 +129,7 @@
 
     <div class="app-shell">
         
-        <div id="screen-login" class="screen active login-bg" style="padding: 0;">
+        <div id="screen-login" class="screen active login-bg" style="justify-content:center; align-items:center; padding: 0;">
             <div class="login-box">
                 <img src="/logo-hospital.png" onerror="this.style.display='none'">
                 <h2 style="color:var(--dark); margin:0 0 8px 0; font-size: 2rem; font-weight: 800; letter-spacing: -1px;">iMaqueiro <span style="color:var(--primary)">Pro</span></h2>
@@ -301,9 +303,7 @@
         window.onload = () => { const salvo = localStorage.getItem('imaqueiro_user'); if (salvo) { usuario = JSON.parse(salvo); socket.emit('relogar_maqueiro', usuario); abrirPainel(usuario); } };
 
         function tentarLogin() { 
-            // CORREÇÃO: FECHA O TECLADO DO CELULAR ANTES DE TROCAR A TELA
             if(document.activeElement) document.activeElement.blur();
-            
             socket.emit('fazer_login', { email: document.getElementById('login-email').value, senha: document.getElementById('login-senha').value }); 
         }
         
@@ -317,6 +317,11 @@
                 if (document.getElementById(id)) document.getElementById(id).src = fotoUrl;
             });
             if (usuario.cargo === 'maqueiro') atualizarUIStatus(usuario.status_trabalho);
+        }
+
+        function forcarScrollTopo() {
+            const zeraScroll = () => { window.scrollTo(0, 0); document.body.scrollTop = 0; document.documentElement.scrollTop = 0; };
+            zeraScroll(); setTimeout(zeraScroll, 50); setTimeout(zeraScroll, 150); setTimeout(zeraScroll, 300);
         }
 
         function abrirPerfil() {
@@ -341,19 +346,6 @@
             else { select.disabled = false; select.innerHTML = '<option value="disponivel" style="color:white;">🟢 DISPONÍVEL</option><option value="intervalo" style="color:var(--dark);">☕ INTERVALO</option>'; select.value = status || 'disponivel'; if (select.value === 'intervalo') { card.style.background = 'var(--warning-light)'; card.style.boxShadow = '0 4px 15px rgba(245, 158, 11, 0.2)'; select.style.color = 'var(--warning-dark)'; } else { card.style.background = 'var(--success)'; card.style.boxShadow = '0 4px 15px rgba(16, 185, 129, 0.4)'; select.style.color = 'white'; } }
         }
 
-        // CORREÇÃO: FUNÇÃO DESTRAVADORA DE SCROLL
-        function forcarScrollTopo() {
-            const zeraScroll = () => {
-                window.scrollTo(0, 0);
-                document.body.scrollTop = 0;
-                document.documentElement.scrollTop = 0;
-            };
-            zeraScroll();
-            setTimeout(zeraScroll, 50);
-            setTimeout(zeraScroll, 150);
-            setTimeout(zeraScroll, 300); // Garante que até os celulares mais lentos forcem a tela pra cima
-        }
-
         function abrirPainel(u) {
             document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
             
@@ -363,8 +355,6 @@
             
             atualizarFotosUI(); 
             socket.emit('solicitar_lista');
-            
-            // EXECUTA A TRAVA DE SCROLL ASSIM QUE A TELA ABRIR
             forcarScrollTopo();
         }
 
