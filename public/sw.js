@@ -1,27 +1,46 @@
-const CACHE_NAME = 'imaqueiro-cache-v3';
-const ASSETS = ['/', '/index.html', '/logo-hospital.png', 'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css', 'https://unpkg.com/html5-qrcode'];
+const CACHE_NAME = 'imaqueiro-cache-v4'; // Versão nova para forçar a troca
+const ASSETS = ['/', '/index.html', '/logo-hospital.png'];
 
-self.addEventListener('install', (event) => { event.waitUntil(caches.open(CACHE_NAME).then((cache) => cache.addAll(ASSETS))); });
-self.addEventListener('activate', (event) => { event.waitUntil(caches.keys().then((keys) => Promise.all(keys.map((key) => { if (key !== CACHE_NAME) return caches.delete(key); })))); });
-self.addEventListener('fetch', (event) => { event.respondWith(caches.match(event.request).then((cachedResponse) => cachedResponse || fetch(event.request))); });
+// Instala e expulsa o cache antigo imediatamente!
+self.addEventListener('install', (event) => {
+    self.skipWaiting();
+    event.waitUntil(caches.open(CACHE_NAME).then((cache) => cache.addAll(ASSETS)));
+});
+
+// Assume o controle do navegador na hora
+self.addEventListener('activate', (event) => {
+    event.waitUntil(clients.claim());
+    event.waitUntil(
+        caches.keys().then((keys) => Promise.all(keys.map((key) => {
+            if (key !== CACHE_NAME) return caches.delete(key);
+        })))
+    );
+});
+
+// ESTRATÉGIA NOVA: NETWORK FIRST!
+// Sempre tenta pegar o visual mais novo da internet. Se a conexão cair, ele puxa do cache (Modo Elevador)
+self.addEventListener('fetch', (event) => {
+    event.respondWith(
+        fetch(event.request).catch(() => {
+            return caches.match(event.request);
+        })
+    );
+});
 
 // --- MÁGICA DA NOTIFICAÇÃO PUSH ---
 self.addEventListener('push', function(event) {
     const data = event.data ? event.data.json() : { titulo: "Novo Transporte", corpo: "Você tem um novo chamado no iMaqueiro." };
-    
     const options = {
         body: data.corpo,
         icon: '/logo-hospital.png',
         badge: '/logo-hospital.png',
-        vibrate: [500, 250, 500, 250, 500, 250, 500], // Vibração de Emergência
-        requireInteraction: true, // A notificação não some sozinha
+        vibrate: [500, 250, 500, 250, 500, 250, 500],
+        requireInteraction: true,
         data: { url: '/' }
     };
-
     event.waitUntil(self.registration.showNotification(data.titulo, options));
 });
 
-// O QUE ACONTECE QUANDO ELE CLICA NA NOTIFICAÇÃO NO TOPO DA TELA
 self.addEventListener('notificationclick', function(event) {
     event.notification.close();
     event.waitUntil(
