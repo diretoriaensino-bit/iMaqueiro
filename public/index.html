@@ -313,7 +313,6 @@
                             <div style="font-size:0.75rem; opacity:0.9; margin-top:8px; pointer-events:none; font-weight: 500;"><i class="fa fa-hand-pointer"></i> Toque para alterar</div>
                         </div>
                     </div>
-                    <button class="btn" id="btn-som" onclick="ativarAudio()" style="background:var(--warning); color:var(--warning-dark); width:100%; margin-top:15px; padding: 20px; font-size: 1.1rem; box-shadow: 0 4px 15px rgba(245, 158, 11, 0.3);"><i class="fa fa-volume-up"></i> ATIVAR ALERTAS</button>
                     <h4 style="border-top: 1px solid var(--border-color); padding-top: 24px; margin-top: 24px; color: var(--text-muted);"><i class="fa fa-history"></i> Histórico Recente</h4>
                     <div id="maqueiro-history" style="font-size: 0.9rem;"></div>
                 </div>
@@ -532,8 +531,29 @@
             }
         }
 
-        function ativarAudio() { document.getElementById('audio-alerta').play().then(() => document.getElementById('audio-alerta').pause()); document.getElementById('audio-emergencia').play().then(() => document.getElementById('audio-emergencia').pause()); if ('speechSynthesis' in window) window.speechSynthesis.speak(new SpeechSynthesisUtterance('')); habilitarNotificacoes(); audioLigado = true; document.getElementById('btn-som').style.display = 'none'; }
-        function falarAvisoRisco(risco) { if (!('speechSynthesis' in window)) return; window.speechSynthesis.cancel(); let texto = ""; if (risco === 'Contato') texto = "Atenção equipe. Risco de Contato. Paramente-se com luvas e avental."; else if (risco === 'Gotículas') texto = "Atenção. Risco de Gotículas. Coloque máscara cirúrgica."; else if (risco === 'Aerosol') texto = "Atenção. Risco de Aerossol. Utilize máscara N 95."; if (texto) { let locutor = new SpeechSynthesisUtterance(texto); locutor.lang = 'pt-BR'; window.speechSynthesis.speak(locutor); } }
+// --- O NOVO MOTOR FANTASMA DE ÁUDIO E NOTIFICAÇÃO ---
+        function destravarSistemaSilenciosamente() {
+            if (audioLigado) return; // Se já ligou, ignora.
+
+            try {
+                // Dá um "play e pause" super rápido (invisível) para destravar o bloqueio do Google Chrome
+                document.getElementById('audio-alerta').play().then(() => document.getElementById('audio-alerta').pause()).catch(()=>{});
+                document.getElementById('audio-emergencia').play().then(() => document.getElementById('audio-emergencia').pause()).catch(()=>{});
+                if ('speechSynthesis' in window) window.speechSynthesis.speak(new SpeechSynthesisUtterance(''));
+                
+                // Puxa a permissão de notificação (o Chrome vai pedir se for a primeira vez)
+                habilitarNotificacoes();
+                
+                audioLigado = true;
+                console.log("🚀 Sistema de Alertas Destravado com Sucesso!");
+            } catch(e) {
+                console.error("Erro ao destravar áudio", e);
+            }
+        }
+
+        // Fica vigiando o primeiro clique ou toque na tela do celular
+        document.addEventListener('click', destravarSistemaSilenciosamente, { once: true });
+        document.addEventListener('touchstart', destravarSistemaSilenciosamente, { once: true });        function falarAvisoRisco(risco) { if (!('speechSynthesis' in window)) return; window.speechSynthesis.cancel(); let texto = ""; if (risco === 'Contato') texto = "Atenção equipe. Risco de Contato. Paramente-se com luvas e avental."; else if (risco === 'Gotículas') texto = "Atenção. Risco de Gotículas. Coloque máscara cirúrgica."; else if (risco === 'Aerosol') texto = "Atenção. Risco de Aerossol. Utilize máscara N 95."; if (texto) { let locutor = new SpeechSynthesisUtterance(texto); locutor.lang = 'pt-BR'; window.speechSynthesis.speak(locutor); } }
         function abrirChecklist(id) { idChecklistAtual = id; document.querySelectorAll('.check-seguranca').forEach(cb => cb.checked = false); validarChecklist(); document.getElementById('checklist-modal').style.display = 'flex'; }
         function fecharChecklist() { document.getElementById('checklist-modal').style.display = 'none'; idChecklistAtual = null; }
         function validarChecklist() { const btn = document.getElementById('btn-iniciar-viagem'); if(Array.from(document.querySelectorAll('.check-seguranca')).every(cb => cb.checked)) { btn.style.opacity = '1'; btn.style.cursor = 'pointer'; btn.disabled = false; } else { btn.style.opacity = '0.5'; btn.style.cursor = 'not-allowed'; btn.disabled = true; } }
