@@ -17,9 +17,6 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     
     <style>
-        /* TRAVA ABSOLUTA DE VAZAMENTO DE TELA */
-        *, *::before, *::after { box-sizing: border-box; }
-
         :root { 
             --primary: #4F46E5; 
             --primary-hover: #4338CA; --primary-light: #E0E7FF;
@@ -52,30 +49,28 @@
             --header-text: #F8FAFC;
         }
         
+        *, *::before, *::after { box-sizing: border-box; }
+
         body { font-family: 'Inter', sans-serif; background: var(--bg-color); margin: 0; user-select: none; color: var(--text-main); overflow-x: hidden; -webkit-font-smoothing: antialiased; transition: background-color 0.3s, color 0.3s; }
         
         .app-shell { width: 100%; min-height: 100vh; display: flex; flex-direction: column; }
         
-        /* === RESPONSIVIDADE PARA TABLETS E CELULARES === */
         @media (max-width: 1000px) {
             .app-shell { max-width: 100vw; margin: 0; }
             .dashboard-container { flex-direction: column !important; height: auto !important; padding: 16px !important; gap: 20px !important; }
             .sidebar-form { width: 100% !important; margin-bottom: 10px; box-shadow: none !important; border: none !important; padding: 0 !important; }
             header { padding: 15px 20px !important; flex-direction: column; gap: 12px; align-items: center; border-radius: 0 0 15px 15px !important; }
             .header-actions { width: 100%; justify-content: center; flex-wrap: wrap; }
-            
             .stats-bar { display: grid !important; grid-template-columns: 1fr 1fr !important; gap: 12px !important; margin-bottom: 20px !important;} 
             .stat-item { padding: 15px !important; }
             .stat-item h2 { font-size: 1.8rem !important; }
-            
             .cards-grid { grid-template-columns: 1fr !important; }
             .form-row { flex-direction: column; gap: 0 !important; }
-            .checkbox-grid { grid-template-columns: 1fr !important; padding: 12px !important; } /* Coluna única no celular */
+            .checkbox-grid { grid-template-columns: 1fr !important; padding: 12px !important; }
             .adm-row { flex-direction: column; }
             .login-box { width: 95% !important; padding: 30px 20px !important; }
         }
 
-        /* === RESPONSIVIDADE PARA COMPUTADOR (DESKTOP) === */
         @media (min-width: 1001px) {
             .app-shell { max-width: 100%; margin: 0; }
             .dashboard-container { display: flex; gap: 24px; width: 100%; max-width: 1600px; margin: 0 auto; height: calc(100vh - 90px); padding: 24px; }
@@ -180,7 +175,8 @@
         
         <div id="screen-login" class="screen active login-bg" style="justify-content:center; align-items:center; padding: 0;">
             <div class="login-box">
-                <img src="/logo-hospital.png" onerror="this.style.display='none'">
+                <img src="/logo-hospital.png" style="width: 80px; max-height: 80px; object-fit: contain; margin-bottom: 15px;" onerror="this.style.display='none'">
+                
                 <h2 style="color:#0F172A; margin:0 0 8px 0; font-size: 2rem; font-weight: 800; letter-spacing: -1px;">iMaqueiro <span style="color:var(--primary)">Pro</span></h2>
                 <p style="color:#64748B; margin-bottom: 30px; font-weight: 500; font-size: 0.95rem;">Gestão Logística Inteligente</p>
                 <div style="text-align: left;">
@@ -199,7 +195,7 @@
                 <div class="header-title"><i class="fa fa-chart-pie" style="font-size: 1.8rem; color: #60A5FA;"></i><h3 style="margin:0; font-weight: 700; letter-spacing: -0.5px;">Centro de Comando</h3></div>
                 <div class="header-actions">
                     <button class="btn" style="background:transparent; color:inherit; font-size: 1.2rem; padding: 8px;" onclick="toggleTheme()"><i class="fa fa-moon" id="theme-icon-coord"></i></button>
-                    <span id="user-name-coord" style="font-weight:600; font-size:0.95rem; display: none;"></span>
+                    <span id="user-name-coord" style="font-weight:600; font-size:0.95rem;"></span>
                     <img id="header-foto-coord" src="/logo-hospital.png" class="miniatura-foto" onerror="this.src='https://cdn-icons-png.flaticon.com/512/149/149071.png'">
                     <button class="btn" style="background:rgba(255,255,255,0.15); color:white; padding:10px; border-radius:50%; width: 40px; height: 40px;" onclick="abrirPerfil()"><i class="fa fa-cog"></i></button>
                     <button class="btn" style="background:var(--danger); color:white; padding:10px 20px;" onclick="fazerLogout()"><i class="fa fa-power-off"></i> Sair</button>
@@ -242,7 +238,7 @@
                 <div class="header-title"><i class="fa fa-user-nurse" style="font-size: 1.8rem; color: #60A5FA;"></i><h3 style="margin:0; font-weight: 700; letter-spacing: -0.5px;">Solicitar Transporte</h3></div>
                 <div class="header-actions">
                     <button class="btn" style="background:transparent; color:inherit; font-size: 1.2rem; padding: 8px;" onclick="toggleTheme()"><i class="fa fa-moon" id="theme-icon-nurse"></i></button>
-                    <span id="user-name-nurse" style="font-weight:600; font-size:0.95rem; display: none;"></span>
+                    <span id="user-name-nurse" style="font-weight:600; font-size:0.95rem;"></span>
                     <img id="header-foto-nurse" src="/logo-hospital.png" class="miniatura-foto" onerror="this.src='https://cdn-icons-png.flaticon.com/512/149/149071.png'">
                     <button class="btn" style="background:rgba(255,255,255,0.15); color:white; padding:10px; border-radius:50%; width: 40px; height: 40px;" onclick="abrirPerfil()"><i class="fa fa-cog"></i></button>
                     <button class="btn" style="background:var(--danger); color:white; padding:10px 20px;" onclick="fazerLogout()"><i class="fa fa-power-off"></i> Sair</button>
@@ -276,7 +272,6 @@
                                 <div class="form-col"><label>Isolamento</label><select id="risco"><option value="Nenhum">Padrão</option><option value="Contato">Contato</option><option value="Gotículas">Gotículas</option><option value="Aerosol">Aerossóis</option></select></div>
                             </div>
                             <label>Dispositivos Invasivos</label>
-                            
                             <div class="checkbox-grid">
                                 <label><input type="checkbox" class="cb-disp" value="SVD"> SVD</label>
                                 <label><input type="checkbox" class="cb-disp" value="SNE/SNG"> SNE/SNG</label>
@@ -285,7 +280,6 @@
                                 <label><input type="checkbox" class="cb-disp" value="Drenos"> Drenos</label>
                                 <label><input type="checkbox" class="cb-disp" value="Confuso/Agitado"> Confuso</label>
                             </div>
-                            
                             <label>Observações</label><textarea id="obs" rows="2" placeholder="Opcional..."></textarea>
                             <button class="btn btn-main" style="padding:16px; margin-top: 5px; font-size: 1.05rem;" onclick="enviarPedido()"><i class="fa fa-paper-plane"></i> Solicitar Transporte</button>
                         </div>
@@ -304,7 +298,7 @@
                 <div class="header-title"><i class="fa fa-ambulance" style="font-size: 1.8rem; color: var(--warning);"></i><h3 style="margin:0; font-weight: 700;">Painel de Operação</h3></div>
                 <div class="header-actions">
                     <button class="btn" style="background:transparent; color:inherit; font-size: 1.2rem; padding: 8px;" onclick="toggleTheme()"><i class="fa fa-moon" id="theme-icon-maq"></i></button>
-                    <span id="user-name-maq" style="font-weight:600; font-size:0.95rem; display: none;"></span>
+                    <span id="user-name-maq" style="font-weight:600; font-size:0.95rem;"></span>
                     <img id="header-foto-maq" src="/logo-hospital.png" class="miniatura-foto" onerror="this.src='https://cdn-icons-png.flaticon.com/512/149/149071.png'">
                     <button class="btn" style="background:rgba(255,255,255,0.15); color:white; padding:10px; border-radius:50%; width: 40px; height: 40px;" onclick="abrirPerfil()"><i class="fa fa-cog"></i></button>
                     <button class="btn" style="background:var(--danger); color:white; padding:10px 20px;" onclick="fazerLogout()"><i class="fa fa-power-off"></i> Sair</button>
@@ -363,14 +357,17 @@
     <audio id="audio-emergencia" src="https://assets.mixkit.co/active_storage/sfx/951/951-preview.mp3" loop></audio>
 
     <script>
+        // ESCUDOS DE SEGURANÇA (TRY-CATCH) ADICIONADOS EM TODAS AS FUNÇÕES VITAIS
         function applyTheme(theme) {
-            document.documentElement.setAttribute('data-theme', theme);
-            const icons = ['theme-icon-coord', 'theme-icon-nurse', 'theme-icon-maq'];
-            icons.forEach(id => {
-                const el = document.getElementById(id);
-                if(el) { el.className = theme === 'dark' ? 'fa fa-sun' : 'fa fa-moon'; el.style.color = theme === 'dark' ? '#F59E0B' : 'inherit'; }
-            });
-            if (graficoSetoresInstancia) graficoSetoresInstancia.update();
+            try {
+                document.documentElement.setAttribute('data-theme', theme);
+                const icons = ['theme-icon-coord', 'theme-icon-nurse', 'theme-icon-maq'];
+                icons.forEach(id => {
+                    const el = document.getElementById(id);
+                    if(el) { el.className = theme === 'dark' ? 'fa fa-sun' : 'fa fa-moon'; el.style.color = theme === 'dark' ? '#F59E0B' : 'inherit'; }
+                });
+                if (graficoSetoresInstancia) graficoSetoresInstancia.update();
+            } catch(e) { console.error("Erro no tema", e); }
         }
 
         function toggleTheme() {
@@ -397,11 +394,24 @@
             return `<span class="badge badge-success"><i class="fa fa-circle" style="font-size:8px;"></i> Rotina</span>`;
         }
 
-        window.onload = () => { const salvo = localStorage.getItem('imaqueiro_user'); if (salvo) { usuario = JSON.parse(salvo); socket.emit('relogar_maqueiro', usuario); abrirPainel(usuario); } };
+        window.onload = () => { 
+            try {
+                const salvo = localStorage.getItem('imaqueiro_user'); 
+                if (salvo) { usuario = JSON.parse(salvo); socket.emit('relogar_maqueiro', usuario); abrirPainel(usuario); } 
+            } catch(e) { console.error("Erro ao carregar usuário salvo", e); localStorage.removeItem('imaqueiro_user'); }
+        };
 
         function tentarLogin() { 
-            if(document.activeElement) document.activeElement.blur();
-            socket.emit('fazer_login', { email: document.getElementById('login-email').value, senha: document.getElementById('login-senha').value }); 
+            try {
+                if(document.activeElement) document.activeElement.blur();
+                const email = document.getElementById('login-email').value;
+                const senha = document.getElementById('login-senha').value;
+                if(email && senha) {
+                    socket.emit('fazer_login', { email: email, senha: senha }); 
+                } else {
+                    document.getElementById('login-msg').innerHTML = `<i class="fa fa-exclamation-triangle"></i> Preencha os dados!`;
+                }
+            } catch (e) { console.error("Erro no login", e); }
         }
         
         socket.on('login_sucesso', u => { usuario = u; localStorage.setItem('imaqueiro_user', JSON.stringify(u)); document.getElementById('login-animation').style.display = 'flex'; setTimeout(() => { document.getElementById('login-animation').style.display = 'none'; abrirPainel(u); }, 1000); });
@@ -409,11 +419,13 @@
         function fazerLogout() { localStorage.removeItem('imaqueiro_user'); location.reload(); }
 
         function atualizarFotosUI() {
-            const fotoUrl = usuario.foto || 'https://cdn-icons-png.flaticon.com/512/149/149071.png';
-            ['header-foto-nurse', 'header-foto-maq', 'header-foto-coord', 'painel-foto-maq', 'perfil-foto-preview'].forEach(id => {
-                if (document.getElementById(id)) document.getElementById(id).src = fotoUrl;
-            });
-            if (usuario.cargo === 'maqueiro') atualizarUIStatus(usuario.status_trabalho);
+            try {
+                const fotoUrl = usuario.foto || 'https://cdn-icons-png.flaticon.com/512/149/149071.png';
+                ['header-foto-nurse', 'header-foto-maq', 'header-foto-coord', 'painel-foto-maq', 'perfil-foto-preview'].forEach(id => {
+                    if (document.getElementById(id)) document.getElementById(id).src = fotoUrl;
+                });
+                if (usuario.cargo === 'maqueiro') atualizarUIStatus(usuario.status_trabalho);
+            } catch(e) { console.error("Erro na foto", e); }
         }
 
         function forcarScrollTopo() {
@@ -426,7 +438,7 @@
         function abrirPerfil() {
             esconderTelas();
             document.getElementById('screen-perfil').classList.add('active');
-            document.getElementById('perfil-nome').value = usuario.nome; document.getElementById('perfil-email').value = usuario.email; document.getElementById('perfil-cargo').value = usuario.cargo; document.getElementById('perfil-telefone').value = usuario.telefone || '';
+            document.getElementById('perfil-nome').value = usuario.nome || ''; document.getElementById('perfil-email').value = usuario.email || ''; document.getElementById('perfil-cargo').value = usuario.cargo || ''; document.getElementById('perfil-telefone').value = usuario.telefone || '';
             atualizarFotosUI(); forcarScrollTopo();
         }
 
@@ -439,50 +451,72 @@
         socket.on('status_atualizado', (status) => { usuario.status_trabalho = status; localStorage.setItem('imaqueiro_user', JSON.stringify(usuario)); atualizarUIStatus(status); });
 
         function atualizarUIStatus(status, isOcupado = false) {
-            const card = document.getElementById('card-status-maq'); const select = document.getElementById('select-status-maq'); if(!card || !select) return;
-            if (isOcupado) { card.style.background = 'var(--primary)'; select.innerHTML = '<option value="ocupado" style="color:white;">🚑 OCUPADO</option>'; select.value = 'ocupado'; select.style.color = 'white'; select.disabled = true; } 
-            else { select.disabled = false; select.innerHTML = '<option value="disponivel" style="color:white;">🟢 DISPONÍVEL</option><option value="intervalo" style="color:var(--text-main);">☕ INTERVALO</option>'; select.value = status || 'disponivel'; if (select.value === 'intervalo') { card.style.background = 'var(--warning-light)'; select.style.color = 'var(--warning-dark)'; } else { card.style.background = 'var(--success)'; select.style.color = 'white'; } }
+            try {
+                const card = document.getElementById('card-status-maq'); const select = document.getElementById('select-status-maq'); if(!card || !select) return;
+                if (isOcupado) { card.style.background = 'var(--primary)'; select.innerHTML = '<option value="ocupado" style="color:white;">🚑 OCUPADO</option>'; select.value = 'ocupado'; select.style.color = 'white'; select.disabled = true; } 
+                else { select.disabled = false; select.innerHTML = '<option value="disponivel" style="color:white;">🟢 DISPONÍVEL</option><option value="intervalo" style="color:var(--text-main);">☕ INTERVALO</option>'; select.value = status || 'disponivel'; if (select.value === 'intervalo') { card.style.background = 'var(--warning-light)'; select.style.color = 'var(--warning-dark)'; } else { card.style.background = 'var(--success)'; select.style.color = 'white'; } }
+            } catch(e) { console.error("Erro no status", e); }
         }
 
         function abrirPainel(u) {
-            esconderTelas();
-            if (u.cargo === 'enfermagem') { document.getElementById('screen-nurse').classList.add('active'); document.getElementById('user-name-nurse').innerText = u.nome.split(" ")[0]; }
-            else if (u.cargo === 'coordenador') { document.getElementById('screen-coordinator').classList.add('active'); document.getElementById('user-name-coord').innerText = u.nome.split(" ")[0]; }
-            else { document.getElementById('screen-maqueiro').classList.add('active'); document.getElementById('user-name-maq').innerText = u.nome.split(" ")[0]; }
-            atualizarFotosUI(); socket.emit('solicitar_lista'); forcarScrollTopo();
+            try {
+                esconderTelas();
+                // ESCUDO DE PROTEÇÃO PARA USUÁRIOS SEM NOME
+                const primeiroNome = u.nome ? u.nome.split(" ")[0] : "Usuário";
+
+                if (u.cargo === 'enfermagem') { document.getElementById('screen-nurse').classList.add('active'); document.getElementById('user-name-nurse').innerText = primeiroNome; }
+                else if (u.cargo === 'coordenador') { document.getElementById('screen-coordinator').classList.add('active'); document.getElementById('user-name-coord').innerText = primeiroNome; }
+                else { document.getElementById('screen-maqueiro').classList.add('active'); document.getElementById('user-name-maq').innerText = primeiroNome; }
+                
+                atualizarFotosUI(); socket.emit('solicitar_lista'); forcarScrollTopo();
+            } catch(e) { console.error("Erro crítico ao abrir painel", e); }
         }
 
         function enviarPedido() {
-            const checkboxes = document.querySelectorAll('.cb-disp:checked'); let selecionados = Array.from(checkboxes).map(cb => cb.value);
-            let obs = document.getElementById('obs').value; let dispositivosFinal = selecionados.join(', '); if(obs) dispositivosFinal += (dispositivosFinal ? " | " : "") + obs; if(!dispositivosFinal) dispositivosFinal = "Nenhuma observação reportada.";
-            const d = { paciente: document.getElementById('paciente').value, origem: document.getElementById('origem').value, destino: document.getElementById('destino').value, tipo: document.getElementById('tipo').value, urgencia: document.getElementById('urgencia').value, trajeto: document.getElementById('trajeto').value, risco_assistencial: document.getElementById('risco').value, dispositivos: dispositivosFinal };
-            if(!d.paciente || !d.origem || !d.destino) return alert("Preencha origem e destino!"); socket.emit('novo_pedido', d);
-            document.getElementById('paciente').value = ""; document.getElementById('origem').value = ""; document.getElementById('destino').value = ""; document.getElementById('obs').value = ""; checkboxes.forEach(cb => cb.checked = false); window.scrollTo(0,0);
+            try {
+                const checkboxes = document.querySelectorAll('.cb-disp:checked'); let selecionados = Array.from(checkboxes).map(cb => cb.value);
+                let obs = document.getElementById('obs').value; let dispositivosFinal = selecionados.join(', '); if(obs) dispositivosFinal += (dispositivosFinal ? " | " : "") + obs; if(!dispositivosFinal) dispositivosFinal = "Nenhuma observação reportada.";
+                
+                const d = { 
+                    paciente: document.getElementById('paciente').value, origem: document.getElementById('origem').value, destino: document.getElementById('destino').value, 
+                    tipo: document.getElementById('tipo').value, urgencia: document.getElementById('urgencia').value, trajeto: document.getElementById('trajeto').value, 
+                    risco_assistencial: document.getElementById('risco').value, dispositivos: dispositivosFinal 
+                };
+                
+                if(!d.paciente || !d.origem || !d.destino) return alert("Preencha origem e destino!"); 
+                
+                socket.emit('novo_pedido', d);
+                document.getElementById('paciente').value = ""; document.getElementById('origem').value = ""; document.getElementById('destino').value = ""; document.getElementById('obs').value = ""; checkboxes.forEach(cb => cb.checked = false); window.scrollTo(0,0);
+            } catch(e) { console.error("Erro ao enviar pedido", e); }
         }
 
         socket.on('atualizar_lista', data => { pedidosAtivos = data.ativos; historicoGlobal = data.historico; renderizar(data.ativos, data.historico); if(usuario && usuario.cargo === 'coordenador') renderizarDashboardADM(data.ativos, data.historico, data.online); });
 
         function renderizarDashboardADM(ativos, historico, online) {
-            let tempoTotal = 0; let viagensLidas = 0; const setoresCount = {}; const rankingCount = {};
-            historico.forEach(p => { if(p.aceito_em && p.finalizado_at) { const diffMins = (new Date(p.finalizado_at) - new Date(p.aceito_em)) / 60000; if(diffMins > 0 && diffMins < 300) { tempoTotal += diffMins; viagensLidas++; } } setoresCount[p.origem] = (setoresCount[p.origem] || 0) + 1; if(p.maqueiro_ida) rankingCount[p.maqueiro_ida] = (rankingCount[p.maqueiro_ida] || 0) + 1; });
-            document.getElementById('adm-sla-time').innerText = (viagensLidas > 0 ? Math.round(tempoTotal / viagensLidas) : 0) + " min"; document.getElementById('adm-total-trips').innerText = historico.length; document.getElementById('adm-online-staff').innerText = online.length; document.getElementById('adm-delayed').innerText = ativos.filter(p => p.status === 'pendente').length;
-            const tbody = document.querySelector('#adm-live-table tbody'); tbody.innerHTML = "";
-            if(ativos.length === 0) tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; padding:30px; color:var(--text-muted);"><i class="fa fa-check-circle" style="font-size:2rem; margin-bottom:10px; color:var(--success-light);"></i><br>Operação fluindo perfeitamente. Nenhum gargalo.</td></tr>`;
-            ativos.forEach(p => { tbody.innerHTML += `<tr><td><b>#${p.id}</b></td><td>${p.paciente}</td><td><b>${p.origem}</b> ➔ ${p.destino}</td><td>${getUrgenciaBadge(p.urgencia)}</td><td style="color:var(--primary); font-weight:700;">${p.status.toUpperCase().replace(/_/g, ' ')}</td><td>${p.maqueiro_ida || p.maqueiro_sugerido || '<span style="color:var(--danger)">Procurando...</span>'}</td></tr>`; });
-            const rankingArray = Object.entries(rankingCount).sort((a, b) => b[1] - a[1]).slice(0, 5); const rankingList = document.getElementById('adm-ranking-list'); rankingList.innerHTML = "";
-            if(rankingArray.length === 0) rankingList.innerHTML = `<div class="empty-state"><i class="fa fa-medal" style="color:var(--warning-light);"></i><p>Aguardando dados</p></div>`;
-            rankingArray.forEach((item, index) => { const isTop = index === 0 ? "top-1" : ""; rankingList.innerHTML += `<div class="ranking-item"><div style="display:flex; align-items:center; gap:16px;"><div class="ranking-badge ${isTop}">${index + 1}</div><b style="font-size:1.05rem;">${item[0]}</b></div><div style="font-weight:800; font-size:1.3rem; color:var(--primary);">${item[1]} <span style="font-size:0.75rem; color:var(--text-muted); font-weight:500;">viagens</span></div></div>`; });
-            if (graficoSetoresInstancia) graficoSetoresInstancia.destroy();
-            const corGrafico = document.documentElement.getAttribute('data-theme') === 'dark' ? '#60A5FA' : '#4F46E5'; const corGrid = document.documentElement.getAttribute('data-theme') === 'dark' ? '#334155' : '#E2E8F0'; const corTexto = document.documentElement.getAttribute('data-theme') === 'dark' ? '#94A3B8' : '#64748B';
-            graficoSetoresInstancia = new Chart(document.getElementById('graficoSetores').getContext('2d'), { type: 'bar', data: { labels: Object.keys(setoresCount).slice(0, 6), datasets: [{ label: 'Pedidos', data: Object.values(setoresCount).slice(0, 6), backgroundColor: corGrafico, borderRadius: 8 }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, grid: { color: corGrid }, ticks: { color: corTexto } }, x: { grid: { display: false }, ticks: { color: corTexto } } } } });
+            try {
+                let tempoTotal = 0; let viagensLidas = 0; const setoresCount = {}; const rankingCount = {};
+                historico.forEach(p => { if(p.aceito_em && p.finalizado_at) { const diffMins = (new Date(p.finalizado_at) - new Date(p.aceito_em)) / 60000; if(diffMins > 0 && diffMins < 300) { tempoTotal += diffMins; viagensLidas++; } } setoresCount[p.origem] = (setoresCount[p.origem] || 0) + 1; if(p.maqueiro_ida) rankingCount[p.maqueiro_ida] = (rankingCount[p.maqueiro_ida] || 0) + 1; });
+                document.getElementById('adm-sla-time').innerText = (viagensLidas > 0 ? Math.round(tempoTotal / viagensLidas) : 0) + " min"; document.getElementById('adm-total-trips').innerText = historico.length; document.getElementById('adm-online-staff').innerText = online.length; document.getElementById('adm-delayed').innerText = ativos.filter(p => p.status === 'pendente').length;
+                const tbody = document.querySelector('#adm-live-table tbody'); tbody.innerHTML = "";
+                if(ativos.length === 0) tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; padding:30px; color:var(--text-muted);"><i class="fa fa-check-circle" style="font-size:2rem; margin-bottom:10px; color:var(--success-light);"></i><br>Operação fluindo perfeitamente. Nenhum gargalo.</td></tr>`;
+                ativos.forEach(p => { tbody.innerHTML += `<tr><td><b>#${p.id}</b></td><td>${p.paciente}</td><td><b>${p.origem}</b> ➔ ${p.destino}</td><td>${getUrgenciaBadge(p.urgencia)}</td><td style="color:var(--primary); font-weight:700;">${p.status.toUpperCase().replace(/_/g, ' ')}</td><td>${p.maqueiro_ida || p.maqueiro_sugerido || '<span style="color:var(--danger)">Procurando...</span>'}</td></tr>`; });
+                const rankingArray = Object.entries(rankingCount).sort((a, b) => b[1] - a[1]).slice(0, 5); const rankingList = document.getElementById('adm-ranking-list'); rankingList.innerHTML = "";
+                if(rankingArray.length === 0) rankingList.innerHTML = `<div class="empty-state"><i class="fa fa-medal" style="color:var(--warning-light);"></i><p>Aguardando dados</p></div>`;
+                rankingArray.forEach((item, index) => { const isTop = index === 0 ? "top-1" : ""; rankingList.innerHTML += `<div class="ranking-item"><div style="display:flex; align-items:center; gap:16px;"><div class="ranking-badge ${isTop}">${index + 1}</div><b style="font-size:1.05rem;">${item[0]}</b></div><div style="font-weight:800; font-size:1.3rem; color:var(--primary);">${item[1]} <span style="font-size:0.75rem; color:var(--text-muted); font-weight:500;">viagens</span></div></div>`; });
+                if (graficoSetoresInstancia) graficoSetoresInstancia.destroy();
+                const corGrafico = document.documentElement.getAttribute('data-theme') === 'dark' ? '#60A5FA' : '#4F46E5'; const corGrid = document.documentElement.getAttribute('data-theme') === 'dark' ? '#334155' : '#E2E8F0'; const corTexto = document.documentElement.getAttribute('data-theme') === 'dark' ? '#94A3B8' : '#64748B';
+                graficoSetoresInstancia = new Chart(document.getElementById('graficoSetores').getContext('2d'), { type: 'bar', data: { labels: Object.keys(setoresCount).slice(0, 6), datasets: [{ label: 'Pedidos', data: Object.values(setoresCount).slice(0, 6), backgroundColor: corGrafico, borderRadius: 8 }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, grid: { color: corGrid }, ticks: { color: corTexto } }, x: { grid: { display: false }, ticks: { color: corTexto } } } } });
+            } catch(e) { console.error("Erro no Dashboard", e); }
         }
 
         socket.on('notificacao_mensagem', d => { if(d.autor !== usuario.nome && idChatAtivo !== d.idPedido) { document.getElementById('toast-autor').innerText = d.autor; document.getElementById('toast-msg').innerText = d.texto; document.getElementById('toast').style.display = 'flex'; setTimeout(() => document.getElementById('toast').style.display='none', 5000); } });
 
         function abrirDetalhes(id) {
-            const p = pedidosAtivos.find(x => x.id === id) || historicoGlobal.find(x => x.id === id); if (!p) return;
-            document.getElementById('details-body').innerHTML = `<div style="margin-bottom:20px; font-size:1rem;"><b>Nome:</b> ${p.paciente}<br><b>Origem:</b> ${p.origem}<br><b>Destino:</b> ${p.destino}<br><b>Modalidade:</b> ${p.tipo}<br><b>Prioridade:</b> ${p.urgencia}<br><b>Precaução:</b> ${p.risco_assistencial}</div><div style="background:var(--danger-light); padding:15px; border-left:4px solid var(--danger); border-radius:8px;"><b style="color:var(--danger-dark)"><i class="fa fa-exclamation-circle"></i> Atenção Extra:</b><br><span style="color:var(--danger-dark); font-weight:500;">${p.dispositivos || 'Paciente Padrão.'}</span></div>`;
-            document.getElementById('details-modal').style.display = 'flex';
+            try {
+                const p = pedidosAtivos.find(x => x.id === id) || historicoGlobal.find(x => x.id === id); if (!p) return;
+                document.getElementById('details-body').innerHTML = `<div style="margin-bottom:20px; font-size:1rem;"><b>Nome:</b> ${p.paciente}<br><b>Origem:</b> ${p.origem}<br><b>Destino:</b> ${p.destino}<br><b>Modalidade:</b> ${p.tipo}<br><b>Prioridade:</b> ${p.urgencia}<br><b>Precaução:</b> ${p.risco_assistencial}</div><div style="background:var(--danger-light); padding:15px; border-left:4px solid var(--danger); border-radius:8px;"><b style="color:var(--danger-dark)"><i class="fa fa-exclamation-circle"></i> Atenção Extra:</b><br><span style="color:var(--danger-dark); font-weight:500;">${p.dispositivos || 'Paciente Padrão.'}</span></div>`;
+                document.getElementById('details-modal').style.display = 'flex';
+            } catch(e) { console.error("Erro em detalhes", e); }
         }
 
         async function habilitarNotificacoes() {
@@ -505,57 +539,59 @@
         function confirmarChecklist() { if(idChecklistAtual) { socket.emit('iniciar_ida', idChecklistAtual); fecharChecklist(); } }
 
         function renderizar(ativos, historico) {
-            const nList = document.getElementById('nurse-list'); const mPendentes = document.getElementById('maqueiro-pendentes'); const mAtivo = document.getElementById('maqueiro-ativo'); const mHist = document.getElementById('maqueiro-history');
-            if(!usuario) return; if(nList) nList.innerHTML = ""; if(mPendentes) mPendentes.innerHTML = ""; if(mAtivo) mAtivo.innerHTML = ""; if(mHist) mHist.innerHTML = "";
-            let callNow = false; let contHoje = 0; let temAtivo = false; let cPendente = 0, cCurso = 0, cRisco = 0;
+            try {
+                const nList = document.getElementById('nurse-list'); const mPendentes = document.getElementById('maqueiro-pendentes'); const mAtivo = document.getElementById('maqueiro-ativo'); const mHist = document.getElementById('maqueiro-history');
+                if(!usuario) return; if(nList) nList.innerHTML = ""; if(mPendentes) mPendentes.innerHTML = ""; if(mAtivo) mAtivo.innerHTML = ""; if(mHist) mHist.innerHTML = "";
+                let callNow = false; let contHoje = 0; let temAtivo = false; let cPendente = 0, cCurso = 0, cRisco = 0;
 
-            if (ativos.length === 0 && usuario.cargo === 'enfermagem') { nList.innerHTML = `<div class="empty-state" style="grid-column: 1 / -1;"><i class="fa fa-coffee"></i><p>Tudo limpo por aqui. Nenhum transporte ativo.</p></div>`; }
-            if (ativos.length === 0 && usuario.cargo === 'maqueiro') { mPendentes.innerHTML = `<div class="empty-state" style="grid-column: 1 / -1;"><i class="fa fa-bed"></i><p>Pátio livre. Aguardando chamados.</p></div>`; }
+                if (ativos.length === 0 && usuario.cargo === 'enfermagem' && nList) { nList.innerHTML = `<div class="empty-state" style="grid-column: 1 / -1;"><i class="fa fa-coffee"></i><p>Tudo limpo por aqui. Nenhum transporte ativo.</p></div>`; }
+                if (ativos.length === 0 && usuario.cargo === 'maqueiro' && mPendentes) { mPendentes.innerHTML = `<div class="empty-state" style="grid-column: 1 / -1;"><i class="fa fa-bed"></i><p>Pátio livre. Aguardando chamados.</p></div>`; }
 
-            ativos.forEach(p => {
-                const borderRisco = p.risco_assistencial !== 'Nenhum' ? 'border-left-color: var(--danger);' : 'border-left-color: var(--primary);';
-                const badgeRisco = p.risco_assistencial !== 'Nenhum' ? `<span class="badge badge-danger"><i class="fa fa-biohazard"></i> ${p.risco_assistencial}</span>` : "";
-                if(p.risco_assistencial !== 'Nenhum') cRisco++; if(p.status === 'pendente') cPendente++; else cCurso++;
+                ativos.forEach(p => {
+                    const borderRisco = p.risco_assistencial !== 'Nenhum' ? 'border-left-color: var(--danger);' : 'border-left-color: var(--primary);';
+                    const badgeRisco = p.risco_assistencial !== 'Nenhum' ? `<span class="badge badge-danger"><i class="fa fa-biohazard"></i> ${p.risco_assistencial}</span>` : "";
+                    if(p.risco_assistencial !== 'Nenhum') cRisco++; if(p.status === 'pendente') cPendente++; else cCurso++;
 
-                const cardBase = `<div class="card" style="${borderRisco}"><button onclick="abrirDetalhes(${p.id})" style="position:absolute; right:15px; top:15px; border:none; background:none; cursor:pointer; font-size:1.2rem; color:var(--text-muted); transition:0.2s;"><i class="fa fa-file-medical"></i></button><div style="display:flex; justify-content:space-between; align-items:start; margin-bottom:12px; padding-right:30px;"><b style="font-size:1.15rem; letter-spacing:-0.5px;">${p.origem} ➔ ${p.destino}</b></div><div style="display:flex; gap:8px; margin-bottom: 12px; flex-wrap:wrap;">${getUrgenciaBadge(p.urgencia)} ${badgeRisco}</div><div style="font-size:0.95rem; margin-bottom:6px; font-weight:500;"><i class="fa fa-user" style="color:var(--text-muted); width:15px;"></i> ${p.paciente}</div><div style="font-size:0.85rem; color:var(--text-muted); margin-bottom:12px; font-weight:500;"><i class="fa fa-wheelchair" style="width:15px;"></i> ${p.tipo}</div><div style="font-size:0.85rem; padding: 8px 12px; background: var(--input-bg); border-radius: 8px; font-weight: 600; display:flex; justify-content:space-between; border: 1px solid var(--border-color);"><span>Status:</span> <b style="color:var(--primary)">${p.status.toUpperCase().replace(/_/g, ' ')}</b></div><button onclick="abrirChat(${p.id})" style="position:absolute; right:15px; bottom:15px; border:none; background:var(--primary-light); width:38px; height:38px; border-radius:50%; cursor:pointer; transition:0.2s;"><i class="fa fa-comment" style="color:var(--primary-hover)"></i></button>`;
+                    const cardBase = `<div class="card" style="${borderRisco}"><button onclick="abrirDetalhes(${p.id})" style="position:absolute; right:15px; top:15px; border:none; background:none; cursor:pointer; font-size:1.2rem; color:var(--text-muted); transition:0.2s;"><i class="fa fa-file-medical"></i></button><div style="display:flex; justify-content:space-between; align-items:start; margin-bottom:12px; padding-right:30px;"><b style="font-size:1.15rem; letter-spacing:-0.5px;">${p.origem} ➔ ${p.destino}</b></div><div style="display:flex; gap:8px; margin-bottom: 12px; flex-wrap:wrap;">${getUrgenciaBadge(p.urgencia)} ${badgeRisco}</div><div style="font-size:0.95rem; margin-bottom:6px; font-weight:500;"><i class="fa fa-user" style="color:var(--text-muted); width:15px;"></i> ${p.paciente}</div><div style="font-size:0.85rem; color:var(--text-muted); margin-bottom:12px; font-weight:500;"><i class="fa fa-wheelchair" style="width:15px;"></i> ${p.tipo}</div><div style="font-size:0.85rem; padding: 8px 12px; background: var(--input-bg); border-radius: 8px; font-weight: 600; display:flex; justify-content:space-between; border: 1px solid var(--border-color);"><span>Status:</span> <b style="color:var(--primary)">${p.status.toUpperCase().replace(/_/g, ' ')}</b></div><button onclick="abrirChat(${p.id})" style="position:absolute; right:15px; bottom:15px; border:none; background:var(--primary-light); width:38px; height:38px; border-radius:50%; cursor:pointer; transition:0.2s;"><i class="fa fa-comment" style="color:var(--primary-hover)"></i></button>`;
 
-                if(usuario.cargo === 'enfermagem') {
-                    nList.innerHTML += `<div>${cardBase}<div style="font-size:0.8rem; color:var(--text-muted); margin-top:8px; text-align:center; font-weight:500;">Responsável: <b>${p.maqueiro_ida || 'Aguardando aceite...'}</b></div>${p.status === 'no_destino' && p.trajeto === 'ida_volta' ? `<button class="btn btn-main" style="margin-top:12px; background:var(--success); font-size:0.9rem;" onclick="socket.emit('pedir_retorno', ${p.id})"><i class="fa fa-undo"></i> EXIGIR RETORNO</button>` : ""}</div></div>`;
-                }
-                
-                if(usuario.cargo === 'maqueiro') {
-                    const isPendente = p.status === 'pendente' || p.status === 'aguardando_retorno';
-                    const isMeu = p.maqueiro_ida === usuario.nome || p.maqueiro_volta === usuario.nome;
-
-                    if(isPendente) {
-                        if((!p.maqueiro_sugerido || p.maqueiro_sugerido === usuario.nome) && !chamadosRejeitados.includes(p.id) && usuario.status_trabalho !== 'intervalo') {
-                            callNow = true; idChamadoAtual = p.id;
-                            document.getElementById('call-paciente').innerText = p.paciente; document.getElementById('call-rota').innerText = p.origem + " ➔ " + p.destino; document.getElementById('call-equip').innerText = p.tipo; 
-                            const faixaRisco = document.getElementById('call-risco-faixa'); const imgRisco = document.getElementById('img-aviso-risco'); const iconeSirene = document.getElementById('icone-sirene');
-                            if (p.risco_assistencial !== 'Nenhum') { faixaRisco.style.display = 'block'; imgRisco.style.display = 'block'; iconeSirene.style.display = 'none'; if(p.risco_assistencial === 'Contato') imgRisco.src = '/img-contato.png'; else if (p.risco_assistencial === 'Gotículas') imgRisco.src = '/img-goticulas.png'; else if (p.risco_assistencial === 'Aerosol') imgRisco.src = '/img-aerosol.png'; } else { faixaRisco.style.display = 'none'; imgRisco.style.display = 'none'; iconeSirene.style.display = 'block'; }
-                            if(audioLigado) { if (p.urgencia === 'Vermelho') document.getElementById('audio-emergencia').play(); else document.getElementById('audio-alerta').play(); if (p.risco_assistencial !== 'Nenhum') setTimeout(() => falarAvisoRisco(p.risco_assistencial), 1000); }
-                        }
-                        mPendentes.innerHTML += `${cardBase}<button class="btn btn-main" style="background:var(--success); margin-top:15px; width:100%; box-shadow:0 4px 15px rgba(16,185,129,0.3);" onclick="aceitarChamadoManual(${p.id})"><i class="fa fa-hand-paper"></i> ACEITAR CHAMADO</button></div>`;
-                    } 
-                    else if (isMeu) {
-                        temAtivo = true; let btnAcao = "";
-                        if(p.status === 'aceito' || p.status === 'aceito_retorno') btnAcao = `<button class="btn btn-main" style="margin-top:15px; width:100%;" onclick="abrirQR(${p.id})"><i class="fa fa-qrcode"></i> LER QR DE DESTINO</button>`;
-                        else if(p.status === 'na_origem') btnAcao = `<button class="btn" style="background:var(--warning); margin-top:15px; width:100%; color:var(--warning-dark);" onclick="abrirChecklist(${p.id})"><i class="fa fa-truck-medical"></i> INICIAR ROTA</button>`;
-                        else if(p.status === 'em_transito_ida') btnAcao = `<button class="btn" style="background:var(--success); color:white; margin-top:15px; width:100%;" onclick="socket.emit('entregue_destino', ${p.id})"><i class="fa fa-check-circle"></i> CONFIRMAR ENTREGA</button>`;
-                        mAtivo.innerHTML += `${cardBase}${btnAcao}</div>`;
+                    if(usuario.cargo === 'enfermagem' && nList) {
+                        nList.innerHTML += `<div>${cardBase}<div style="font-size:0.8rem; color:var(--text-muted); margin-top:8px; text-align:center; font-weight:500;">Responsável: <b>${p.maqueiro_ida || 'Aguardando aceite...'}</b></div>${p.status === 'no_destino' && p.trajeto === 'ida_volta' ? `<button class="btn btn-main" style="margin-top:12px; background:var(--success); font-size:0.9rem;" onclick="socket.emit('pedir_retorno', ${p.id})"><i class="fa fa-undo"></i> EXIGIR RETORNO</button>` : ""}</div></div>`;
                     }
-                }
-            });
+                    
+                    if(usuario.cargo === 'maqueiro') {
+                        const isPendente = p.status === 'pendente' || p.status === 'aguardando_retorno';
+                        const isMeu = p.maqueiro_ida === usuario.nome || p.maqueiro_volta === usuario.nome;
 
-            if(usuario.cargo === 'enfermagem') { document.getElementById('stat-pendente').innerText = cPendente; document.getElementById('stat-curso').innerText = cCurso; document.getElementById('stat-risco').innerText = cRisco; }
-            if(usuario.cargo === 'maqueiro') {
-                document.getElementById('area-corrida-ativa').style.display = temAtivo ? 'block' : 'none';
-                atualizarUIStatus(usuario.status_trabalho, temAtivo);
-                if (historico.filter(x => x.maqueiro_ida === usuario.nome || x.maqueiro_volta === usuario.nome).length === 0) { mHist.innerHTML = `<div class="empty-state" style="padding: 20px;"><i class="fa fa-bed" style="font-size:2rem;"></i><p style="font-size:0.9rem;">Nenhum transporte hoje.</p></div>`; }
-                historico.forEach(p => { if(p.maqueiro_ida === usuario.nome || p.maqueiro_volta === usuario.nome) { contHoje++; mHist.innerHTML += `<div style="background:var(--card-bg); padding:16px; border-radius:12px; margin-bottom:12px; border-left:4px solid var(--success); display:flex; justify-content:space-between; align-items:center; box-shadow:var(--shadow-sm); border: 1px solid var(--border-color);"><div><b style="font-size:0.95rem;">${p.origem} ➔ ${p.destino}</b><br><span style="color:var(--text-muted); font-size:0.85rem; font-weight:500;"><i class="fa fa-user" style="font-size:0.7rem;"></i> ${p.paciente}</span></div><i class="fa fa-check-circle" style="color:var(--success); font-size:1.5rem;"></i></div>`; } });
-                document.getElementById('total-hoje').innerText = contHoje;
-            }
-            document.getElementById('call-modal').style.display = callNow ? 'flex' : 'none';
+                        if(isPendente && mPendentes) {
+                            if((!p.maqueiro_sugerido || p.maqueiro_sugerido === usuario.nome) && !chamadosRejeitados.includes(p.id) && usuario.status_trabalho !== 'intervalo') {
+                                callNow = true; idChamadoAtual = p.id;
+                                document.getElementById('call-paciente').innerText = p.paciente; document.getElementById('call-rota').innerText = p.origem + " ➔ " + p.destino; document.getElementById('call-equip').innerText = p.tipo; 
+                                const faixaRisco = document.getElementById('call-risco-faixa'); const imgRisco = document.getElementById('img-aviso-risco'); const iconeSirene = document.getElementById('icone-sirene');
+                                if (p.risco_assistencial !== 'Nenhum') { faixaRisco.style.display = 'block'; imgRisco.style.display = 'block'; iconeSirene.style.display = 'none'; if(p.risco_assistencial === 'Contato') imgRisco.src = '/img-contato.png'; else if (p.risco_assistencial === 'Gotículas') imgRisco.src = '/img-goticulas.png'; else if (p.risco_assistencial === 'Aerosol') imgRisco.src = '/img-aerosol.png'; } else { faixaRisco.style.display = 'none'; imgRisco.style.display = 'none'; iconeSirene.style.display = 'block'; }
+                                if(audioLigado) { if (p.urgencia === 'Vermelho') document.getElementById('audio-emergencia').play(); else document.getElementById('audio-alerta').play(); if (p.risco_assistencial !== 'Nenhum') setTimeout(() => falarAvisoRisco(p.risco_assistencial), 1000); }
+                            }
+                            mPendentes.innerHTML += `${cardBase}<button class="btn btn-main" style="background:var(--success); margin-top:15px; width:100%; box-shadow:0 4px 15px rgba(16,185,129,0.3);" onclick="aceitarChamadoManual(${p.id})"><i class="fa fa-hand-paper"></i> ACEITAR CHAMADO</button></div>`;
+                        } 
+                        else if (isMeu && mAtivo) {
+                            temAtivo = true; let btnAcao = "";
+                            if(p.status === 'aceito' || p.status === 'aceito_retorno') btnAcao = `<button class="btn btn-main" style="margin-top:15px; width:100%;" onclick="abrirQR(${p.id})"><i class="fa fa-qrcode"></i> LER QR DE DESTINO</button>`;
+                            else if(p.status === 'na_origem') btnAcao = `<button class="btn" style="background:var(--warning); margin-top:15px; width:100%; color:var(--warning-dark);" onclick="abrirChecklist(${p.id})"><i class="fa fa-truck-medical"></i> INICIAR ROTA</button>`;
+                            else if(p.status === 'em_transito_ida') btnAcao = `<button class="btn" style="background:var(--success); color:white; margin-top:15px; width:100%;" onclick="socket.emit('entregue_destino', ${p.id})"><i class="fa fa-check-circle"></i> CONFIRMAR ENTREGA</button>`;
+                            mAtivo.innerHTML += `${cardBase}${btnAcao}</div>`;
+                        }
+                    }
+                });
+
+                if(usuario.cargo === 'enfermagem') { document.getElementById('stat-pendente').innerText = cPendente; document.getElementById('stat-curso').innerText = cCurso; document.getElementById('stat-risco').innerText = cRisco; }
+                if(usuario.cargo === 'maqueiro' && mHist) {
+                    document.getElementById('area-corrida-ativa').style.display = temAtivo ? 'block' : 'none';
+                    atualizarUIStatus(usuario.status_trabalho, temAtivo);
+                    if (historico.filter(x => x.maqueiro_ida === usuario.nome || x.maqueiro_volta === usuario.nome).length === 0) { mHist.innerHTML = `<div class="empty-state" style="padding: 20px;"><i class="fa fa-bed" style="font-size:2rem;"></i><p style="font-size:0.9rem;">Nenhum transporte hoje.</p></div>`; }
+                    historico.forEach(p => { if(p.maqueiro_ida === usuario.nome || p.maqueiro_volta === usuario.nome) { contHoje++; mHist.innerHTML += `<div style="background:var(--card-bg); padding:16px; border-radius:12px; margin-bottom:12px; border-left:4px solid var(--success); display:flex; justify-content:space-between; align-items:center; box-shadow:var(--shadow-sm); border: 1px solid var(--border-color);"><div><b style="font-size:0.95rem;">${p.origem} ➔ ${p.destino}</b><br><span style="color:var(--text-muted); font-size:0.85rem; font-weight:500;"><i class="fa fa-user" style="font-size:0.7rem;"></i> ${p.paciente}</span></div><i class="fa fa-check-circle" style="color:var(--success); font-size:1.5rem;"></i></div>`; } });
+                    document.getElementById('total-hoje').innerText = contHoje;
+                }
+                document.getElementById('call-modal').style.display = callNow ? 'flex' : 'none';
+            } catch(e) { console.error("Erro ao renderizar dados", e); }
         }
 
         function aceitarChamadoManual(id) { socket.emit('aceitar_chamado', { idPedido: id, nomeMaqueiro: usuario.nome }); }
