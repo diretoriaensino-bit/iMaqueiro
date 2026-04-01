@@ -1,4 +1,4 @@
-const CACHE_NAME = 'imaqueiro-cache-v2';
+const CACHE_NAME = 'imaqueiro-cache-v3';
 const ASSETS = ['/', '/index.html', '/logo-hospital.png', 'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css', 'https://unpkg.com/html5-qrcode'];
 
 self.addEventListener('install', (event) => { event.waitUntil(caches.open(CACHE_NAME).then((cache) => cache.addAll(ASSETS))); });
