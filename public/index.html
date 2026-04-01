@@ -17,6 +17,9 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     
     <style>
+        /* TRAVA ABSOLUTA DE VAZAMENTO DE TELA */
+        *, *::before, *::after { box-sizing: border-box; }
+
         :root { 
             --primary: #4F46E5; 
             --primary-hover: #4338CA; --primary-light: #E0E7FF;
@@ -53,15 +56,26 @@
         
         .app-shell { width: 100%; min-height: 100vh; display: flex; flex-direction: column; }
         
+        /* === RESPONSIVIDADE PARA TABLETS E CELULARES === */
         @media (max-width: 1000px) {
-            .app-shell { max-width: 100%; margin: 0; }
-            .dashboard-container { flex-direction: column !important; height: auto !important; padding: 10px !important; }
-            .sidebar-form { width: 100% !important; margin-bottom: 20px; box-shadow: var(--shadow-sm) !important; }
-            header { padding: 15px 20px !important; border-radius: 0 0 15px 15px !important; }
-            .stats-bar { flex-wrap: wrap; } .stat-item { padding: 15px !important; } .cards-grid { grid-template-columns: 1fr !important; }
+            .app-shell { max-width: 100vw; margin: 0; }
+            .dashboard-container { flex-direction: column !important; height: auto !important; padding: 16px !important; gap: 20px !important; }
+            .sidebar-form { width: 100% !important; margin-bottom: 10px; box-shadow: none !important; border: none !important; padding: 0 !important; }
+            header { padding: 15px 20px !important; flex-direction: column; gap: 12px; align-items: center; border-radius: 0 0 15px 15px !important; }
+            .header-actions { width: 100%; justify-content: center; flex-wrap: wrap; }
+            
+            .stats-bar { display: grid !important; grid-template-columns: 1fr 1fr !important; gap: 12px !important; margin-bottom: 20px !important;} 
+            .stat-item { padding: 15px !important; }
+            .stat-item h2 { font-size: 1.8rem !important; }
+            
+            .cards-grid { grid-template-columns: 1fr !important; }
             .form-row { flex-direction: column; gap: 0 !important; }
+            .checkbox-grid { grid-template-columns: 1fr !important; padding: 12px !important; } /* Coluna única no celular */
+            .adm-row { flex-direction: column; }
+            .login-box { width: 95% !important; padding: 30px 20px !important; }
         }
 
+        /* === RESPONSIVIDADE PARA COMPUTADOR (DESKTOP) === */
         @media (min-width: 1001px) {
             .app-shell { max-width: 100%; margin: 0; }
             .dashboard-container { display: flex; gap: 24px; width: 100%; max-width: 1600px; margin: 0 auto; height: calc(100vh - 90px); padding: 24px; }
@@ -76,6 +90,8 @@
         .active { display: flex !important; }
 
         header { background: var(--header-bg); color: var(--header-text); padding: 16px 32px; display: flex; justify-content: space-between; align-items: center; box-shadow: var(--shadow-md); z-index: 10; border-bottom: 3px solid var(--primary); transition: 0.3s; }
+        .header-title { display: flex; align-items: center; gap: 12px; }
+        .header-actions { display: flex; align-items: center; gap: 12px; }
         
         .card { background: var(--card-bg); border-radius: 16px; padding: 20px; border-left: 6px solid #ddd; box-shadow: var(--shadow-sm); position: relative; display: flex; flex-direction: column; justify-content: space-between; transition: 0.2s; border: 1px solid var(--border-color); }
         .card:hover { transform: translateY(-3px); box-shadow: var(--shadow-lg); }
@@ -86,7 +102,7 @@
         .btn-main { background: var(--primary); color: #FFF; width: 100%; box-shadow: 0 4px 14px rgba(79, 70, 229, 0.3); }
         
         input:not([type="range"]):not([type="checkbox"]):not([type="file"]), select, textarea { 
-            -webkit-appearance: none; appearance: none; width: 100%; padding: 12px; margin-bottom: 15px; border: 1px solid var(--border-color); border-radius: 8px; background: var(--input-bg); font-size: 0.9rem; font-family: 'Inter', sans-serif; transition: 0.2s; color: var(--text-main); box-sizing: border-box;
+            -webkit-appearance: none; appearance: none; width: 100%; padding: 14px; margin-bottom: 16px; border: 1px solid var(--border-color); border-radius: 8px; background: var(--input-bg); font-size: 0.95rem; font-family: 'Inter', sans-serif; transition: 0.2s; color: var(--text-main); 
         }
         input:focus, select:focus, textarea:focus { outline: none; border-color: var(--primary); background: var(--card-bg); box-shadow: 0 0 0 3px var(--primary-light); }
         
@@ -113,6 +129,9 @@
         [data-theme="dark"] .header-purple { background: rgba(79, 70, 229, 0.2); }
         [data-theme="dark"] .header-green { background: rgba(16, 185, 129, 0.2); }
 
+        .checkbox-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px; font-size: 0.9rem; background: var(--input-bg); padding: 15px; border-radius: 8px; border: 1px solid var(--border-color); }
+        .checkbox-grid label { display:flex; align-items:center; gap:8px; margin:0; text-transform:none; font-weight:500; color:var(--text-main); }
+
         .empty-state { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 40px 20px; text-align: center; color: var(--text-muted); border: 2px dashed var(--border-color); border-radius: 16px; margin-top: 10px; }
         .empty-state i { font-size: 3rem; margin-bottom: 15px; opacity: 0.5; }
         
@@ -120,18 +139,23 @@
         .adm-table th { background: var(--input-bg); color: var(--text-muted); padding: 14px 16px; font-size: 0.85rem; text-transform: uppercase; font-weight: 600; border-bottom: 2px solid var(--border-color); }
         .adm-table td { padding: 14px 16px; border-bottom: 1px solid var(--border-color); font-size: 0.95rem; color: var(--text-main); font-weight: 500; }
         
+        .ranking-item { display: flex; justify-content: space-between; align-items: center; padding: 14px 16px; border-bottom: 1px solid var(--border-color); }
+        .ranking-item:last-child { border: none; }
+        .ranking-badge { background: var(--input-bg); color: var(--text-muted); width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; border-radius: 50%; font-weight: bold; font-size: 1.1rem; border: 2px solid var(--border-color); }
+        .ranking-badge.top-1 { background: var(--warning-light); color: var(--warning-dark); border-color: var(--warning); box-shadow: 0 0 10px rgba(245, 158, 11, 0.2); }
+
         .login-bg { background: linear-gradient(135deg, #0F172A 0%, #312E81 100%); }
         .login-box { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); padding: 40px; border-radius: 24px; box-shadow: var(--shadow-lg); width: 90%; max-width: 400px; text-align: center; border: 1px solid rgba(255,255,255,0.2); }
 
-        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.85); backdrop-filter: blur(4px); z-index: 999; justify-content: center; align-items: center; padding: 20px; }
-        .modal-content { background: var(--card-bg); color: var(--text-main); width: 100%; max-width: 420px; border-radius: 20px; padding: 24px; position: relative; box-shadow: var(--shadow-lg); border: 1px solid var(--border-color); }
+        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(15, 23, 42, 0.85); backdrop-filter: blur(4px); z-index: 9999; justify-content: center; align-items: center; padding: 20px; }
+        .modal-content { background: var(--card-bg); color: var(--text-main); width: 100%; max-width: 420px; border-radius: 20px; padding: 24px; position: relative; box-shadow: var(--shadow-lg); border: 1px solid var(--border-color); max-height: 95vh; overflow-y: auto; }
         
         .chat-box { height: 280px; overflow-y: auto; background: var(--input-bg); padding: 15px; border-radius: 12px; display: flex; flex-direction: column; gap: 10px; border: 1px solid var(--border-color); }
         .msg { padding: 10px 14px; border-radius: 14px; font-size: 0.9rem; max-width: 85%; font-weight: 500; line-height: 1.4; color: #FFF; } 
         .msg.meu { align-self: flex-end; background: var(--primary); border-bottom-right-radius: 4px; } 
         .msg.outro { align-self: flex-start; background: var(--text-muted); border-bottom-left-radius: 4px; }
         
-        #call-modal { display: none; position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(15, 23, 42, 0.98); z-index:1500; color:#FFF; flex-direction:column; justify-content:center; align-items:center; text-align:center; padding:20px;}
+        #call-modal { display: none; position: fixed; top:0; left:0; width:100vw; height:100vh; background: rgba(15, 23, 42, 0.98); z-index:9999; color:#FFF; flex-direction:column; justify-content:center; align-items:center; text-align:center; padding:20px;}
         #swipe-accept { -webkit-appearance: none; appearance: none; width: 100%; background: transparent; position: absolute; height: 100%; cursor: pointer; outline: none; z-index: 10; }
         #swipe-accept::-webkit-slider-thumb { -webkit-appearance: none; appearance: none; width: 70px; height: 70px; border-radius: 50%; background: var(--success); box-shadow: 0 0 20px rgba(16, 185, 129, 0.6); border: 3px solid #FFF;}
         
@@ -142,7 +166,7 @@
         .select-status { background:transparent; color:inherit; border:none; font-size:1.2rem; font-weight:700; text-align:center; width:100%; height:100%; outline:none; appearance:none; -webkit-appearance:none; cursor:pointer; }
 
         .toast-notif { position: fixed; top: 20px; right: 20px; background: var(--header-bg); color: white; padding: 15px 25px; border-radius: 10px; z-index: 2000; display: none; box-shadow: var(--shadow-lg); font-size: 0.95rem; font-weight: 500; cursor: pointer; border-left: 5px solid var(--warning); }
-        .login-animation-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--primary); z-index: 9999; flex-direction: column; justify-content: center; align-items: center; color: white; }
+        .login-animation-overlay { display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: var(--primary); z-index: 9999; flex-direction: column; justify-content: center; align-items: center; color: white; }
         .maca-icon { font-size: 5rem; animation: macaAndando 2s linear infinite; }
         @keyframes macaAndando { 0% { transform: translateX(-150%) scaleX(-1); } 100% { transform: translateX(150%) scaleX(-1); } }
         #offline-banner { display: none; background: var(--warning); color: var(--warning-dark); text-align: center; padding: 12px; font-weight: 700; font-size: 0.9rem; z-index: 10000; position: sticky; top: 0; width: 100%; border-bottom: 2px solid #D97706;}
@@ -172,10 +196,10 @@
 
         <div id="screen-coordinator" class="screen" style="padding: 0;">
             <header>
-                <div style="display:flex; align-items:center; gap:12px;"><i class="fa fa-chart-pie" style="font-size: 1.8rem; color: #60A5FA;"></i><h3 style="margin:0; font-weight: 700; letter-spacing: -0.5px;">Centro de Comando</h3></div>
-                <div style="display:flex; align-items:center; gap:12px;">
+                <div class="header-title"><i class="fa fa-chart-pie" style="font-size: 1.8rem; color: #60A5FA;"></i><h3 style="margin:0; font-weight: 700; letter-spacing: -0.5px;">Centro de Comando</h3></div>
+                <div class="header-actions">
                     <button class="btn" style="background:transparent; color:inherit; font-size: 1.2rem; padding: 8px;" onclick="toggleTheme()"><i class="fa fa-moon" id="theme-icon-coord"></i></button>
-                    <span id="user-name-coord" style="font-weight:600; font-size:0.95rem;"></span>
+                    <span id="user-name-coord" style="font-weight:600; font-size:0.95rem; display: none;"></span>
                     <img id="header-foto-coord" src="/logo-hospital.png" class="miniatura-foto" onerror="this.src='https://cdn-icons-png.flaticon.com/512/149/149071.png'">
                     <button class="btn" style="background:rgba(255,255,255,0.15); color:white; padding:10px; border-radius:50%; width: 40px; height: 40px;" onclick="abrirPerfil()"><i class="fa fa-cog"></i></button>
                     <button class="btn" style="background:var(--danger); color:white; padding:10px 20px;" onclick="fazerLogout()"><i class="fa fa-power-off"></i> Sair</button>
@@ -184,7 +208,7 @@
 
             <div class="dashboard-container" style="flex-direction: column;">
                 <div class="stats-bar">
-                    <div class="stat-item"><label>SLA Médio</label><h2 id="adm-sla-time" style="color:var(--primary)">0 min</h2></div>
+                    <div class="stat-item"><label>SLA Médio (Atendimento)</label><h2 id="adm-sla-time" style="color:var(--primary)">0 min</h2></div>
                     <div class="stat-item"><label>Transportes Hoje</label><h2 id="adm-total-trips">0</h2></div>
                     <div class="stat-item"><label>Equipe Ativa</label><h2 id="adm-online-staff" style="color:var(--success)">0</h2></div>
                     <div class="stat-item" style="border-bottom: 4px solid var(--danger);"><label>Em Atraso</label><h2 id="adm-delayed" style="color:var(--danger)">0</h2></div>
@@ -193,7 +217,7 @@
                 <div class="adm-row">
                     <div style="flex: 2; background: var(--card-bg); padding: 24px; border-radius: 16px; box-shadow: var(--shadow-sm); border: 1px solid var(--border-color); transition:0.3s;">
                         <h3 style="margin:0 0 20px 0; font-weight: 700;"><i class="fa fa-chart-column" style="color:var(--primary); margin-right: 8px;"></i> Volume por Setor</h3>
-                        <canvas id="graficoSetores" style="max-height: 280px;"></canvas>
+                        <canvas id="graficoSetores" style="max-height: 280px; width: 100%;"></canvas>
                     </div>
                     <div style="flex: 1; background: var(--card-bg); padding: 24px; border-radius: 16px; box-shadow: var(--shadow-sm); border: 1px solid var(--border-color); transition:0.3s;">
                         <h3 style="margin:0 0 20px 0; font-weight: 700;"><i class="fa fa-medal" style="color:var(--warning); margin-right: 8px;"></i> Top Produtividade</h3>
@@ -215,10 +239,10 @@
 
         <div id="screen-nurse" class="screen" style="padding: 0;">
             <header>
-                <div style="display:flex; align-items:center; gap:12px;"><i class="fa fa-user-nurse" style="font-size: 1.8rem; color: #60A5FA;"></i><h3 style="margin:0; font-weight: 700; letter-spacing: -0.5px;">Solicitar Transporte</h3></div>
-                <div style="display:flex; align-items:center; gap:12px;">
+                <div class="header-title"><i class="fa fa-user-nurse" style="font-size: 1.8rem; color: #60A5FA;"></i><h3 style="margin:0; font-weight: 700; letter-spacing: -0.5px;">Solicitar Transporte</h3></div>
+                <div class="header-actions">
                     <button class="btn" style="background:transparent; color:inherit; font-size: 1.2rem; padding: 8px;" onclick="toggleTheme()"><i class="fa fa-moon" id="theme-icon-nurse"></i></button>
-                    <span id="user-name-nurse" style="font-weight:600; font-size:0.95rem;"></span>
+                    <span id="user-name-nurse" style="font-weight:600; font-size:0.95rem; display: none;"></span>
                     <img id="header-foto-nurse" src="/logo-hospital.png" class="miniatura-foto" onerror="this.src='https://cdn-icons-png.flaticon.com/512/149/149071.png'">
                     <button class="btn" style="background:rgba(255,255,255,0.15); color:white; padding:10px; border-radius:50%; width: 40px; height: 40px;" onclick="abrirPerfil()"><i class="fa fa-cog"></i></button>
                     <button class="btn" style="background:var(--danger); color:white; padding:10px 20px;" onclick="fazerLogout()"><i class="fa fa-power-off"></i> Sair</button>
@@ -252,14 +276,16 @@
                                 <div class="form-col"><label>Isolamento</label><select id="risco"><option value="Nenhum">Padrão</option><option value="Contato">Contato</option><option value="Gotículas">Gotículas</option><option value="Aerosol">Aerossóis</option></select></div>
                             </div>
                             <label>Dispositivos Invasivos</label>
-                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px; font-size: 0.9rem; background: var(--input-bg); padding: 15px; border-radius: 8px; border: 1px solid var(--border-color);">
-                                <label style="display:flex; align-items:center; gap:8px; margin:0; text-transform:none;"><input type="checkbox" class="cb-disp" value="SVD"> SVD</label>
-                                <label style="display:flex; align-items:center; gap:8px; margin:0; text-transform:none;"><input type="checkbox" class="cb-disp" value="SNE/SNG"> SNE/SNG</label>
-                                <label style="display:flex; align-items:center; gap:8px; margin:0; text-transform:none;"><input type="checkbox" class="cb-disp" value="Acesso Venoso"> Acesso Venoso</label>
-                                <label style="display:flex; align-items:center; gap:8px; margin:0; text-transform:none;"><input type="checkbox" class="cb-disp" value="O2 Contínuo"> O2 Contínuo</label>
-                                <label style="display:flex; align-items:center; gap:8px; margin:0; text-transform:none;"><input type="checkbox" class="cb-disp" value="Drenos"> Drenos</label>
-                                <label style="display:flex; align-items:center; gap:8px; margin:0; text-transform:none;"><input type="checkbox" class="cb-disp" value="Confuso/Agitado"> Confuso</label>
+                            
+                            <div class="checkbox-grid">
+                                <label><input type="checkbox" class="cb-disp" value="SVD"> SVD</label>
+                                <label><input type="checkbox" class="cb-disp" value="SNE/SNG"> SNE/SNG</label>
+                                <label><input type="checkbox" class="cb-disp" value="Acesso Venoso"> Acesso Venoso</label>
+                                <label><input type="checkbox" class="cb-disp" value="O2 Contínuo"> O2 Contínuo</label>
+                                <label><input type="checkbox" class="cb-disp" value="Drenos"> Drenos</label>
+                                <label><input type="checkbox" class="cb-disp" value="Confuso/Agitado"> Confuso</label>
                             </div>
+                            
                             <label>Observações</label><textarea id="obs" rows="2" placeholder="Opcional..."></textarea>
                             <button class="btn btn-main" style="padding:16px; margin-top: 5px; font-size: 1.05rem;" onclick="enviarPedido()"><i class="fa fa-paper-plane"></i> Solicitar Transporte</button>
                         </div>
@@ -275,12 +301,13 @@
 
         <div id="screen-maqueiro" class="screen" style="padding: 0;">
             <header>
-                <div style="display:flex; align-items:center; gap:12px;"><i class="fa fa-ambulance" style="font-size: 1.8rem; color: var(--warning);"></i><h3 style="margin:0; font-weight: 700;">Painel de Operação</h3></div>
-                <div style="display:flex; align-items:center; gap:12px;">
+                <div class="header-title"><i class="fa fa-ambulance" style="font-size: 1.8rem; color: var(--warning);"></i><h3 style="margin:0; font-weight: 700;">Painel de Operação</h3></div>
+                <div class="header-actions">
                     <button class="btn" style="background:transparent; color:inherit; font-size: 1.2rem; padding: 8px;" onclick="toggleTheme()"><i class="fa fa-moon" id="theme-icon-maq"></i></button>
-                    <span id="user-name-maq" style="font-weight:600; font-size:0.95rem;"></span>
+                    <span id="user-name-maq" style="font-weight:600; font-size:0.95rem; display: none;"></span>
                     <img id="header-foto-maq" src="/logo-hospital.png" class="miniatura-foto" onerror="this.src='https://cdn-icons-png.flaticon.com/512/149/149071.png'">
                     <button class="btn" style="background:rgba(255,255,255,0.15); color:white; padding:10px; border-radius:50%; width: 40px; height: 40px;" onclick="abrirPerfil()"><i class="fa fa-cog"></i></button>
+                    <button class="btn" style="background:var(--danger); color:white; padding:10px 20px;" onclick="fazerLogout()"><i class="fa fa-power-off"></i> Sair</button>
                 </div>
             </header>
             <div class="dashboard-container">
@@ -304,10 +331,10 @@
             </div>
         </div>
 
-        <div id="screen-perfil" class="screen" style="justify-content:center; align-items:center; padding: 0;">
-            <div style="background:var(--card-bg); padding:40px; border-radius:24px; box-shadow:var(--shadow-lg); width:100%; max-width:420px; position: relative; border: 1px solid var(--border-color);">
-                <button class="btn" style="position: absolute; top: 20px; left: 20px; background: var(--input-bg); color: var(--text-main); padding: 10px 15px; border-radius: 12px;" onclick="fecharPerfil()"><i class="fa fa-arrow-left"></i> Voltar</button>
-                <h2 style="margin:0 0 30px 0; text-align: center; font-size: 1.6rem; font-weight: 800;">Configurações</h2>
+        <div id="screen-perfil" class="screen" style="justify-content:center; align-items:center; padding: 20px;">
+            <div style="background:var(--card-bg); padding:40px 20px; border-radius:24px; box-shadow:var(--shadow-lg); width:100%; max-width:420px; position: relative; border: 1px solid var(--border-color);">
+                <button class="btn" style="position: absolute; top: 15px; left: 15px; background: var(--input-bg); color: var(--text-main); padding: 8px 12px; border-radius: 12px;" onclick="fecharPerfil()"><i class="fa fa-arrow-left"></i> Voltar</button>
+                <h2 style="margin:20px 0 30px 0; text-align: center; font-size: 1.6rem; font-weight: 800;">Configurações</h2>
                 <div class="perfil-avatar-wrapper">
                     <img id="perfil-foto-preview" src="https://cdn-icons-png.flaticon.com/512/149/149071.png" class="perfil-avatar">
                     <label for="perfil-upload" class="perfil-avatar-btn"><i class="fa fa-camera"></i></label>
@@ -329,19 +356,13 @@
     <div id="login-animation" class="login-animation-overlay"><i class="fa fa-bed maca-icon"></i><h2 style="margin-top:24px; font-weight: 800; letter-spacing: -1px;">iMaqueiro Pro</h2><p style="font-weight: 500;">Autenticando credenciais...</p></div>
     <div id="chat-modal" class="modal-overlay"><div class="modal-content"><h3 style="margin-top:0; font-weight: 800; border-bottom: 2px solid var(--border-color); padding-bottom: 15px;"><i class="fa fa-comments" style="color: var(--primary);"></i> Comunicação Rápida</h3><div class="chat-box" id="chat-box"></div><div id="quick-replies" style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:15px;"></div><button class="btn" style="width:100%; margin-top:20px; background:var(--input-bg); color: var(--text-main);" onclick="document.getElementById('chat-modal').style.display='none'; idChatAtivo=null;">Fechar Chat</button></div></div>
     <div id="qr-modal" class="modal-overlay"><div class="modal-content"><h3 style="margin-top:0; font-weight: 800; text-align: center;"><i class="fa fa-qrcode" style="color: var(--primary);"></i> Validação de Leito</h3><p style="text-align: center; color: var(--text-muted); font-size: 0.9rem; margin-bottom: 20px;">Aponte a câmera para o leito</p><div id="qr-reader" style="width:100%; border-radius:16px; overflow:hidden; border: 2px solid var(--border-color);"></div><button class="btn" style="background:var(--danger-light); color:var(--danger-dark); width:100%; margin-top:20px;" onclick="fecharQR()">Cancelar Leitura</button></div></div>
-    <div id="call-modal"><div id="call-risco-faixa" style="background:var(--danger); width:100%; padding:15px; position:absolute; top:0; font-weight:800; font-size:1.2rem; display:none; letter-spacing: 1px; text-transform: uppercase; box-shadow: 0 4px 15px rgba(239, 68, 68, 0.4);">⚠️ PROTOCOLO DE ISOLAMENTO</div><i id="icone-sirene" class="fa fa-bell fa-shake" style="font-size: 4rem; color: var(--warning); margin-bottom: 10px; filter: drop-shadow(0 0 15px rgba(245,158,11,0.5));"></i><img id="img-aviso-risco" src="" alt="Aviso EPI" onerror="this.style.display='none'; document.getElementById('icone-sirene').style.display='block';"><h2 id="call-paciente" style="margin:0; font-size: 1.8rem; color: #FFF; font-weight: 800; letter-spacing: -0.5px;"></h2><h1 id="call-rota" style="margin:10px 0 15px 0; font-size: 3rem; color: var(--warning); font-weight: 800; letter-spacing: -1px; text-shadow: 0 4px 10px rgba(0,0,0,0.5);"></h1><p id="call-equip" style="color: #94A3B8; font-size: 1.2rem; margin-bottom: 40px; font-weight: 500;"></p><div style="width:320px; height:76px; background:#1E293B; border-radius:38px; position:relative; display:flex; align-items:center; justify-content:center; border: 2px solid #334155; box-shadow: inset 0 4px 10px rgba(0,0,0,0.5);"><span style="color:#64748B; font-weight:700; letter-spacing: 0.5px;">DESLIZE PARA ACEITAR</span><input type="range" min="0" max="100" value="0" id="swipe-accept"></div><button onclick="passarVezCall()" style="background:none; border:none; color:var(--danger); margin-top:30px; font-weight:700; font-size:1.1rem; letter-spacing: 1px; cursor: pointer; transition: 0.2s;">RECUSAR CHAMADO</button></div>
+    <div id="call-modal"><div id="call-risco-faixa" style="background:var(--danger); width:100%; padding:15px; position:absolute; top:0; font-weight:800; font-size:1.2rem; display:none; letter-spacing: 1px; text-transform: uppercase; box-shadow: 0 4px 15px rgba(239, 68, 68, 0.4);">⚠️ PROTOCOLO DE ISOLAMENTO</div><i id="icone-sirene" class="fa fa-bell fa-shake" style="font-size: 4rem; color: var(--warning); margin-bottom: 10px; filter: drop-shadow(0 0 15px rgba(245,158,11,0.5));"></i><img id="img-aviso-risco" src="" alt="Aviso EPI" onerror="this.style.display='none'; document.getElementById('icone-sirene').style.display='block';"><h2 id="call-paciente" style="margin:0; font-size: 1.8rem; color: #FFF; font-weight: 800; letter-spacing: -0.5px;"></h2><h1 id="call-rota" style="margin:10px 0 15px 0; font-size: 3rem; color: var(--warning); font-weight: 800; letter-spacing: -1px; text-shadow: 0 4px 10px rgba(0,0,0,0.5);"></h1><p id="call-equip" style="color: #94A3B8; font-size: 1.2rem; margin-bottom: 40px; font-weight: 500;"></p><div style="width:320px; max-width: 90vw; height:76px; background:#1E293B; border-radius:38px; position:relative; display:flex; align-items:center; justify-content:center; border: 2px solid #334155; box-shadow: inset 0 4px 10px rgba(0,0,0,0.5);"><span style="color:#64748B; font-weight:700; letter-spacing: 0.5px;">DESLIZE PARA ACEITAR</span><input type="range" min="0" max="100" value="0" id="swipe-accept"></div><button onclick="passarVezCall()" style="background:none; border:none; color:var(--danger); margin-top:30px; font-weight:700; font-size:1.1rem; letter-spacing: 1px; cursor: pointer; transition: 0.2s;">RECUSAR CHAMADO</button></div>
     <div id="toast" class="toast-notif" onclick="this.style.display='none'"><i class="fa fa-envelope" style="font-size:1.5rem; color:var(--warning)"></i> <div><b id="toast-autor"></b><br><span id="toast-msg"></span></div></div>
 
     <audio id="audio-alerta" src="https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3" loop></audio>
     <audio id="audio-emergencia" src="https://assets.mixkit.co/active_storage/sfx/951/951-preview.mp3" loop></audio>
 
     <script>
-        // MÁGICA 1: AS VARIÁVEIS NASCEM AQUI (NUNCA MAIS VAI TRAVAR!)
-        const socket = io();
-        let usuario, audioLigado = false, pedidosAtivos = [], historicoGlobal = [], idChamadoAtual, idChatAtivo, html5QrCode;
-        let chamadosRejeitados = []; let idChecklistAtual = null; let graficoSetoresInstancia = null; 
-
-        // MÁGICA 2: O TEMA É CARREGADO AGORA COM SEGURANÇA
         function applyTheme(theme) {
             document.documentElement.setAttribute('data-theme', theme);
             const icons = ['theme-icon-coord', 'theme-icon-nurse', 'theme-icon-maq'];
@@ -365,6 +386,10 @@
         if ('serviceWorker' in navigator) { window.addEventListener('load', () => { navigator.serviceWorker.register('/sw.js') }); }
         window.addEventListener('offline', () => { document.getElementById('offline-banner').style.display = 'block'; });
         window.addEventListener('online', () => { document.getElementById('offline-banner').style.display = 'none'; });
+
+        const socket = io();
+        let usuario, audioLigado = false, pedidosAtivos = [], historicoGlobal = [], idChamadoAtual, idChatAtivo, html5QrCode;
+        let chamadosRejeitados = []; let idChecklistAtual = null; let graficoSetoresInstancia = null; 
 
         function getUrgenciaBadge(urgencia) {
             if(urgencia === 'Vermelho') return `<span class="badge badge-danger"><i class="fa fa-circle" style="font-size:8px;"></i> Emergência</span>`;
