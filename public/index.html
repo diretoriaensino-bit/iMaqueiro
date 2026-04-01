@@ -44,7 +44,7 @@
         .btn:hover { opacity: 0.9; }
         .btn-main { background: var(--primary); color: white; width: 100%; }
         
-        input:not([type="range"]):not([type="checkbox"]), select { 
+        input:not([type="range"]):not([type="checkbox"]):not([type="file"]), select { 
             -webkit-appearance: none; appearance: none; width: 100%; padding: 12px; margin-bottom: 12px; border: 1px solid #ddd; border-radius: 8px; background: white; font-size: 0.9rem;
         }
 
@@ -72,8 +72,13 @@
         
         #img-aviso-risco { display: none; max-width: 200px; max-height: 200px; border-radius: 15px; border: 3px solid var(--danger); box-shadow: 0 0 20px rgba(220, 53, 69, 0.5); margin-top: 15px; margin-bottom: 15px; background: white; padding: 5px; object-fit: contain;}
 
-        /* FAIXA OFFLINE */
         #offline-banner { display: none; background: var(--warning); color: #000; text-align: center; padding: 10px; font-weight: bold; font-size: 0.9rem; z-index: 10000; position: sticky; top: 0; width: 100%; }
+
+        /* ESTILOS DO PERFIL */
+        .perfil-avatar-wrapper { position: relative; width: 120px; height: 120px; margin: 0 auto 20px auto; }
+        .perfil-avatar { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; border: 3px solid var(--primary); background: #eee; }
+        .perfil-avatar-btn { position: absolute; bottom: 0; right: 0; background: var(--primary); color: white; width: 35px; height: 35px; border-radius: 50%; display: flex; justify-content: center; align-items: center; cursor: pointer; border: 2px solid white; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
+        .miniatura-foto { width: 35px; height: 35px; border-radius: 50%; object-fit: cover; border: 2px solid white; }
     </style>
 </head>
 <body>
@@ -96,7 +101,12 @@
         <div id="screen-nurse" class="screen" style="padding: 0;">
             <header>
                 <div style="display:flex; align-items:center; gap:10px;"><img src="/logo-hospital.png" style="width:30px; filter: brightness(0) invert(1);" onerror="this.style.display='none'"><h3 style="margin:0">Enfermagem</h3></div>
-                <div style="display:flex; align-items:center; gap:15px;"><span id="user-name-nurse" style="font-weight:bold; font-size:0.9rem;"></span><button class="btn" style="background:rgba(255,255,255,0.2); color:white; padding:8px 15px;" onclick="fazerLogout()">Sair</button></div>
+                <div style="display:flex; align-items:center; gap:10px;">
+                    <img id="header-foto-nurse" src="/logo-hospital.png" class="miniatura-foto" onerror="this.src='https://cdn-icons-png.flaticon.com/512/149/149071.png'">
+                    <span id="user-name-nurse" style="font-weight:bold; font-size:0.9rem;"></span>
+                    <button class="btn" style="background:rgba(255,255,255,0.2); color:white; padding:8px; border-radius:50%; width: 35px; height: 35px;" onclick="abrirPerfil()"><i class="fa fa-cog"></i></button>
+                    <button class="btn" style="background:var(--danger); color:white; padding:8px 15px;" onclick="fazerLogout()">Sair</button>
+                </div>
             </header>
 
             <div class="dashboard-container">
@@ -145,13 +155,19 @@
         <div id="screen-maqueiro" class="screen" style="padding: 0;">
             <header style="background:var(--dark);">
                 <div style="display:flex; align-items:center; gap:10px;"><i class="fa fa-ambulance" style="font-size: 1.5rem;"></i><h3 style="margin:0">Painel do Maqueiro</h3></div>
-                <div style="display:flex; align-items:center; gap:15px;"><span id="user-name-maq" style="font-weight:bold; font-size:0.9rem;"></span><button class="btn" style="background:rgba(255,255,255,0.2); color:white; padding:8px 15px;" onclick="fazerLogout()">Sair</button></div>
+                <div style="display:flex; align-items:center; gap:10px;">
+                    <img id="header-foto-maq" src="/logo-hospital.png" class="miniatura-foto" onerror="this.src='https://cdn-icons-png.flaticon.com/512/149/149071.png'">
+                    <span id="user-name-maq" style="font-weight:bold; font-size:0.9rem;"></span>
+                    <button class="btn" style="background:rgba(255,255,255,0.2); color:white; padding:8px; border-radius:50%; width: 35px; height: 35px;" onclick="abrirPerfil()"><i class="fa fa-cog"></i></button>
+                    <button class="btn" style="background:var(--danger); color:white; padding:8px 15px;" onclick="fazerLogout()">Sair</button>
+                </div>
             </header>
 
             <div class="dashboard-container">
                 <div class="sidebar-form" style="background:var(--primary); color:white;">
                     <div style="text-align: center; margin-bottom: 20px;">
-                        <i class="fa fa-user-circle" style="font-size: 4rem; opacity: 0.8; margin-bottom: 10px;"></i><h3 style="margin:0;">Meu Desempenho</h3>
+                        <img id="painel-foto-maq" src="https://cdn-icons-png.flaticon.com/512/149/149071.png" style="width: 80px; height: 80px; border-radius: 50%; border: 3px solid white; object-fit: cover; margin-bottom: 10px;">
+                        <h3 style="margin:0;">Meu Desempenho</h3>
                     </div>
                     <div class="stats-bar" style="flex-direction: column;">
                         <div class="stat-item" style="background:rgba(255,255,255,0.1); color:white; border:none; box-shadow:none;"><h2 id="total-hoje" style="color:white; font-size: 2.5rem;">0</h2><span>Corridas Hoje</span></div>
@@ -173,272 +189,244 @@
             </div>
         </div>
 
+        <div id="screen-perfil" class="screen" style="justify-content:center; align-items:center; padding: 0;">
+            <div style="background:white; padding:30px; border-radius:20px; box-shadow:0 10px 30px rgba(0,0,0,0.1); width:100%; max-width:400px; position: relative;">
+                <button class="btn" style="position: absolute; top: 20px; left: 20px; background: none; color: var(--gray); font-size: 1.2rem; padding: 0;" onclick="fecharPerfil()"><i class="fa fa-arrow-left"></i></button>
+                <h2 style="color:var(--primary); margin:0 0 20px 0; text-align: center; font-size: 1.5rem;">Meu Perfil</h2>
+                
+                <div class="perfil-avatar-wrapper">
+                    <img id="perfil-foto-preview" src="https://cdn-icons-png.flaticon.com/512/149/149071.png" class="perfil-avatar">
+                    <label for="perfil-upload" class="perfil-avatar-btn"><i class="fa fa-camera"></i></label>
+                    <input type="file" id="perfil-upload" accept="image/*" style="display:none;" onchange="lerFoto(event)">
+                </div>
+
+                <label>Nome Completo</label>
+                <input type="text" id="perfil-nome" disabled style="background:#f4f4f4; color:#888;">
+                
+                <label>E-mail Corporativo</label>
+                <input type="email" id="perfil-email" disabled style="background:#f4f4f4; color:#888;">
+
+                <label>Cargo</label>
+                <input type="text" id="perfil-cargo" disabled style="background:#f4f4f4; color:#888; text-transform: uppercase;">
+                
+                <label>Telefone / WhatsApp</label>
+                <input type="tel" id="perfil-telefone" placeholder="(11) 99999-9999">
+                
+                <button class="btn btn-main" style="margin-top: 15px;" onclick="salvarPerfil()"><i class="fa fa-save"></i> SALVAR ALTERAÇÕES</button>
+            </div>
+        </div>
+
     </div>
 
-    <div id="details-modal" class="modal-overlay">
-        <div class="modal-content">
-            <h3 style="margin-top:0; color:var(--primary);"><i class="fa fa-file-medical"></i> Dados Clínicos</h3>
-            <div id="details-body" style="font-size:0.9rem; line-height:1.6; color:var(--dark);"></div>
-            <button class="btn" style="width:100%; margin-top:15px; background:#eee" onclick="document.getElementById('details-modal').style.display='none'">Fechar</button>
-        </div>
-    </div>
+    <div id="details-modal" class="modal-overlay"><div class="modal-content"><h3 style="margin-top:0; color:var(--primary);"><i class="fa fa-file-medical"></i> Dados Clínicos</h3><div id="details-body" style="font-size:0.9rem; line-height:1.6; color:var(--dark);"></div><button class="btn" style="width:100%; margin-top:15px; background:#eee" onclick="document.getElementById('details-modal').style.display='none'">Fechar</button></div></div>
     
-    <div id="checklist-modal" class="modal-overlay">
-        <div class="modal-content" style="max-width: 380px;">
-            <h3 style="color:var(--warning); margin-top:0; border-bottom: 2px solid var(--warning); padding-bottom: 10px;">
-                <i class="fa fa-clipboard-check"></i> Handover de Segurança
-            </h3>
-            <p style="font-size:0.9rem; color:var(--gray); margin-bottom:20px;">Confirme os itens de segurança antes de movimentar o paciente:</p>
-
-            <label style="display:flex; align-items:center; gap:10px; margin-bottom:10px; font-size:0.95rem; background:#f9f9f9; padding:12px; border-radius:8px; border: 1px solid #ddd;">
-                <input type="checkbox" class="check-seguranca" onchange="validarChecklist()"> Pulseira de Identificação conferida
-            </label>
-            <label style="display:flex; align-items:center; gap:10px; margin-bottom:10px; font-size:0.95rem; background:#f9f9f9; padding:12px; border-radius:8px; border: 1px solid #ddd;">
-                <input type="checkbox" class="check-seguranca" onchange="validarChecklist()"> Prontuário / Documentos em mãos
-            </label>
-            <label style="display:flex; align-items:center; gap:10px; margin-bottom:20px; font-size:0.95rem; background:#f9f9f9; padding:12px; border-radius:8px; border: 1px solid #ddd;">
-                <input type="checkbox" class="check-seguranca" onchange="validarChecklist()"> Dispositivos (Sondas, Acessos, O2) seguros
-            </label>
-
-            <button id="btn-iniciar-viagem" class="btn btn-main" style="width:100%; opacity:0.5; cursor:not-allowed; background: var(--success);" disabled onclick="confirmarChecklist()">INICIAR TRAJETO SEGURO</button>
-            <button class="btn" style="width:100%; margin-top:10px; background:#eee;" onclick="fecharChecklist()">Cancelar</button>
-        </div>
-    </div>
+    <div id="checklist-modal" class="modal-overlay"><div class="modal-content" style="max-width: 380px;"><h3 style="color:var(--warning); margin-top:0; border-bottom: 2px solid var(--warning); padding-bottom: 10px;"><i class="fa fa-clipboard-check"></i> Handover de Segurança</h3><p style="font-size:0.9rem; color:var(--gray); margin-bottom:20px;">Confirme os itens de segurança antes de movimentar o paciente:</p><label style="display:flex; align-items:center; gap:10px; margin-bottom:10px; font-size:0.95rem; background:#f9f9f9; padding:12px; border-radius:8px; border: 1px solid #ddd;"><input type="checkbox" class="check-seguranca" onchange="validarChecklist()"> Pulseira de Identificação conferida</label><label style="display:flex; align-items:center; gap:10px; margin-bottom:10px; font-size:0.95rem; background:#f9f9f9; padding:12px; border-radius:8px; border: 1px solid #ddd;"><input type="checkbox" class="check-seguranca" onchange="validarChecklist()"> Prontuário / Documentos em mãos</label><label style="display:flex; align-items:center; gap:10px; margin-bottom:20px; font-size:0.95rem; background:#f9f9f9; padding:12px; border-radius:8px; border: 1px solid #ddd;"><input type="checkbox" class="check-seguranca" onchange="validarChecklist()"> Dispositivos (Sondas, Acessos, O2) seguros</label><button id="btn-iniciar-viagem" class="btn btn-main" style="width:100%; opacity:0.5; cursor:not-allowed; background: var(--success);" disabled onclick="confirmarChecklist()">INICIAR TRAJETO SEGURO</button><button class="btn" style="width:100%; margin-top:10px; background:#eee;" onclick="fecharChecklist()">Cancelar</button></div></div>
 
     <div id="login-animation" class="login-animation-overlay"><i class="fa fa-bed maca-icon"></i><h2 style="margin-top:20px;">iMaqueiro</h2><p>Conectando...</p></div>
+    <div id="chat-modal" class="modal-overlay"><div class="modal-content"><h3 style="margin-top:0">Mensagens</h3><div class="chat-box" id="chat-box"></div><div id="quick-replies" style="display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:10px;"></div><button class="btn" style="width:100%; margin-top:15px; background:#eee" onclick="document.getElementById('chat-modal').style.display='none'; idChatAtivo=null;">Fechar</button></div></div>
+    <div id="qr-modal" class="modal-overlay"><div class="modal-content"><h3 style="margin-top:0">Escanear Leito</h3><div id="qr-reader" style="width:100%; border-radius:10px; overflow:hidden;"></div><button class="btn" style="background:var(--danger); color:white; width:100%; margin-top:15px;" onclick="fecharQR()">Cancelar</button></div></div>
 
-    <div id="chat-modal" class="modal-overlay">
-        <div class="modal-content">
-            <h3 style="margin-top:0">Mensagens</h3>
-            <div class="chat-box" id="chat-box"></div>
-            <div id="quick-replies" style="display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:10px;"></div>
-            <button class="btn" style="width:100%; margin-top:15px; background:#eee" onclick="document.getElementById('chat-modal').style.display='none'; idChatAtivo=null;">Fechar</button>
-        </div>
-    </div>
-
-    <div id="qr-modal" class="modal-overlay">
-        <div class="modal-content">
-            <h3 style="margin-top:0">Escanear Leito</h3>
-            <div id="qr-reader" style="width:100%; border-radius:10px; overflow:hidden;"></div>
-            <button class="btn" style="background:var(--danger); color:white; width:100%; margin-top:15px;" onclick="fecharQR()">Cancelar</button>
-        </div>
-    </div>
-
-    <div id="call-modal">
-        <div id="call-risco-faixa" style="background:var(--danger); width:100%; padding:15px; position:absolute; top:0; font-weight:bold; font-size:1.2rem; display:none; letter-spacing: 1px; text-transform: uppercase;">⚠️ AVISO DE ISOLAMENTO</div>
-        <i id="icone-sirene" class="fa fa-bell fa-shake" style="font-size: 3.5rem; color: var(--warning); margin-bottom: 5px;"></i>
-        <img id="img-aviso-risco" src="" alt="Aviso EPI" onerror="this.style.display='none'; document.getElementById('icone-sirene').style.display='block';">
-        <h2 id="call-paciente" style="margin:0; font-size: 1.5rem; color: #fff;"></h2>
-        <h1 id="call-rota" style="margin:5px 0 10px 0; font-size: 2.5rem; color: var(--warning);"></h1>
-        <p id="call-equip" style="color: #ccc; font-size: 1.1rem; margin-bottom: 20px;"></p>
-        
-        <div style="width:300px; height:70px; background:#222; border-radius:35px; position:relative; display:flex; align-items:center; justify-content:center; border: 2px solid #555;">
-            <span style="color:#aaa; font-weight:bold;">DESLIZE PARA ACEITAR</span>
-            <input type="range" min="0" max="100" value="0" id="swipe-accept">
-        </div>
-        <button onclick="passarVezCall()" style="background:none; border:none; color:var(--danger); margin-top:20px; font-weight:bold; font-size:1.1rem; text-decoration:underline;">PASSAR A VEZ</button>
-    </div>
+    <div id="call-modal"><div id="call-risco-faixa" style="background:var(--danger); width:100%; padding:15px; position:absolute; top:0; font-weight:bold; font-size:1.2rem; display:none; letter-spacing: 1px; text-transform: uppercase;">⚠️ AVISO DE ISOLAMENTO</div><i id="icone-sirene" class="fa fa-bell fa-shake" style="font-size: 3.5rem; color: var(--warning); margin-bottom: 5px;"></i><img id="img-aviso-risco" src="" alt="Aviso EPI" onerror="this.style.display='none'; document.getElementById('icone-sirene').style.display='block';"><h2 id="call-paciente" style="margin:0; font-size: 1.5rem; color: #fff;"></h2><h1 id="call-rota" style="margin:5px 0 10px 0; font-size: 2.5rem; color: var(--warning);"></h1><p id="call-equip" style="color: #ccc; font-size: 1.1rem; margin-bottom: 20px;"></p><div style="width:300px; height:70px; background:#222; border-radius:35px; position:relative; display:flex; align-items:center; justify-content:center; border: 2px solid #555;"><span style="color:#aaa; font-weight:bold;">DESLIZE PARA ACEITAR</span><input type="range" min="0" max="100" value="0" id="swipe-accept"></div><button onclick="passarVezCall()" style="background:none; border:none; color:var(--danger); margin-top:20px; font-weight:bold; font-size:1.1rem; text-decoration:underline;">PASSAR A VEZ</button></div>
 
     <div id="toast" class="toast-notif" onclick="this.style.display='none'"><i class="fa fa-envelope" style="font-size:1.5rem; color:var(--warning)"></i> <div><b id="toast-autor"></b><br><span id="toast-msg"></span></div></div>
 
     <audio id="audio-alerta" src="https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3" loop></audio>
     <audio id="audio-emergencia" src="https://assets.mixkit.co/active_storage/sfx/951/951-preview.mp3" loop></audio>
 
-   <script>
-    const socket = io();
-    let usuario, audioLigado = false, pedidosAtivos = [], historicoGlobal = [], idChamadoAtual, idChatAtivo, html5QrCode;
-    let chamadosRejeitados = []; let idChecklistAtual = null;
+    <script>
+        if ('serviceWorker' in navigator) { window.addEventListener('load', () => { navigator.serviceWorker.register('/sw.js') }); }
+        window.addEventListener('offline', () => { document.getElementById('offline-banner').style.display = 'block'; });
+        window.addEventListener('online', () => { document.getElementById('offline-banner').style.display = 'none'; });
 
-    // --- FUNÇÃO PARA PEDIR PERMISSÃO E ASSINAR O PUSH ---
-    async function habilitarNotificacoes() {
-        if (!('serviceWorker' in navigator && 'PushManager' in window)) return;
+        const socket = io();
+        let usuario, audioLigado = false, pedidosAtivos = [], historicoGlobal = [], idChamadoAtual, idChatAtivo, html5QrCode;
+        let chamadosRejeitados = []; let idChecklistAtual = null;
+
+        window.onload = () => { const salvo = localStorage.getItem('imaqueiro_user'); if (salvo) { usuario = JSON.parse(salvo); socket.emit('relogar_maqueiro', usuario); abrirPainel(usuario); } };
+
+        function tentarLogin() { socket.emit('fazer_login', { email: document.getElementById('login-email').value, senha: document.getElementById('login-senha').value }); }
         
-        const permissao = await Notification.requestPermission();
-        if (permissao === 'granted') {
-            const reg = await navigator.serviceWorker.ready;
-            const publicVapidKey = 'BEl62iUYgUivxIkv69yViEuiBIa-Ib9-SkvMeAtA3LFgDzkrxZJjSgSnfckjBJuB22-xHhZpM8S2X_4WvXhQ6A0';
-            
-            // Conversor de Chave
-            const urlBase64ToUint8Array = (base64String) => {
-                const padding = '='.repeat((4 - base64String.length % 4) % 4);
-                const base64 = (base64String + padding).replace(/\-/g, '+').replace(/_/g, '/');
-                const rawData = window.atob(base64);
-                const outputArray = new Uint8Array(rawData.length);
-                for (let i = 0; i < rawData.length; ++i) { outputArray[i] = rawData.charCodeAt(i); }
-                return outputArray;
-            };
+        socket.on('login_sucesso', u => {
+            usuario = u; localStorage.setItem('imaqueiro_user', JSON.stringify(u));
+            document.getElementById('login-animation').style.display = 'flex';
+            setTimeout(() => { document.getElementById('login-animation').style.display = 'none'; abrirPainel(u); }, 2000);
+        });
 
-            const sub = await reg.pushManager.subscribe({
-                userVisibleOnly: true,
-                applicationServerKey: urlBase64ToUint8Array(publicVapidKey)
-            });
+        socket.on('login_erro', m => document.getElementById('login-msg').innerText = m);
+        function fazerLogout() { localStorage.removeItem('imaqueiro_user'); location.reload(); }
 
-            // Manda a permissão pro Servidor
-            socket.emit('salvar_inscricao_push', { nomeMaqueiro: usuario.nome, sub_info: sub });
-            console.log("Push Ativado e salvo no banco!");
+        // --- SISTEMA DE PERFIL ---
+        function atualizarFotosUI() {
+            const fotoUrl = usuario.foto || 'https://cdn-icons-png.flaticon.com/512/149/149071.png';
+            if (document.getElementById('header-foto-nurse')) document.getElementById('header-foto-nurse').src = fotoUrl;
+            if (document.getElementById('header-foto-maq')) document.getElementById('header-foto-maq').src = fotoUrl;
+            if (document.getElementById('painel-foto-maq')) document.getElementById('painel-foto-maq').src = fotoUrl;
+            if (document.getElementById('perfil-foto-preview')) document.getElementById('perfil-foto-preview').src = fotoUrl;
         }
-    }
 
-    if ('serviceWorker' in navigator) {
-        window.addEventListener('load', () => { navigator.serviceWorker.register('/sw.js'); });
-    }
-
-    window.addEventListener('offline', () => document.getElementById('offline-banner').style.display = 'block');
-    window.addEventListener('online', () => document.getElementById('offline-banner').style.display = 'none');
-
-    window.onload = () => {
-        const salvo = localStorage.getItem('imaqueiro_user');
-        if (salvo) { usuario = JSON.parse(salvo); socket.emit('relogar_maqueiro', usuario); abrirPainel(usuario); }
-    };
-
-    function tentarLogin() { socket.emit('fazer_login', { email: document.getElementById('login-email').value, senha: document.getElementById('login-senha').value }); }
-    
-    socket.on('login_sucesso', u => {
-        usuario = u; localStorage.setItem('imaqueiro_user', JSON.stringify(u));
-        document.getElementById('login-animation').style.display = 'flex';
-        setTimeout(() => { document.getElementById('login-animation').style.display = 'none'; abrirPainel(u); }, 2000);
-    });
-
-    socket.on('login_erro', m => document.getElementById('login-msg').innerText = m);
-    function fazerLogout() { localStorage.removeItem('imaqueiro_user'); location.reload(); }
-
-    function abrirPainel(u) {
-        document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-        document.getElementById(u.cargo === 'enfermagem' ? 'screen-nurse' : 'screen-maqueiro').classList.add('active');
-        document.getElementById(u.cargo === 'enfermagem' ? 'user-name-nurse' : 'user-name-maq').innerText = u.nome;
-        socket.emit('solicitar_lista');
-    }
-
-    function enviarPedido() {
-        const checkboxes = document.querySelectorAll('.cb-disp:checked');
-        let selecionados = Array.from(checkboxes).map(cb => cb.value);
-        let obs = document.getElementById('obs').value;
-        let dispositivosFinal = selecionados.join(', ');
-        if(obs) dispositivosFinal += (dispositivosFinal ? " | " : "") + obs;
-        if(!dispositivosFinal) dispositivosFinal = "Nenhuma observação reportada.";
-
-        const d = { paciente: document.getElementById('paciente').value, origem: document.getElementById('origem').value, destino: document.getElementById('destino').value, tipo: document.getElementById('tipo').value, urgencia: document.getElementById('urgencia').value, trajeto: document.getElementById('trajeto').value, risco_assistencial: document.getElementById('risco').value, dispositivos: dispositivosFinal };
-        if(!d.paciente || !d.origem || !d.destino) return alert("Preencha origem e destino!");
-        socket.emit('novo_pedido', d);
-        document.getElementById('paciente').value = ""; document.getElementById('origem').value = ""; document.getElementById('destino').value = ""; document.getElementById('obs').value = ""; checkboxes.forEach(cb => cb.checked = false);
-    }
-
-    socket.on('atualizar_lista', data => { pedidosAtivos = data.ativos; historicoGlobal = data.historico; renderizar(data.ativos, data.historico); });
-
-    socket.on('notificacao_mensagem', d => {
-        if(d.autor !== usuario.nome && idChatAtivo !== d.idPedido) {
-            document.getElementById('toast-autor').innerText = d.autor; document.getElementById('toast-msg').innerText = d.texto;
-            document.getElementById('toast').style.display = 'flex'; setTimeout(() => document.getElementById('toast').style.display='none', 5000);
-        }
-    });
-
-    function abrirDetalhes(id) {
-        const p = pedidosAtivos.find(x => x.id === id) || historicoGlobal.find(x => x.id === id);
-        if (!p) return;
-        document.getElementById('details-body').innerHTML = `<div style="margin-bottom:15px;"><b>Paciente:</b> ${p.paciente}<br><b>Trajeto:</b> ${p.origem} ➔ ${p.destino}<br><b>Equipamento:</b> ${p.tipo}<br><b>Urgência:</b> ${p.urgencia}<br><b>Risco Biológico:</b> ${p.risco_assistencial}</div><div style="background:#f4f4f4; padding:10px; border-left:4px solid var(--danger); border-radius:5px;"><b style="color:var(--danger)">Condições / Dispositivos:</b><br>${p.dispositivos || 'Nenhuma observação reportada.'}</div>`;
-        document.getElementById('details-modal').style.display = 'flex';
-    }
-
-    // BOTÃO ATIVAR ÁUDIO AGORA TAMBÉM ATIVA O PUSH!
-    function ativarAudio() {
-        document.getElementById('audio-alerta').play().then(() => document.getElementById('audio-alerta').pause());
-        document.getElementById('audio-emergencia').play().then(() => document.getElementById('audio-emergencia').pause());
-        if ('speechSynthesis' in window) window.speechSynthesis.speak(new SpeechSynthesisUtterance(''));
-        
-        habilitarNotificacoes(); // Chama a janela do Google Chrome pedindo permissão
-        
-        audioLigado = true; document.getElementById('btn-som').style.display = 'none';
-    }
-
-    function falarAvisoRisco(risco) {
-        if (!('speechSynthesis' in window)) return; window.speechSynthesis.cancel(); 
-        let texto = "";
-        if (risco === 'Contato') texto = "Atenção maqueiro. Risco de Contato. Por favor, paramente-se com luvas e avental.";
-        else if (risco === 'Gotículas') texto = "Atenção. Risco de Gotículas. Coloque máscara cirúrgica.";
-        else if (risco === 'Aerosol') texto = "Atenção. Risco de Aerossol. Utilize máscara N 95.";
-        if (texto) { let locutor = new SpeechSynthesisUtterance(texto); locutor.lang = 'pt-BR'; window.speechSynthesis.speak(locutor); }
-    }
-
-    function abrirChecklist(id) { idChecklistAtual = id; document.querySelectorAll('.check-seguranca').forEach(cb => cb.checked = false); validarChecklist(); document.getElementById('checklist-modal').style.display = 'flex'; }
-    function fecharChecklist() { document.getElementById('checklist-modal').style.display = 'none'; idChecklistAtual = null; }
-    function validarChecklist() {
-        const btn = document.getElementById('btn-iniciar-viagem');
-        if(Array.from(document.querySelectorAll('.check-seguranca')).every(cb => cb.checked)) { btn.style.opacity = '1'; btn.style.cursor = 'pointer'; btn.disabled = false; } 
-        else { btn.style.opacity = '0.5'; btn.style.cursor = 'not-allowed'; btn.disabled = true; }
-    }
-    function confirmarChecklist() { if(idChecklistAtual) { socket.emit('iniciar_ida', idChecklistAtual); fecharChecklist(); } }
-
-    function renderizar(ativos, historico) {
-        const nList = document.getElementById('nurse-list'); const mPendentes = document.getElementById('maqueiro-pendentes'); const mAtivo = document.getElementById('maqueiro-ativo'); const mHist = document.getElementById('maqueiro-history');
-        if(!usuario) return;
-        nList.innerHTML = ""; mPendentes.innerHTML = ""; mAtivo.innerHTML = ""; mHist.innerHTML = "";
-        let callNow = false; let contHoje = 0; let temAtivo = false; let cPendente = 0, cCurso = 0, cRisco = 0;
-
-        ativos.forEach(p => {
-            const color = p.urgencia === 'Vermelho' ? 'var(--danger)' : (p.urgencia === 'Amarelo' ? 'var(--warning)' : 'var(--success)');
-            const badgeRisco = p.risco_assistencial !== 'Nenhum' ? `<span style="background:var(--danger); color:white; font-size:9px; padding:3px 6px; border-radius:5px; font-weight:bold;">${p.risco_assistencial.toUpperCase()}</span>` : "";
-            if(p.risco_assistencial !== 'Nenhum') cRisco++;
-            if(p.status === 'pendente') cPendente++; else cCurso++;
-
-            const cardBase = `<div class="card" style="border-left-color:${color}"><button onclick="abrirDetalhes(${p.id})" style="position:absolute; right:15px; top:15px; border:none; background:none; cursor:pointer; font-size:1.2rem; color:var(--primary);"><i class="fa fa-info-circle"></i></button><div style="display:flex; justify-content:space-between; align-items:start; margin-bottom:8px; padding-right:25px;"><b style="font-size:1.05rem">${p.origem} ➔ ${p.destino}</b> ${badgeRisco}</div><div style="font-size:0.95rem; margin-bottom:5px;">👤 ${p.paciente}</div><div style="font-size:0.8rem; color:var(--gray); margin-bottom:5px;">🚑 ${p.tipo}</div><div style="font-size:0.85rem;">Status: <b style="color:var(--primary)">${p.status.toUpperCase().replace(/_/g, ' ')}</b></div><button onclick="abrirChat(${p.id})" style="position:absolute; right:15px; bottom:15px; border:none; background:#f0f0f0; width:35px; height:35px; border-radius:50%; cursor:pointer;"><i class="fa fa-comment" style="color:var(--primary)"></i></button>`;
-
-            if(usuario.cargo === 'enfermagem') {
-                nList.innerHTML += `<div>${cardBase}<div style="font-size:0.8rem; color:var(--gray); margin-top:5px;">Maqueiro: ${p.maqueiro_ida || '---'}</div>${p.status === 'no_destino' && p.trajeto === 'ida_volta' ? `<button class="btn btn-main" style="margin-top:12px; background:var(--success);" onclick="socket.emit('pedir_retorno', ${p.id})"><i class="fa fa-undo"></i> Solicitar Retorno</button>` : ""}</div></div>`;
-            }
+        function abrirPerfil() {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.getElementById('screen-perfil').classList.add('active');
             
-            if(usuario.cargo === 'maqueiro') {
-                const isPendente = p.status === 'pendente' || p.status === 'aguardando_retorno';
-                const isMeu = p.maqueiro_ida === usuario.nome || p.maqueiro_volta === usuario.nome;
+            document.getElementById('perfil-nome').value = usuario.nome;
+            document.getElementById('perfil-email').value = usuario.email;
+            document.getElementById('perfil-cargo').value = usuario.cargo;
+            document.getElementById('perfil-telefone').value = usuario.telefone || '';
+            atualizarFotosUI();
+        }
 
-                if(isPendente) {
-                    if((!p.maqueiro_sugerido || p.maqueiro_sugerido === usuario.nome) && !chamadosRejeitados.includes(p.id)) {
-                        callNow = true; idChamadoAtual = p.id;
-                        document.getElementById('call-paciente').innerText = p.paciente; document.getElementById('call-rota').innerText = p.origem + " ➔ " + p.destino; document.getElementById('call-equip').innerText = p.tipo; 
-                        
-                        const faixaRisco = document.getElementById('call-risco-faixa'); const imgRisco = document.getElementById('img-aviso-risco'); const iconeSirene = document.getElementById('icone-sirene');
-                        if (p.risco_assistencial !== 'Nenhum') {
-                            faixaRisco.style.display = 'block'; imgRisco.style.display = 'block'; iconeSirene.style.display = 'none';
-                            if(p.risco_assistencial === 'Contato') imgRisco.src = '/img-contato.png'; else if (p.risco_assistencial === 'Gotículas') imgRisco.src = '/img-goticulas.png'; else if (p.risco_assistencial === 'Aerosol') imgRisco.src = '/img-aerosol.png';
-                        } else { faixaRisco.style.display = 'none'; imgRisco.style.display = 'none'; iconeSirene.style.display = 'block'; }
+        function fecharPerfil() { abrirPainel(usuario); }
 
-                        if(audioLigado) {
-                            if (p.urgencia === 'Vermelho') document.getElementById('audio-emergencia').play(); else document.getElementById('audio-alerta').play();
-                            if (p.risco_assistencial !== 'Nenhum') setTimeout(() => falarAvisoRisco(p.risco_assistencial), 1000);
-                        }
-                    }
-                    mPendentes.innerHTML += `${cardBase}<button class="btn btn-main" style="background:var(--success); margin-top:15px; width:100%;" onclick="aceitarChamadoManual(${p.id})">ACEITAR CHAMADO</button></div>`;
-                } 
-                else if (isMeu) {
-                    temAtivo = true; let btnAcao = "";
-                    if(p.status === 'aceito' || p.status === 'aceito_retorno') btnAcao = `<button class="btn btn-main" style="margin-top:15px; width:100%;" onclick="abrirQR(${p.id})"><i class="fa fa-qrcode"></i> LER QR CODE LEITO</button>`;
-                    else if(p.status === 'na_origem') btnAcao = `<button class="btn" style="background:var(--warning); margin-top:15px; width:100%;" onclick="abrirChecklist(${p.id})"><i class="fa fa-play"></i> INICIAR TRAJETO</button>`;
-                    else if(p.status === 'em_transito_ida') btnAcao = `<button class="btn" style="background:var(--dark); color:white; margin-top:15px; width:100%;" onclick="socket.emit('entregue_destino', ${p.id})"><i class="fa fa-check"></i> ENTREGUE NO DESTINO</button>`;
-                    mAtivo.innerHTML += `${cardBase}${btnAcao}</div>`;
-                }
+        function lerFoto(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function(e) { document.getElementById('perfil-foto-preview').src = e.target.result; }
+            reader.readAsDataURL(file);
+        }
+
+        function salvarPerfil() {
+            const telefone = document.getElementById('perfil-telefone').value;
+            const foto = document.getElementById('perfil-foto-preview').src;
+            socket.emit('atualizar_perfil', { email: usuario.email, telefone, foto });
+        }
+
+        socket.on('perfil_atualizado', u => {
+            usuario = u; localStorage.setItem('imaqueiro_user', JSON.stringify(u));
+            atualizarFotosUI();
+            alert('✅ Perfil salvo com sucesso!');
+            fecharPerfil();
+        });
+
+        function abrirPainel(u) {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.getElementById(u.cargo === 'enfermagem' ? 'screen-nurse' : 'screen-maqueiro').classList.add('active');
+            const elNurse = document.getElementById('user-name-nurse'); if(elNurse) elNurse.innerText = u.nome;
+            const elMaq = document.getElementById('user-name-maq'); if(elMaq) elMaq.innerText = u.nome;
+            atualizarFotosUI();
+            socket.emit('solicitar_lista');
+        }
+
+        function enviarPedido() {
+            const checkboxes = document.querySelectorAll('.cb-disp:checked'); let selecionados = Array.from(checkboxes).map(cb => cb.value);
+            let obs = document.getElementById('obs').value; let dispositivosFinal = selecionados.join(', ');
+            if(obs) dispositivosFinal += (dispositivosFinal ? " | " : "") + obs;
+            if(!dispositivosFinal) dispositivosFinal = "Nenhuma observação reportada.";
+            const d = { paciente: document.getElementById('paciente').value, origem: document.getElementById('origem').value, destino: document.getElementById('destino').value, tipo: document.getElementById('tipo').value, urgencia: document.getElementById('urgencia').value, trajeto: document.getElementById('trajeto').value, risco_assistencial: document.getElementById('risco').value, dispositivos: dispositivosFinal };
+            if(!d.paciente || !d.origem || !d.destino) return alert("Preencha origem e destino!");
+            socket.emit('novo_pedido', d);
+            document.getElementById('paciente').value = ""; document.getElementById('origem').value = ""; document.getElementById('destino').value = ""; document.getElementById('obs').value = ""; checkboxes.forEach(cb => cb.checked = false);
+        }
+
+        socket.on('atualizar_lista', data => { pedidosAtivos = data.ativos; historicoGlobal = data.historico; renderizar(data.ativos, data.historico); });
+
+        socket.on('notificacao_mensagem', d => {
+            if(d.autor !== usuario.nome && idChatAtivo !== d.idPedido) {
+                document.getElementById('toast-autor').innerText = d.autor; document.getElementById('toast-msg').innerText = d.texto;
+                document.getElementById('toast').style.display = 'flex'; setTimeout(() => document.getElementById('toast').style.display='none', 5000);
             }
         });
 
-        if(usuario.cargo === 'enfermagem') { document.getElementById('stat-pendente').innerText = cPendente; document.getElementById('stat-curso').innerText = cCurso; document.getElementById('stat-risco').innerText = cRisco; }
-        if(usuario.cargo === 'maqueiro') {
-            document.getElementById('area-corrida-ativa').style.display = temAtivo ? 'block' : 'none';
-            historico.forEach(p => {
-                if(p.maqueiro_ida === usuario.nome || p.maqueiro_volta === usuario.nome) {
-                    contHoje++; mHist.innerHTML += `<div style="background:rgba(255,255,255,0.1); padding:10px; border-radius:8px; margin-bottom:10px; border-left:3px solid var(--success); display:flex; justify-content:space-between; align-items:center;"><div><b>${p.origem} ➔ ${p.destino}</b><br><span style="opacity:0.8">${p.paciente}</span></div><i class="fa fa-check-circle" style="color:var(--success); font-size:1.2rem;"></i></div>`;
+        function abrirDetalhes(id) {
+            const p = pedidosAtivos.find(x => x.id === id) || historicoGlobal.find(x => x.id === id); if (!p) return;
+            document.getElementById('details-body').innerHTML = `<div style="margin-bottom:15px;"><b>Paciente:</b> ${p.paciente}<br><b>Trajeto:</b> ${p.origem} ➔ ${p.destino}<br><b>Equipamento:</b> ${p.tipo}<br><b>Urgência:</b> ${p.urgencia}<br><b>Risco Biológico:</b> ${p.risco_assistencial}</div><div style="background:#f4f4f4; padding:10px; border-left:4px solid var(--danger); border-radius:5px;"><b style="color:var(--danger)">Condições / Dispositivos:</b><br>${p.dispositivos || 'Nenhuma observação reportada.'}</div>`;
+            document.getElementById('details-modal').style.display = 'flex';
+        }
+
+        async function habilitarNotificacoes() {
+            if (!('serviceWorker' in navigator && 'PushManager' in window)) return;
+            const permissao = await Notification.requestPermission();
+            if (permissao === 'granted') {
+                const reg = await navigator.serviceWorker.ready;
+                const publicVapidKey = 'BEl62iUYgUivxIkv69yViEuiBIa-Ib9-SkvMeAtA3LFgDzkrxZJjSgSnfckjBJuB22-xHhZpM8S2X_4WvXhQ6A0';
+                const urlBase64ToUint8Array = (base64String) => { const padding = '='.repeat((4 - base64String.length % 4) % 4); const base64 = (base64String + padding).replace(/\-/g, '+').replace(/_/g, '/'); const rawData = window.atob(base64); const outputArray = new Uint8Array(rawData.length); for (let i = 0; i < rawData.length; ++i) { outputArray[i] = rawData.charCodeAt(i); } return outputArray; };
+                const sub = await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: urlBase64ToUint8Array(publicVapidKey) });
+                socket.emit('salvar_inscricao_push', { nomeMaqueiro: usuario.nome, sub_info: sub });
+            }
+        }
+
+        function ativarAudio() {
+            document.getElementById('audio-alerta').play().then(() => document.getElementById('audio-alerta').pause());
+            document.getElementById('audio-emergencia').play().then(() => document.getElementById('audio-emergencia').pause());
+            if ('speechSynthesis' in window) window.speechSynthesis.speak(new SpeechSynthesisUtterance(''));
+            habilitarNotificacoes();
+            audioLigado = true; document.getElementById('btn-som').style.display = 'none';
+        }
+
+        function falarAvisoRisco(risco) {
+            if (!('speechSynthesis' in window)) return; window.speechSynthesis.cancel(); 
+            let texto = "";
+            if (risco === 'Contato') texto = "Atenção maqueiro. Risco de Contato. Por favor, paramente-se com luvas e avental.";
+            else if (risco === 'Gotículas') texto = "Atenção. Risco de Gotículas. Coloque máscara cirúrgica.";
+            else if (risco === 'Aerosol') texto = "Atenção. Risco de Aerossol. Utilize máscara N 95.";
+            if (texto) { let locutor = new SpeechSynthesisUtterance(texto); locutor.lang = 'pt-BR'; window.speechSynthesis.speak(locutor); }
+        }
+
+        function abrirChecklist(id) { idChecklistAtual = id; document.querySelectorAll('.check-seguranca').forEach(cb => cb.checked = false); validarChecklist(); document.getElementById('checklist-modal').style.display = 'flex'; }
+        function fecharChecklist() { document.getElementById('checklist-modal').style.display = 'none'; idChecklistAtual = null; }
+        function validarChecklist() { const btn = document.getElementById('btn-iniciar-viagem'); if(Array.from(document.querySelectorAll('.check-seguranca')).every(cb => cb.checked)) { btn.style.opacity = '1'; btn.style.cursor = 'pointer'; btn.disabled = false; } else { btn.style.opacity = '0.5'; btn.style.cursor = 'not-allowed'; btn.disabled = true; } }
+        function confirmarChecklist() { if(idChecklistAtual) { socket.emit('iniciar_ida', idChecklistAtual); fecharChecklist(); } }
+
+        function renderizar(ativos, historico) {
+            const nList = document.getElementById('nurse-list'); const mPendentes = document.getElementById('maqueiro-pendentes'); const mAtivo = document.getElementById('maqueiro-ativo'); const mHist = document.getElementById('maqueiro-history');
+            if(!usuario) return; nList.innerHTML = ""; mPendentes.innerHTML = ""; mAtivo.innerHTML = ""; mHist.innerHTML = "";
+            let callNow = false; let contHoje = 0; let temAtivo = false; let cPendente = 0, cCurso = 0, cRisco = 0;
+
+            ativos.forEach(p => {
+                const color = p.urgencia === 'Vermelho' ? 'var(--danger)' : (p.urgencia === 'Amarelo' ? 'var(--warning)' : 'var(--success)');
+                const badgeRisco = p.risco_assistencial !== 'Nenhum' ? `<span style="background:var(--danger); color:white; font-size:9px; padding:3px 6px; border-radius:5px; font-weight:bold;">${p.risco_assistencial.toUpperCase()}</span>` : "";
+                if(p.risco_assistencial !== 'Nenhum') cRisco++; if(p.status === 'pendente') cPendente++; else cCurso++;
+
+                const cardBase = `<div class="card" style="border-left-color:${color}"><button onclick="abrirDetalhes(${p.id})" style="position:absolute; right:15px; top:15px; border:none; background:none; cursor:pointer; font-size:1.2rem; color:var(--primary);"><i class="fa fa-info-circle"></i></button><div style="display:flex; justify-content:space-between; align-items:start; margin-bottom:8px; padding-right:25px;"><b style="font-size:1.05rem">${p.origem} ➔ ${p.destino}</b> ${badgeRisco}</div><div style="font-size:0.95rem; margin-bottom:5px;">👤 ${p.paciente}</div><div style="font-size:0.8rem; color:var(--gray); margin-bottom:5px;">🚑 ${p.tipo}</div><div style="font-size:0.85rem;">Status: <b style="color:var(--primary)">${p.status.toUpperCase().replace(/_/g, ' ')}</b></div><button onclick="abrirChat(${p.id})" style="position:absolute; right:15px; bottom:15px; border:none; background:#f0f0f0; width:35px; height:35px; border-radius:50%; cursor:pointer;"><i class="fa fa-comment" style="color:var(--primary)"></i></button>`;
+
+                if(usuario.cargo === 'enfermagem') {
+                    nList.innerHTML += `<div>${cardBase}<div style="font-size:0.8rem; color:var(--gray); margin-top:5px;">Maqueiro: ${p.maqueiro_ida || '---'}</div>${p.status === 'no_destino' && p.trajeto === 'ida_volta' ? `<button class="btn btn-main" style="margin-top:12px; background:var(--success);" onclick="socket.emit('pedir_retorno', ${p.id})"><i class="fa fa-undo"></i> Solicitar Retorno</button>` : ""}</div></div>`;
+                }
+                
+                if(usuario.cargo === 'maqueiro') {
+                    const isPendente = p.status === 'pendente' || p.status === 'aguardando_retorno';
+                    const isMeu = p.maqueiro_ida === usuario.nome || p.maqueiro_volta === usuario.nome;
+
+                    if(isPendente) {
+                        if((!p.maqueiro_sugerido || p.maqueiro_sugerido === usuario.nome) && !chamadosRejeitados.includes(p.id)) {
+                            callNow = true; idChamadoAtual = p.id;
+                            document.getElementById('call-paciente').innerText = p.paciente; document.getElementById('call-rota').innerText = p.origem + " ➔ " + p.destino; document.getElementById('call-equip').innerText = p.tipo; 
+                            const faixaRisco = document.getElementById('call-risco-faixa'); const imgRisco = document.getElementById('img-aviso-risco'); const iconeSirene = document.getElementById('icone-sirene');
+                            if (p.risco_assistencial !== 'Nenhum') {
+                                faixaRisco.style.display = 'block'; imgRisco.style.display = 'block'; iconeSirene.style.display = 'none';
+                                if(p.risco_assistencial === 'Contato') imgRisco.src = '/img-contato.png'; else if (p.risco_assistencial === 'Gotículas') imgRisco.src = '/img-goticulas.png'; else if (p.risco_assistencial === 'Aerosol') imgRisco.src = '/img-aerosol.png';
+                            } else { faixaRisco.style.display = 'none'; imgRisco.style.display = 'none'; iconeSirene.style.display = 'block'; }
+                            if(audioLigado) { if (p.urgencia === 'Vermelho') document.getElementById('audio-emergencia').play(); else document.getElementById('audio-alerta').play(); if (p.risco_assistencial !== 'Nenhum') setTimeout(() => falarAvisoRisco(p.risco_assistencial), 1000); }
+                        }
+                        mPendentes.innerHTML += `${cardBase}<button class="btn btn-main" style="background:var(--success); margin-top:15px; width:100%;" onclick="aceitarChamadoManual(${p.id})">ACEITAR CHAMADO</button></div>`;
+                    } 
+                    else if (isMeu) {
+                        temAtivo = true; let btnAcao = "";
+                        if(p.status === 'aceito' || p.status === 'aceito_retorno') btnAcao = `<button class="btn btn-main" style="margin-top:15px; width:100%;" onclick="abrirQR(${p.id})"><i class="fa fa-qrcode"></i> LER QR CODE LEITO</button>`;
+                        else if(p.status === 'na_origem') btnAcao = `<button class="btn" style="background:var(--warning); margin-top:15px; width:100%;" onclick="abrirChecklist(${p.id})"><i class="fa fa-play"></i> INICIAR TRAJETO</button>`;
+                        else if(p.status === 'em_transito_ida') btnAcao = `<button class="btn" style="background:var(--dark); color:white; margin-top:15px; width:100%;" onclick="socket.emit('entregue_destino', ${p.id})"><i class="fa fa-check"></i> ENTREGUE NO DESTINO</button>`;
+                        mAtivo.innerHTML += `${cardBase}${btnAcao}</div>`;
+                    }
                 }
             });
-            document.getElementById('total-hoje').innerText = contHoje;
-        }
-        document.getElementById('call-modal').style.display = callNow ? 'flex' : 'none';
-    }
 
-    function aceitarChamadoManual(id) { socket.emit('aceitar_chamado', { idPedido: id, nomeMaqueiro: usuario.nome }); }
-    document.getElementById('swipe-accept').addEventListener('input', function() { if(this.value > 85) { this.value = 0; pararAlarme(); socket.emit('aceitar_chamado', {idPedido: idChamadoAtual, nomeMaqueiro: usuario.nome}); } });
-    function passarVezCall() { pararAlarme(); chamadosRejeitados.push(idChamadoAtual); document.getElementById('call-modal').style.display = 'none'; socket.emit('rejeitar_pedido', idChamadoAtual); }
-    function pararAlarme() { document.getElementById('audio-alerta').pause(); document.getElementById('audio-emergencia').pause(); window.speechSynthesis.cancel(); }
-    function abrirChat(id) { idChatAtivo = id; const p = pedidosAtivos.find(x => x.id === id); const box = document.getElementById('chat-box'); box.innerHTML = (p.chat_mensagens || []).map(m => `<div class="msg ${m.autor === usuario.nome ? 'meu' : 'outro'}"><b>${m.autor}:</b> ${m.texto}</div>`).join(''); const fr = usuario.cargo === 'maqueiro' ? ["Chegando", "Elevador lotado", "Paciente não pronto"] : ["Aguarde", "Pode vir", "Tudo Certo"]; document.getElementById('quick-replies').innerHTML = fr.map(f => `<button class="btn" style="border:1px solid var(--primary); background:none; font-size:0.75rem;" onclick="enviarMensagem('${f}')">${f}</button>`).join(''); document.getElementById('chat-modal').style.display = 'flex'; box.scrollTop = box.scrollHeight; }
-    function enviarMensagem(texto) { socket.emit('enviar_mensagem', { idPedido: idChatAtivo, texto, autor: usuario.nome }); document.getElementById('chat-modal').style.display='none'; idChatAtivo=null; }
-    function abrirQR(id) { document.getElementById('qr-modal').style.display = 'flex'; html5QrCode = new Html5Qrcode("qr-reader"); html5QrCode.start({ facingMode: "environment" }, { fps: 10, qrbox: 250 }, (txt) => { fecharQR(); socket.emit('cheguei_origem', id); }, () => {}); }
-    function fecharQR() { if(html5QrCode) html5QrCode.stop().then(() => html5QrCode.clear()); document.getElementById('qr-modal').style.display = 'none'; }
-</script>
+            if(usuario.cargo === 'enfermagem') { document.getElementById('stat-pendente').innerText = cPendente; document.getElementById('stat-curso').innerText = cCurso; document.getElementById('stat-risco').innerText = cRisco; }
+            if(usuario.cargo === 'maqueiro') {
+                document.getElementById('area-corrida-ativa').style.display = temAtivo ? 'block' : 'none';
+                historico.forEach(p => { if(p.maqueiro_ida === usuario.nome || p.maqueiro_volta === usuario.nome) { contHoje++; mHist.innerHTML += `<div style="background:rgba(255,255,255,0.1); padding:10px; border-radius:8px; margin-bottom:10px; border-left:3px solid var(--success); display:flex; justify-content:space-between; align-items:center;"><div><b>${p.origem} ➔ ${p.destino}</b><br><span style="opacity:0.8">${p.paciente}</span></div><i class="fa fa-check-circle" style="color:var(--success); font-size:1.2rem;"></i></div>`; } });
+                document.getElementById('total-hoje').innerText = contHoje;
+            }
+            document.getElementById('call-modal').style.display = callNow ? 'flex' : 'none';
+        }
+
+        function aceitarChamadoManual(id) { socket.emit('aceitar_chamado', { idPedido: id, nomeMaqueiro: usuario.nome }); }
+        document.getElementById('swipe-accept').addEventListener('input', function() { if(this.value > 85) { this.value = 0; pararAlarme(); socket.emit('aceitar_chamado', {idPedido: idChamadoAtual, nomeMaqueiro: usuario.nome}); } });
+        function passarVezCall() { pararAlarme(); chamadosRejeitados.push(idChamadoAtual); document.getElementById('call-modal').style.display = 'none'; socket.emit('rejeitar_pedido', idChamadoAtual); }
+        function pararAlarme() { document.getElementById('audio-alerta').pause(); document.getElementById('audio-emergencia').pause(); window.speechSynthesis.cancel(); }
+        function abrirChat(id) { idChatAtivo = id; const p = pedidosAtivos.find(x => x.id === id); const box = document.getElementById('chat-box'); box.innerHTML = (p.chat_mensagens || []).map(m => `<div class="msg ${m.autor === usuario.nome ? 'meu' : 'outro'}"><b>${m.autor}:</b> ${m.texto}</div>`).join(''); const fr = usuario.cargo === 'maqueiro' ? ["Chegando", "Elevador lotado", "Paciente não pronto"] : ["Aguarde", "Pode vir", "Tudo Certo"]; document.getElementById('quick-replies').innerHTML = fr.map(f => `<button class="btn" style="border:1px solid var(--primary); background:none; font-size:0.75rem;" onclick="enviarMensagem('${f}')">${f}</button>`).join(''); document.getElementById('chat-modal').style.display = 'flex'; box.scrollTop = box.scrollHeight; }
+        function enviarMensagem(texto) { socket.emit('enviar_mensagem', { idPedido: idChatAtivo, texto, autor: usuario.nome }); document.getElementById('chat-modal').style.display='none'; idChatAtivo=null; }
+        function abrirQR(id) { document.getElementById('qr-modal').style.display = 'flex'; html5QrCode = new Html5Qrcode("qr-reader"); html5QrCode.start({ facingMode: "environment" }, { fps: 10, qrbox: 250 }, (txt) => { fecharQR(); socket.emit('cheguei_origem', id); }, () => {}); }
+        function fecharQR() { if(html5QrCode) html5QrCode.stop().then(() => html5QrCode.clear()); document.getElementById('qr-modal').style.display = 'none'; }
+    </script>
 </body>
 </html>

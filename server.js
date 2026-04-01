@@ -9,7 +9,6 @@ const supabaseUrl = 'https://yleinvhlnsgozeyajeom.supabase.co';
 const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlsZWludmhsbnNnb3pleWFqZW9tIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ5NDY3MDQsImV4cCI6MjA5MDUyMjcwNH0.EdvC4eM8ZG-RSh1zDExmIRd-kJLtCyAOpgbxBef6ebk';
 const supabase = createClient(supabaseUrl, supabaseKey);
 
-// --- CONFIGURAÇÃO WEB PUSH (Não perca essas chaves) ---
 const publicVapidKey = 'BEl62iUYgUivxIkv69yViEuiBIa-Ib9-SkvMeAtA3LFgDzkrxZJjSgSnfckjBJuB22-xHhZpM8S2X_4WvXhQ6A0';
 const privateVapidKey = 't1v8Q1jXgY9p37_HlQv_tH9eM5VvjF9YQ_V1x0X2oZ4';
 webpush.setVapidDetails('mailto:admin@imaqueiro.com', publicVapidKey, privateVapidKey);
@@ -59,9 +58,17 @@ io.on('connection', async (socket) => {
         }
     });
 
-    // Salva a permissão do celular no banco
     socket.on('salvar_inscricao_push', async (d) => {
         await supabase.from('push_subscriptions').upsert([{ nome_maqueiro: d.nomeMaqueiro, sub_info: d.sub_info }], { onConflict: 'nome_maqueiro' });
+    });
+
+    // --- NOVA ROTA DE PERFIL ---
+    socket.on('atualizar_perfil', async (dados) => {
+        const { email, telefone, foto } = dados;
+        const { data, error } = await supabase.from('usuarios').update({ telefone, foto }).eq('email', email).select().single();
+        if (!error && data) {
+            socket.emit('perfil_atualizado', data);
+        }
     });
 
     socket.on('disconnect', () => { maqueirosOnline = maqueirosOnline.filter(m => m.id !== socket.id); });
@@ -79,8 +86,6 @@ io.on('connection', async (socket) => {
         }]);
         
         atualizarTodos();
-
-        // SE O SISTEMA SUGERIU UM MAQUEIRO, ACORDA O CELULAR DELE!
         if (sugerido) {
             let urgenciaMsg = d.urgencia === 'Vermelho' ? '🚨 EMERGÊNCIA:' : 'Novo Transporte:';
             enviarPushNotificacao(sugerido, "iMaqueiro", `${urgenciaMsg} ${d.origem} para ${d.destino}`);
@@ -99,8 +104,6 @@ io.on('connection', async (socket) => {
         await supabase.from('pedidos').update({ chat_mensagens: h }).eq('id', d.idPedido);
         io.emit('notificacao_mensagem', d);
         atualizarTodos();
-        
-        // Manda notificação Push no chat se estiver no bolso
         if (p.maqueiro_ida && d.autor !== p.maqueiro_ida) enviarPushNotificacao(p.maqueiro_ida, "Mensagem da Enfermagem", d.texto);
     });
 
@@ -126,8 +129,6 @@ io.on('connection', async (socket) => {
         if (maqueirosOnline.length > 0) { sugerido = maqueirosOnline[0].nome; const m = maqueirosOnline.shift(); maqueirosOnline.push(m); }
         await supabase.from('pedidos').update({ status: 'aguardando_retorno', pedido_retorno_at: new Date().toISOString(), maqueiro_sugerido: sugerido }).eq('id', id);
         atualizarTodos();
-        
-        // ACORDA O CELULAR PARA A VOLTA DO PACIENTE
         if (sugerido) enviarPushNotificacao(sugerido, "iMaqueiro", `🔄 Retorno de Paciente Liberado!`);
     });
     
