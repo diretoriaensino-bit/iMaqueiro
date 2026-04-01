@@ -221,6 +221,9 @@
     <script>
         const socket = io();
         let usuario, audioLigado = false, pedidosAtivos = [], historicoGlobal = [], idChamadoAtual, idChatAtivo, html5QrCode;
+        
+        // Memória de chamados que este maqueiro já rejeitou
+        let chamadosRejeitados = [];
 
         window.onload = () => {
             const salvo = localStorage.getItem('imaqueiro_user');
@@ -362,7 +365,8 @@
                     const isMeu = p.maqueiro_ida === usuario.nome || p.maqueiro_volta === usuario.nome;
 
                     if(isPendente) {
-                        if(!p.maqueiro_sugerido || p.maqueiro_sugerido === usuario.nome) {
+                        // NOVA TRAVA: Só mostra a tela preta se ele não estiver na lista de rejeitados
+                        if((!p.maqueiro_sugerido || p.maqueiro_sugerido === usuario.nome) && !chamadosRejeitados.includes(p.id)) {
                             callNow = true; idChamadoAtual = p.id;
                             document.getElementById('call-paciente').innerText = p.paciente; 
                             document.getElementById('call-rota').innerText = p.origem + " ➔ " + p.destino; 
@@ -396,6 +400,8 @@
                                 }
                             }
                         }
+                        
+                        // O card vai aparecer na lista com o botão Aceitar mesmo que ele tenha rejeitado a chamada de tela preta
                         let btnAceitar = `<button class="btn btn-main" style="background:var(--success); margin-top:15px; width:100%;" onclick="aceitarChamadoManual(${p.id})">ACEITAR CHAMADO</button>`;
                         mPendentes.innerHTML += `${cardBase}${btnAceitar}</div>`;
                     } 
@@ -427,9 +433,28 @@
         }
 
         function aceitarChamadoManual(id) { socket.emit('aceitar_chamado', { idPedido: id, nomeMaqueiro: usuario.nome }); }
-        document.getElementById('swipe-accept').addEventListener('input', function() { if(this.value > 85) { this.value = 0; pararAlarme(); socket.emit('aceitar_chamado', {idPedido: idChamadoAtual, nomeMaqueiro: usuario.nome}); } });
-        function passarVezCall() { pararAlarme(); socket.emit('rejeitar_pedido', idChamadoAtual); }
-        function pararAlarme() { document.getElementById('audio-alerta').pause(); document.getElementById('audio-emergencia').pause(); window.speechSynthesis.cancel(); }
+        
+        document.getElementById('swipe-accept').addEventListener('input', function() { 
+            if(this.value > 85) { 
+                this.value = 0; 
+                pararAlarme(); 
+                socket.emit('aceitar_chamado', {idPedido: idChamadoAtual, nomeMaqueiro: usuario.nome}); 
+            } 
+        });
+
+        // AQUI ESTÁ A CORREÇÃO DE PASSAR A VEZ
+        function passarVezCall() { 
+            pararAlarme(); 
+            chamadosRejeitados.push(idChamadoAtual); // Salva que este maqueiro recusou
+            document.getElementById('call-modal').style.display = 'none'; // Esconde na hora
+            socket.emit('rejeitar_pedido', idChamadoAtual); // Informa o servidor
+        }
+
+        function pararAlarme() { 
+            document.getElementById('audio-alerta').pause(); 
+            document.getElementById('audio-emergencia').pause(); 
+            if('speechSynthesis' in window) window.speechSynthesis.cancel(); 
+        }
 
         function abrirChat(id) {
             idChatAtivo = id; const p = pedidosAtivos.find(x => x.id === id); const box = document.getElementById('chat-box');
