@@ -34,7 +34,7 @@ async function enviarPushNotificacao(maqueiroNome, titulo, corpo) {
         const { data } = await supabase.from('push_subscriptions').select('sub_info').eq('nome_maqueiro', maqueiroNome);
         if (data && data.length > 0) {
             data.forEach(sub => {
-                webpush.sendNotification(sub.sub_info, JSON.stringify({ titulo, corpo })).catch(err => console.error("Erro no Push:", err));
+                webpush.sendNotification(sub.sub_info, JSON.stringify({ titulo, corpo })).catch(err => console.error("Erro Push:", err));
             });
         }
     } catch (e) { console.error(e); }
@@ -44,7 +44,9 @@ io.on('connection', async (socket) => {
     socket.on('fazer_login', async (dados) => {
         const { data, error } = await supabase.from('usuarios').select('*').eq('email', dados.email).eq('senha', dados.senha).single(); 
         if (error) return socket.emit('login_erro', "Usuário ou senha inválidos.");
-        if (data.cargo === 'maqueiro') {
+        
+        // Só coloca na roleta se ele não estiver no intervalo
+        if (data.cargo === 'maqueiro' && data.status_trabalho !== 'intervalo') {
             maqueirosOnline = maqueirosOnline.filter(m => m.nome !== data.nome);
             maqueirosOnline.push({ id: socket.id, nome: data.nome });
         }
@@ -52,58 +54,46 @@ io.on('connection', async (socket) => {
     });
 
     socket.on('relogar_maqueiro', (u) => {
-        if (u && u.cargo === 'maqueiro') {
+        if (u && u.cargo === 'maqueiro' && u.status_trabalho !== 'intervalo') {
             maqueirosOnline = maqueirosOnline.filter(m => m.nome !== u.nome);
             maqueirosOnline.push({ id: socket.id, nome: u.nome });
         }
     });
 
-    socket.on('salvar_inscricao_push', async (d) => {
-        await supabase.from('push_subscriptions').upsert([{ nome_maqueiro: d.nomeMaqueiro, sub_info: d.sub_info }], { onConflict: 'nome_maqueiro' });
-    });
-
-    // --- NOVA ROTA DE PERFIL ---
-    socket.on('atualizar_perfil', async (dados) => {
-        const { email, telefone, foto } = dados;
-        const { data, error } = await supabase.from('usuarios').update({ telefone, foto }).eq('email', email).select().single();
-        if (!error && data) {
-            socket.emit('perfil_atualizado', data);
+    // --- NOVA ROTA: ALTERAR STATUS ---
+    socket.on('mudar_status', async (dados) => {
+        const { email, nome, status } = dados;
+        await supabase.from('usuarios').update({ status_trabalho: status }).eq('email', email);
+        
+        // Gerencia a roleta do servidor
+        if (status === 'disponivel') {
+            if (!maqueirosOnline.find(m => m.nome === nome)) maqueirosOnline.push({ id: socket.id, nome: nome });
+        } else {
+            maqueirosOnline = maqueirosOnline.filter(m => m.nome !== nome); // Tira do intervalo
         }
+        socket.emit('status_atualizado', status); // Retorna para o celular atualizar a cor
     });
 
+    socket.on('salvar_inscricao_push', async (d) => { await supabase.from('push_subscriptions').upsert([{ nome_maqueiro: d.nomeMaqueiro, sub_info: d.sub_info }], { onConflict: 'nome_maqueiro' }); });
+    socket.on('atualizar_perfil', async (dados) => { const { email, telefone, foto } = dados; const { data, error } = await supabase.from('usuarios').update({ telefone, foto }).eq('email', email).select().single(); if (!error && data) socket.emit('perfil_atualizado', data); });
     socket.on('disconnect', () => { maqueirosOnline = maqueirosOnline.filter(m => m.id !== socket.id); });
     socket.on('solicitar_lista', atualizarTodos);
 
     socket.on('novo_pedido', async (d) => {
         let sugerido = null;
-        if (maqueirosOnline.length > 0) {
-            sugerido = maqueirosOnline[0].nome;
-            const m = maqueirosOnline.shift();
-            maqueirosOnline.push(m);
-        }
-        await supabase.from('pedidos').insert([{ 
-            paciente: d.paciente, origem: d.origem, destino: d.destino, tipo: d.tipo, urgencia: d.urgencia, trajeto: d.trajeto, risco_assistencial: d.risco_assistencial, dispositivos: d.dispositivos, status: 'pendente', maqueiro_sugerido: sugerido
-        }]);
-        
+        if (maqueirosOnline.length > 0) { sugerido = maqueirosOnline[0].nome; const m = maqueirosOnline.shift(); maqueirosOnline.push(m); }
+        await supabase.from('pedidos').insert([{ paciente: d.paciente, origem: d.origem, destino: d.destino, tipo: d.tipo, urgencia: d.urgencia, trajeto: d.trajeto, risco_assistencial: d.risco_assistencial, dispositivos: d.dispositivos, status: 'pendente', maqueiro_sugerido: sugerido }]);
         atualizarTodos();
-        if (sugerido) {
-            let urgenciaMsg = d.urgencia === 'Vermelho' ? '🚨 EMERGÊNCIA:' : 'Novo Transporte:';
-            enviarPushNotificacao(sugerido, "iMaqueiro", `${urgenciaMsg} ${d.origem} para ${d.destino}`);
-        }
+        if (sugerido) { let urgenciaMsg = d.urgencia === 'Vermelho' ? '🚨 EMERGÊNCIA:' : 'Novo Transporte:'; enviarPushNotificacao(sugerido, "iMaqueiro", `${urgenciaMsg} ${d.origem} para ${d.destino}`); }
     });
 
-    socket.on('rejeitar_pedido', async (id) => {
-        await supabase.from('pedidos').update({ maqueiro_sugerido: null }).eq('id', id);
-        atualizarTodos();
-    });
+    socket.on('rejeitar_pedido', async (id) => { await supabase.from('pedidos').update({ maqueiro_sugerido: null }).eq('id', id); atualizarTodos(); });
 
     socket.on('enviar_mensagem', async (d) => {
         const { data: p } = await supabase.from('pedidos').select('*').eq('id', d.idPedido).single();
-        let h = p.chat_mensagens || [];
-        h.push({ texto: d.texto, autor: d.autor, hora: new Date().toLocaleTimeString('pt-BR', {hour:'2-digit', minute:'2-digit'}) });
+        let h = p.chat_mensagens || []; h.push({ texto: d.texto, autor: d.autor, hora: new Date().toLocaleTimeString('pt-BR', {hour:'2-digit', minute:'2-digit'}) });
         await supabase.from('pedidos').update({ chat_mensagens: h }).eq('id', d.idPedido);
-        io.emit('notificacao_mensagem', d);
-        atualizarTodos();
+        io.emit('notificacao_mensagem', d); atualizarTodos();
         if (p.maqueiro_ida && d.autor !== p.maqueiro_ida) enviarPushNotificacao(p.maqueiro_ida, "Mensagem da Enfermagem", d.texto);
     });
 
