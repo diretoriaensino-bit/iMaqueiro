@@ -24,7 +24,6 @@ let maqueirosOnline = [];
 async function atualizarTodos() {
     try {
         const { data: ativos } = await supabase.from('pedidos').select('*').neq('status', 'finalizado').order('id', { ascending: false });
-        // Aumentamos o limite para 100 para o Dashboard do Coordenador ter dados suficientes
         const { data: historico } = await supabase.from('pedidos').select('*').eq('status', 'finalizado').order('finalizado_at', { ascending: false }).limit(100);
         io.emit('atualizar_lista', { ativos: ativos || [], historico: historico || [], online: maqueirosOnline });
     } catch (e) { console.log("Erro:", e); }
@@ -71,48 +70,42 @@ io.on('connection', async (socket) => {
         atualizarTodos();
     });
 
-    socket.on('salvar_inscricao_push', async (d) => { await supabase.from('push_subscriptions').upsert([{ nome_maqueiro: d.nomeMaqueiro, sub_info: d.sub_info }], { onConflict: 'nome_maqueiro' }); });
-    socket.on('atualizar_perfil', async (dados) => { const { email, telefone, foto } = dados; const { data, error } = await supabase.from('usuarios').update({ telefone, foto }).eq('email', email).select().single(); if (!error && data) socket.emit('perfil_atualizado', data); });
-    socket.on('disconnect', () => { maqueirosOnline = maqueirosOnline.filter(m => m.id !== socket.id); atualizarTodos(); });
     socket.on('solicitar_lista', atualizarTodos);
+
+    // --- NOVA LÓGICA: MODO SIMULAÇÃO ---
+    socket.on('simular_pedidos', async () => {
+        const pacientes = ["Carlos Silva", "Ana Oliveira", "Marcos Pereira", "Julia Costa", "Roberto Souza"];
+        const locais = ["UTI 1", "Emergência", "Raio-X", "Centro Cirúrgico", "Enfermaria 2", "Tomografia"];
+        const urgencias = ["Verde", "Amarelo", "Vermelho"];
+        
+        let novosPedidos = [];
+        for(let i=0; i<5; i++) {
+            novosPedidos.push({
+                paciente: pacientes[Math.floor(Math.random() * pacientes.length)] + " (SIMULADO)",
+                origem: locais[Math.floor(Math.random() * locais.length)],
+                destino: locais[Math.floor(Math.random() * locais.length)],
+                urgencia: urgencias[Math.floor(Math.random() * urgencias.length)],
+                tipo: "Maca Padrão",
+                status: 'pendente'
+            });
+        }
+        await supabase.from('pedidos').insert(novosPedidos);
+        atualizarTodos();
+    });
 
     socket.on('novo_pedido', async (d) => {
         let sugerido = null;
         if (maqueirosOnline.length > 0) { sugerido = maqueirosOnline[0].nome; const m = maqueirosOnline.shift(); maqueirosOnline.push(m); }
         await supabase.from('pedidos').insert([{ paciente: d.paciente, origem: d.origem, destino: d.destino, tipo: d.tipo, urgencia: d.urgencia, trajeto: d.trajeto, risco_assistencial: d.risco_assistencial, dispositivos: d.dispositivos, status: 'pendente', maqueiro_sugerido: sugerido }]);
         atualizarTodos();
-        if (sugerido) { let urgenciaMsg = d.urgencia === 'Vermelho' ? '🚨 EMERGÊNCIA:' : 'Novo Transporte:'; enviarPushNotificacao(sugerido, "iMaqueiro", `${urgenciaMsg} ${d.origem} para ${d.destino}`); }
     });
 
-    socket.on('rejeitar_pedido', async (id) => { await supabase.from('pedidos').update({ maqueiro_sugerido: null }).eq('id', id); atualizarTodos(); });
-    socket.on('enviar_mensagem', async (d) => { const { data: p } = await supabase.from('pedidos').select('*').eq('id', d.idPedido).single(); let h = p.chat_mensagens || []; h.push({ texto: d.texto, autor: d.autor, hora: new Date().toLocaleTimeString('pt-BR', {hour:'2-digit', minute:'2-digit'}) }); await supabase.from('pedidos').update({ chat_mensagens: h }).eq('id', d.idPedido); io.emit('notificacao_mensagem', d); atualizarTodos(); if (p.maqueiro_ida && d.autor !== p.maqueiro_ida) enviarPushNotificacao(p.maqueiro_ida, "Mensagem da Enfermagem", d.texto); });
-
-    socket.on('aceitar_chamado', async (dados) => {
-        const { data: p } = await supabase.from('pedidos').select('status').eq('id', dados.idPedido).single();
-        if (p && p.status === 'pendente') await supabase.from('pedidos').update({ status: 'aceito', maqueiro_ida: dados.nomeMaqueiro, aceito_em: new Date().toISOString() }).eq('id', dados.idPedido);
-        else if (p && p.status === 'aguardando_retorno') await supabase.from('pedidos').update({ status: 'aceito_retorno', maqueiro_volta: dados.nomeMaqueiro, aceito_retorno_at: new Date().toISOString() }).eq('id', dados.idPedido);
-        atualizarTodos();
-    });
-    
-    socket.on('cheguei_origem', async (id) => { await supabase.from('pedidos').update({ status: 'na_origem', chegada_origem_at: new Date().toISOString() }).eq('id', id); atualizarTodos(); });
-    socket.on('iniciar_ida', async (id) => { await supabase.from('pedidos').update({ status: 'em_transito_ida', inicio_transporte_at: new Date().toISOString() }).eq('id', id); atualizarTodos(); });
-    
-    socket.on('entregue_destino', async (id) => {
-        const { data } = await supabase.from('pedidos').select('trajeto').eq('id', id).single();
-        const final = (data && data.trajeto === 'so_ida') ? 'finalizado' : 'no_destino';
-        await supabase.from('pedidos').update({ status: final, entrega_destino_at: new Date().toISOString(), finalizado_at: final === 'finalizado' ? new Date().toISOString() : null }).eq('id', id);
-        atualizarTodos();
-    });
-
-    socket.on('pedir_retorno', async (id) => {
-        let sugerido = null;
-        if (maqueirosOnline.length > 0) { sugerido = maqueirosOnline[0].nome; const m = maqueirosOnline.shift(); maqueirosOnline.push(m); }
-        await supabase.from('pedidos').update({ status: 'aguardando_retorno', pedido_retorno_at: new Date().toISOString(), maqueiro_sugerido: sugerido }).eq('id', id);
-        atualizarTodos();
-        if (sugerido) enviarPushNotificacao(sugerido, "iMaqueiro", `🔄 Retorno de Paciente Liberado!`);
-    });
-    
     socket.on('finalizar_geral', async (id) => { await supabase.from('pedidos').update({ status: 'finalizado', finalizado_at: new Date().toISOString() }).eq('id', id); atualizarTodos(); });
+    socket.on('aceitar_chamado', async (dados) => {
+        await supabase.from('pedidos').update({ status: 'aceito', maqueiro_ida: dados.nomeMaqueiro, aceito_em: new Date().toISOString() }).eq('id', dados.idPedido);
+        atualizarTodos();
+    });
+    socket.on('disconnect', () => { maqueirosOnline = maqueirosOnline.filter(m => m.id !== socket.id); atualizarTodos(); });
 });
 
 const PORT = process.env.PORT || 3000;

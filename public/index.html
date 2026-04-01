@@ -7,6 +7,8 @@
     <link rel="manifest" href="/manifest.json">
     <meta name="theme-color" content="#0F172A">
     
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 512 512%22><path fill=%22%234F46E5%22 d=%22M192 112c0-26.5 21.5-48 48-48s48 21.5 48 48s-21.5 48-48 48s-48-21.5-48-48zm39.6 96c-36.5 0-66.4 29.6-66.4 66.4l0 61.6H120c-13.3 0-24 10.7-24 24s10.7 24 24 24h64c13.3 0 24-10.7 24-24l0-61.6c0-10 8.4-18.4 18.4-18.4h55.4c14.2 0 27.5-6.8 36.1-18.2l34.8-46.4c5.4-7.2 4-17.5-3.2-22.9s-17.5-4-22.9 3.2l-34.8 46.4c-2.9 3.8-7.3 6.1-12 6.1H231.6zM224 400c0-53 43-96 96-96s96 43 96 96s-43 96-96 96s-96-43-96-96zm64 0c0 17.7 14.3 32 32 32s32-14.3 32-32s-14.3-32-32-32s-32 14.3-32 32z%22/></svg>">
+    
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -14,6 +16,7 @@
     <script src="/socket.io/socket.io.js"></script>
     <script src="https://unpkg.com/html5-qrcode"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     
     <style>
@@ -150,10 +153,9 @@
         .msg.meu { align-self: flex-end; background: var(--primary); border-bottom-right-radius: 4px; } 
         .msg.outro { align-self: flex-start; background: var(--text-muted); border-bottom-left-radius: 4px; }
         
-        /* AJUSTES NO MODAL DE CHAMADA (ALARME) PARA CABER NO CELULAR */
-        #call-modal { display: none; position: fixed; top:0; left:0; width:100vw; height:100vh; background: rgba(15, 23, 42, 0.98); z-index:9999; color:#FFF; flex-direction:column; justify-content:space-evenly; align-items:center; text-align:center; padding:15px;}
+        #call-modal { display: none; position: fixed; top:0; left:0; width:100vw; height:100vh; background: rgba(15, 23, 42, 0.98); z-index:9999; color:#FFF; flex-direction:column; justify-content:center; align-items:center; text-align:center; padding:20px;}
         #swipe-accept { -webkit-appearance: none; appearance: none; width: 100%; background: transparent; position: absolute; height: 100%; cursor: pointer; outline: none; z-index: 10; }
-        #swipe-accept::-webkit-slider-thumb { -webkit-appearance: none; appearance: none; width: 60px; height: 60px; border-radius: 50%; background: var(--success); box-shadow: 0 0 20px rgba(16, 185, 129, 0.6); border: 3px solid #FFF;}
+        #swipe-accept::-webkit-slider-thumb { -webkit-appearance: none; appearance: none; width: 70px; height: 70px; border-radius: 50%; background: var(--success); box-shadow: 0 0 20px rgba(16, 185, 129, 0.6); border: 3px solid #FFF;}
         
         .perfil-avatar-wrapper { position: relative; width: 130px; height: 130px; margin: 0 auto 24px auto; }
         .perfil-avatar { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; border: 4px solid var(--primary); background: var(--input-bg); box-shadow: var(--shadow-md); }
@@ -176,7 +178,10 @@
         
         <div id="screen-login" class="screen active login-bg" style="justify-content:center; align-items:center; padding: 0;">
             <div class="login-box">
-                <img src="/logo-hospital.png" style="width: 80px; max-height: 80px; object-fit: contain; margin-bottom: 15px;" onerror="this.style.display='none'">
+                <div style="background: var(--primary-light); width: 110px; height: 110px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px auto; box-shadow: var(--shadow-md);">
+                    <i class="fa fa-wheelchair" style="font-size: 4.5rem; color: var(--primary);"></i>
+                </div>
+                
                 <h2 style="color:#0F172A; margin:0 0 8px 0; font-size: 2rem; font-weight: 800; letter-spacing: -1px;">iMaqueiro <span style="color:var(--primary)">Pro</span></h2>
                 <p style="color:#64748B; margin-bottom: 30px; font-weight: 500; font-size: 0.95rem;">Gestão Logística Inteligente</p>
                 <div style="text-align: left;">
@@ -194,9 +199,12 @@
             <header>
                 <div class="header-title"><i class="fa fa-chart-pie" style="font-size: 1.8rem; color: #60A5FA;"></i><h3 style="margin:0; font-weight: 700; letter-spacing: -0.5px;">Centro de Comando</h3></div>
                 <div class="header-actions">
+                    <button class="btn" style="background:var(--success); color:white; font-size: 0.95rem; padding: 10px 15px;" onclick="exportarParaExcel()"><i class="fa fa-file-excel"></i> RELATÓRIO EXCEL</button>
+                    <button class="btn" style="background:var(--warning-light); color:var(--warning-dark); font-size: 0.95rem; padding: 10px 15px;" onclick="socket.emit('simular_pedidos')"><i class="fa fa-magic"></i> SIMULAR DADOS</button>
+                    
                     <button class="btn" style="background:transparent; color:inherit; font-size: 1.2rem; padding: 8px;" onclick="toggleTheme()"><i class="fa fa-moon" id="theme-icon-coord"></i></button>
                     <span id="user-name-coord" style="font-weight:600; font-size:0.95rem;"></span>
-                    <img id="header-foto-coord" src="/logo-hospital.png" class="miniatura-foto" onerror="this.src='https://cdn-icons-png.flaticon.com/512/149/149071.png'">
+                    <img id="header-foto-coord" src="https://cdn-icons-png.flaticon.com/512/149/149071.png" class="miniatura-foto">
                     <button class="btn" style="background:rgba(255,255,255,0.15); color:white; padding:10px; border-radius:50%; width: 40px; height: 40px;" onclick="abrirPerfil()"><i class="fa fa-cog"></i></button>
                     <button class="btn" style="background:var(--danger); color:white; padding:10px 20px;" onclick="fazerLogout()"><i class="fa fa-power-off"></i> Sair</button>
                 </div>
@@ -239,7 +247,7 @@
                 <div class="header-actions">
                     <button class="btn" style="background:transparent; color:inherit; font-size: 1.2rem; padding: 8px;" onclick="toggleTheme()"><i class="fa fa-moon" id="theme-icon-nurse"></i></button>
                     <span id="user-name-nurse" style="font-weight:600; font-size:0.95rem;"></span>
-                    <img id="header-foto-nurse" src="/logo-hospital.png" class="miniatura-foto" onerror="this.src='https://cdn-icons-png.flaticon.com/512/149/149071.png'">
+                    <img id="header-foto-nurse" src="https://cdn-icons-png.flaticon.com/512/149/149071.png" class="miniatura-foto">
                     <button class="btn" style="background:rgba(255,255,255,0.15); color:white; padding:10px; border-radius:50%; width: 40px; height: 40px;" onclick="abrirPerfil()"><i class="fa fa-cog"></i></button>
                     <button class="btn" style="background:var(--danger); color:white; padding:10px 20px;" onclick="fazerLogout()"><i class="fa fa-power-off"></i> Sair</button>
                 </div>
@@ -299,7 +307,7 @@
                 <div class="header-actions">
                     <button class="btn" style="background:transparent; color:inherit; font-size: 1.2rem; padding: 8px;" onclick="toggleTheme()"><i class="fa fa-moon" id="theme-icon-maq"></i></button>
                     <span id="user-name-maq" style="font-weight:600; font-size:0.95rem;"></span>
-                    <img id="header-foto-maq" src="/logo-hospital.png" class="miniatura-foto" onerror="this.src='https://cdn-icons-png.flaticon.com/512/149/149071.png'">
+                    <img id="header-foto-maq" src="https://cdn-icons-png.flaticon.com/512/149/149071.png" class="miniatura-foto">
                     <button class="btn" style="background:rgba(255,255,255,0.15); color:white; padding:10px; border-radius:50%; width: 40px; height: 40px;" onclick="abrirPerfil()"><i class="fa fa-cog"></i></button>
                 </div>
             </header>
@@ -343,11 +351,11 @@
 
     </div>
 
-    <div id="details-modal" class="modal-overlay"><div class="modal-content"><h3 style="margin-top:0; font-weight: 800; border-bottom: 2px solid var(--border-color); padding-bottom: 15px;"><i class="fa fa-file-medical" style="color: var(--primary);"></i> Prontuário Resumido</h3><div id="details-body" style="font-size:0.95rem; line-height:1.7; margin-top: 15px;"></div><button class="btn" style="width:100%; margin-top:24px; background:var(--input-bg); color: var(--text-main);" onclick="document.getElementById('details-modal').style.display='none'">Fechar</button></div></div>
+    <div id="details-modal" class="modal-overlay"><div class="modal-content"><h3 style="margin-top:0; font-weight: 800; border-bottom: 2px solid var(--border-color); padding-bottom: 15px;"><i class="fa fa-wheelchair" style="color: var(--primary);"></i> Prontuário Resumido</h3><div id="details-body" style="font-size:0.95rem; line-height:1.7; margin-top: 15px;"></div><button class="btn" style="width:100%; margin-top:24px; background:var(--input-bg); color: var(--text-main);" onclick="document.getElementById('details-modal').style.display='none'">Fechar</button></div></div>
     
     <div id="checklist-modal" class="modal-overlay"><div class="modal-content" style="max-width: 400px;"><h3 style="color:var(--warning-dark); margin-top:0; border-bottom: 3px solid var(--warning); padding-bottom: 15px; font-weight: 800;"><i class="fa fa-clipboard-check"></i> Checklist de Segurança</h3><p style="font-size:0.95rem; color:var(--text-muted); margin-bottom:24px; font-weight: 500;">Confirmação obrigatória para assumir o paciente:</p><label style="display:flex; align-items:center; gap:12px; margin-bottom:12px; font-size:0.95rem; background:var(--input-bg); padding:16px; border-radius:12px; border: 1px solid var(--border-color); font-weight: 600; cursor: pointer;"><input type="checkbox" class="check-seguranca" onchange="validarChecklist()"> Pulseira de Identificação conferida</label><label style="display:flex; align-items:center; gap:12px; margin-bottom:12px; font-size:0.95rem; background:var(--input-bg); padding:16px; border-radius:12px; border: 1px solid var(--border-color); font-weight: 600; cursor: pointer;"><input type="checkbox" class="check-seguranca" onchange="validarChecklist()"> Prontuário Físico em mãos</label><label style="display:flex; align-items:center; gap:12px; margin-bottom:24px; font-size:0.95rem; background:var(--input-bg); padding:16px; border-radius:12px; border: 1px solid var(--border-color); font-weight: 600; cursor: pointer;"><input type="checkbox" class="check-seguranca" onchange="validarChecklist()"> Sondas, Drenos e O2 seguros (ou Não se Aplica)</label><button id="btn-iniciar-viagem" class="btn btn-main" style="width:100%; opacity:0.5; cursor:not-allowed; background: var(--success); padding: 16px; font-size: 1.1rem;" disabled onclick="confirmarChecklist()"><i class="fa fa-lock"></i> INICIAR ROTA SEGURA</button><button class="btn" style="width:100%; margin-top:12px; background:var(--input-bg); color: var(--text-main);" onclick="fecharChecklist()">Cancelar</button></div></div>
     
-    <div id="login-animation" class="login-animation-overlay"><i class="fa fa-bed maca-icon"></i><h2 style="margin-top:24px; font-weight: 800; letter-spacing: -1px;">iMaqueiro Pro</h2><p style="font-weight: 500;">Autenticando credenciais...</p></div>
+    <div id="login-animation" class="login-animation-overlay"><i class="fa fa-wheelchair maca-icon"></i><h2 style="margin-top:24px; font-weight: 800; letter-spacing: -1px;">iMaqueiro Pro</h2><p style="font-weight: 500;">Autenticando credenciais...</p></div>
     <div id="chat-modal" class="modal-overlay"><div class="modal-content"><h3 style="margin-top:0; font-weight: 800; border-bottom: 2px solid var(--border-color); padding-bottom: 15px;"><i class="fa fa-comments" style="color: var(--primary);"></i> Comunicação Rápida</h3><div class="chat-box" id="chat-box"></div><div id="quick-replies" style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:15px;"></div><button class="btn" style="width:100%; margin-top:20px; background:var(--input-bg); color: var(--text-main);" onclick="document.getElementById('chat-modal').style.display='none'; idChatAtivo=null;">Fechar Chat</button></div></div>
     <div id="qr-modal" class="modal-overlay"><div class="modal-content"><h3 style="margin-top:0; font-weight: 800; text-align: center;"><i class="fa fa-qrcode" style="color: var(--primary);"></i> Validação de Leito</h3><p style="text-align: center; color: var(--text-muted); font-size: 0.9rem; margin-bottom: 20px;">Aponte a câmera para o leito</p><div id="qr-reader" style="width:100%; border-radius:16px; overflow:hidden; border: 2px solid var(--border-color);"></div><button class="btn" style="background:var(--danger-light); color:var(--danger-dark); width:100%; margin-top:20px;" onclick="fecharQR()">Cancelar Leitura</button></div></div>
     
@@ -388,6 +396,34 @@
         const socket = io();
         let usuario, audioLigado = false, pedidosAtivos = [], historicoGlobal = [], idChamadoAtual, idChatAtivo, html5QrCode;
         let chamadosRejeitados = []; let idChecklistAtual = null; let graficoSetoresInstancia = null; 
+
+        // === A MÁGICA DO EXCEL ACONTECE AQUI 👇 ===
+        function exportarParaExcel() {
+            if (!historicoGlobal || historicoGlobal.length === 0) {
+                alert("Você precisa de pelo menos uma corrida finalizada no histórico para exportar.");
+                return;
+            }
+
+            // Criando a formatação bonita para o diretor ler
+            const dadosPlanilha = historicoGlobal.map(p => ({
+                "ID do Chamado": p.id,
+                "Paciente": p.paciente,
+                "Origem": p.origem,
+                "Destino": p.destino,
+                "Modalidade": p.tipo,
+                "Prioridade": p.urgencia,
+                "Precaução": p.risco_assistencial,
+                "Status Final": p.status.toUpperCase().replace(/_/g, ' '),
+                "Maqueiro Responsável": p.maqueiro_ida || "Não atribuído",
+                "Data de Finalização": p.finalizado_at ? new Date(p.finalizado_at).toLocaleString('pt-BR') : "Sem data"
+            }));
+
+            // Usando a biblioteca SheetJS para forçar o download do arquivo .xlsx
+            const worksheet = XLSX.utils.json_to_sheet(dadosPlanilha);
+            const workbook = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(workbook, worksheet, "Corridas_iMaqueiro");
+            XLSX.writeFile(workbook, "Relatorio_Operacao_iMaqueiro.xlsx");
+        }
 
         function getUrgenciaBadge(urgencia) {
             if(urgencia === 'Vermelho') return `<span class="badge badge-danger"><i class="fa fa-circle" style="font-size:8px;"></i> Emergência</span>`;
@@ -531,29 +567,8 @@
             }
         }
 
-// --- O NOVO MOTOR FANTASMA DE ÁUDIO E NOTIFICAÇÃO ---
-        function destravarSistemaSilenciosamente() {
-            if (audioLigado) return; // Se já ligou, ignora.
-
-            try {
-                // Dá um "play e pause" super rápido (invisível) para destravar o bloqueio do Google Chrome
-                document.getElementById('audio-alerta').play().then(() => document.getElementById('audio-alerta').pause()).catch(()=>{});
-                document.getElementById('audio-emergencia').play().then(() => document.getElementById('audio-emergencia').pause()).catch(()=>{});
-                if ('speechSynthesis' in window) window.speechSynthesis.speak(new SpeechSynthesisUtterance(''));
-                
-                // Puxa a permissão de notificação (o Chrome vai pedir se for a primeira vez)
-                habilitarNotificacoes();
-                
-                audioLigado = true;
-                console.log("🚀 Sistema de Alertas Destravado com Sucesso!");
-            } catch(e) {
-                console.error("Erro ao destravar áudio", e);
-            }
-        }
-
-        // Fica vigiando o primeiro clique ou toque na tela do celular
-        document.addEventListener('click', destravarSistemaSilenciosamente, { once: true });
-        document.addEventListener('touchstart', destravarSistemaSilenciosamente, { once: true });        function falarAvisoRisco(risco) { if (!('speechSynthesis' in window)) return; window.speechSynthesis.cancel(); let texto = ""; if (risco === 'Contato') texto = "Atenção equipe. Risco de Contato. Paramente-se com luvas e avental."; else if (risco === 'Gotículas') texto = "Atenção. Risco de Gotículas. Coloque máscara cirúrgica."; else if (risco === 'Aerosol') texto = "Atenção. Risco de Aerossol. Utilize máscara N 95."; if (texto) { let locutor = new SpeechSynthesisUtterance(texto); locutor.lang = 'pt-BR'; window.speechSynthesis.speak(locutor); } }
+        function ativarAudio() { document.getElementById('audio-alerta').play().then(() => document.getElementById('audio-alerta').pause()); document.getElementById('audio-emergencia').play().then(() => document.getElementById('audio-emergencia').pause()); if ('speechSynthesis' in window) window.speechSynthesis.speak(new SpeechSynthesisUtterance('')); habilitarNotificacoes(); audioLigado = true; document.getElementById('btn-som').style.display = 'none'; }
+        function falarAvisoRisco(risco) { if (!('speechSynthesis' in window)) return; window.speechSynthesis.cancel(); let texto = ""; if (risco === 'Contato') texto = "Atenção equipe. Risco de Contato. Paramente-se com luvas e avental."; else if (risco === 'Gotículas') texto = "Atenção. Risco de Gotículas. Coloque máscara cirúrgica."; else if (risco === 'Aerosol') texto = "Atenção. Risco de Aerossol. Utilize máscara N 95."; if (texto) { let locutor = new SpeechSynthesisUtterance(texto); locutor.lang = 'pt-BR'; window.speechSynthesis.speak(locutor); } }
         function abrirChecklist(id) { idChecklistAtual = id; document.querySelectorAll('.check-seguranca').forEach(cb => cb.checked = false); validarChecklist(); document.getElementById('checklist-modal').style.display = 'flex'; }
         function fecharChecklist() { document.getElementById('checklist-modal').style.display = 'none'; idChecklistAtual = null; }
         function validarChecklist() { const btn = document.getElementById('btn-iniciar-viagem'); if(Array.from(document.querySelectorAll('.check-seguranca')).every(cb => cb.checked)) { btn.style.opacity = '1'; btn.style.cursor = 'pointer'; btn.disabled = false; } else { btn.style.opacity = '0.5'; btn.style.cursor = 'not-allowed'; btn.disabled = true; } }
@@ -573,7 +588,7 @@
                     const badgeRisco = p.risco_assistencial !== 'Nenhum' ? `<span class="badge badge-danger"><i class="fa fa-biohazard"></i> ${p.risco_assistencial}</span>` : "";
                     if(p.risco_assistencial !== 'Nenhum') cRisco++; if(p.status === 'pendente') cPendente++; else cCurso++;
 
-                    const cardBase = `<div class="card" style="${borderRisco}"><button onclick="abrirDetalhes(${p.id})" style="position:absolute; right:15px; top:15px; border:none; background:none; cursor:pointer; font-size:1.2rem; color:var(--text-muted); transition:0.2s;"><i class="fa fa-file-medical"></i></button><div style="display:flex; justify-content:space-between; align-items:start; margin-bottom:12px; padding-right:30px;"><b style="font-size:1.15rem; letter-spacing:-0.5px;">${p.origem} ➔ ${p.destino}</b></div><div style="display:flex; gap:8px; margin-bottom: 12px; flex-wrap:wrap;">${getUrgenciaBadge(p.urgencia)} ${badgeRisco}</div><div style="font-size:0.95rem; margin-bottom:6px; font-weight:500;"><i class="fa fa-user" style="color:var(--text-muted); width:15px;"></i> ${p.paciente}</div><div style="font-size:0.85rem; color:var(--text-muted); margin-bottom:12px; font-weight:500;"><i class="fa fa-wheelchair" style="width:15px;"></i> ${p.tipo}</div><div style="font-size:0.85rem; padding: 8px 12px; background: var(--input-bg); border-radius: 8px; font-weight: 600; display:flex; justify-content:space-between; border: 1px solid var(--border-color);"><span>Status:</span> <b style="color:var(--primary)">${p.status.toUpperCase().replace(/_/g, ' ')}</b></div><button onclick="abrirChat(${p.id})" style="position:absolute; right:15px; bottom:15px; border:none; background:var(--primary-light); width:38px; height:38px; border-radius:50%; cursor:pointer; transition:0.2s;"><i class="fa fa-comment" style="color:var(--primary-hover)"></i></button>`;
+                    const cardBase = `<div class="card" style="${borderRisco}"><button onclick="abrirDetalhes(${p.id})" style="position:absolute; right:15px; top:15px; border:none; background:none; cursor:pointer; font-size:1.2rem; color:var(--text-muted); transition:0.2s;"><i class="fa fa-wheelchair"></i></button><div style="display:flex; justify-content:space-between; align-items:start; margin-bottom:12px; padding-right:30px;"><b style="font-size:1.15rem; letter-spacing:-0.5px;">${p.origem} ➔ ${p.destino}</b></div><div style="display:flex; gap:8px; margin-bottom: 12px; flex-wrap:wrap;">${getUrgenciaBadge(p.urgencia)} ${badgeRisco}</div><div style="font-size:0.95rem; margin-bottom:6px; font-weight:500;"><i class="fa fa-user" style="color:var(--text-muted); width:15px;"></i> ${p.paciente}</div><div style="font-size:0.85rem; color:var(--text-muted); margin-bottom:12px; font-weight:500;"><i class="fa fa-wheelchair" style="width:15px;"></i> ${p.tipo}</div><div style="font-size:0.85rem; padding: 8px 12px; background: var(--input-bg); border-radius: 8px; font-weight: 600; display:flex; justify-content:space-between; border: 1px solid var(--border-color);"><span>Status:</span> <b style="color:var(--primary)">${p.status.toUpperCase().replace(/_/g, ' ')}</b></div><button onclick="abrirChat(${p.id})" style="position:absolute; right:15px; bottom:15px; border:none; background:var(--primary-light); width:38px; height:38px; border-radius:50%; cursor:pointer; transition:0.2s;"><i class="fa fa-comment" style="color:var(--primary-hover)"></i></button>`;
 
                     if(usuario.cargo === 'enfermagem' && nList) {
                         let botoesExtras = "";
@@ -581,7 +596,6 @@
                             botoesExtras += `<button class="btn btn-main" style="margin-top:12px; background:var(--success); font-size:0.9rem;" onclick="socket.emit('pedir_retorno', ${p.id})"><i class="fa fa-undo"></i> EXIGIR RETORNO</button>`;
                         }
                         
-                        // O NOVO BOTÃO DA ENFERMAGEM PARA FINALIZAR CHAMADOS
                         botoesExtras += `<button class="btn" style="margin-top:10px; width:100%; background:var(--danger-light); color:var(--danger-dark); font-size:0.9rem; border: 1px solid var(--danger);" onclick="if(confirm('Tem certeza que deseja finalizar ou cancelar este chamado?')) socket.emit('finalizar_geral', ${p.id})"><i class="fa fa-check-circle"></i> FINALIZAR ATENDIMENTO</button>`;
 
                         nList.innerHTML += `<div>${cardBase}<div style="font-size:0.8rem; color:var(--text-muted); margin-top:8px; text-align:center; font-weight:500;">Responsável: <b>${p.maqueiro_ida || 'Aguardando aceite...'}</b></div>${botoesExtras}</div></div>`;
@@ -604,7 +618,7 @@
                         else if (isMeu && mAtivo) {
                             temAtivo = true; let btnAcao = "";
                             if(p.status === 'aceito' || p.status === 'aceito_retorno') btnAcao = `<button class="btn btn-main" style="margin-top:15px; width:100%;" onclick="abrirQR(${p.id})"><i class="fa fa-qrcode"></i> LER QR DE DESTINO</button>`;
-                            else if(p.status === 'na_origem') btnAcao = `<button class="btn" style="background:var(--warning); margin-top:15px; width:100%; color:var(--warning-dark);" onclick="abrirChecklist(${p.id})"><i class="fa fa-truck-medical"></i> INICIAR ROTA</button>`;
+                            else if(p.status === 'na_origem') btnAcao = `<button class="btn" style="background:var(--warning); margin-top:15px; width:100%; color:var(--warning-dark);" onclick="abrirChecklist(${p.id})"><i class="fa fa-wheelchair"></i> INICIAR ROTA</button>`;
                             else if(p.status === 'em_transito_ida') btnAcao = `<button class="btn" style="background:var(--success); color:white; margin-top:15px; width:100%;" onclick="socket.emit('entregue_destino', ${p.id})"><i class="fa fa-check-circle"></i> CONFIRMAR ENTREGA</button>`;
                             mAtivo.innerHTML += `${cardBase}${btnAcao}</div>`;
                         }
@@ -615,7 +629,7 @@
                 if(usuario.cargo === 'maqueiro' && mHist) {
                     document.getElementById('area-corrida-ativa').style.display = temAtivo ? 'block' : 'none';
                     atualizarUIStatus(usuario.status_trabalho, temAtivo);
-                    if (historico.filter(x => x.maqueiro_ida === usuario.nome || x.maqueiro_volta === usuario.nome).length === 0) { mHist.innerHTML = `<div class="empty-state" style="padding: 20px;"><i class="fa fa-bed" style="font-size:2rem;"></i><p style="font-size:0.9rem;">Nenhum transporte hoje.</p></div>`; }
+                    if (historico.filter(x => x.maqueiro_ida === usuario.nome || x.maqueiro_volta === usuario.nome).length === 0) { mHist.innerHTML = `<div class="empty-state" style="padding: 20px;"><i class="fa fa-wheelchair" style="font-size:2rem;"></i><p style="font-size:0.9rem;">Nenhum transporte hoje.</p></div>`; }
                     historico.forEach(p => { if(p.maqueiro_ida === usuario.nome || p.maqueiro_volta === usuario.nome) { contHoje++; mHist.innerHTML += `<div style="background:var(--card-bg); padding:16px; border-radius:12px; margin-bottom:12px; border-left:4px solid var(--success); display:flex; justify-content:space-between; align-items:center; box-shadow:var(--shadow-sm); border: 1px solid var(--border-color);"><div><b style="font-size:0.95rem;">${p.origem} ➔ ${p.destino}</b><br><span style="color:var(--text-muted); font-size:0.85rem; font-weight:500;"><i class="fa fa-user" style="font-size:0.7rem;"></i> ${p.paciente}</span></div><i class="fa fa-check-circle" style="color:var(--success); font-size:1.5rem;"></i></div>`; } });
                     document.getElementById('total-hoje').innerText = contHoje;
                 }
