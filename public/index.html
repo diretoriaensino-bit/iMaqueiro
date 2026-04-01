@@ -352,12 +352,27 @@
             else { select.disabled = false; select.innerHTML = '<option value="disponivel" style="color:white;">🟢 DISPONÍVEL</option><option value="intervalo" style="color:var(--dark);">☕ INTERVALO</option>'; select.value = status || 'disponivel'; if (select.value === 'intervalo') { card.style.background = 'var(--warning-light)'; card.style.boxShadow = '0 4px 15px rgba(245, 158, 11, 0.2)'; select.style.color = 'var(--warning-dark)'; } else { card.style.background = 'var(--success)'; card.style.boxShadow = '0 4px 15px rgba(16, 185, 129, 0.4)'; select.style.color = 'white'; } }
         }
 
-        function abrirPainel(u) {
+       function abrirPainel(u) {
             document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-            if (u.cargo === 'enfermagem') { document.getElementById('screen-nurse').classList.add('active'); document.getElementById('user-name-nurse').innerText = u.nome.split(" ")[0]; }
-            else if (u.cargo === 'coordenador') { document.getElementById('screen-coordinator').classList.add('active'); document.getElementById('user-name-coord').innerText = u.nome.split(" ")[0]; }
-            else { document.getElementById('screen-maqueiro').classList.add('active'); document.getElementById('user-name-maq').innerText = u.nome.split(" ")[0]; }
-            atualizarFotosUI(); socket.emit('solicitar_lista');
+            
+            if (u.cargo === 'enfermagem') { 
+                document.getElementById('screen-nurse').classList.add('active'); 
+                document.getElementById('user-name-nurse').innerText = u.nome.split(" ")[0]; 
+            }
+            else if (u.cargo === 'coordenador') { 
+                document.getElementById('screen-coordinator').classList.add('active'); 
+                document.getElementById('user-name-coord').innerText = u.nome.split(" ")[0]; 
+            }
+            else { 
+                document.getElementById('screen-maqueiro').classList.add('active'); 
+                document.getElementById('user-name-maq').innerText = u.nome.split(" ")[0]; 
+            }
+            
+            atualizarFotosUI(); 
+            socket.emit('solicitar_lista');
+
+            // --- CORREÇÃO AQUI: Força a tela a voltar para o topo suavemente ---
+            window.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
         function enviarPedido() {
