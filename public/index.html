@@ -386,25 +386,35 @@
     <div id="call-modal"><div id="call-risco-faixa" style="background:var(--danger); width:100%; padding:10px; position:absolute; top:0; font-weight:800; font-size:1rem; display:none; letter-spacing: 1px; text-transform: uppercase; box-shadow: 0 4px 15px rgba(239, 68, 68, 0.4);">⚠️ PROTOCOLO DE ISOLAMENTO</div><i id="icone-sirene" class="fa fa-bell fa-shake" style="font-size: 2.5rem; color: var(--warning); margin-bottom: 5px; filter: drop-shadow(0 0 15px rgba(245,158,11,0.5));"></i><img id="img-aviso-risco" src="" alt="Aviso EPI" style="display: none; max-width: 100px; max-height: 100px; border-radius: 12px; border: 3px solid var(--danger); box-shadow: 0 0 20px rgba(239, 68, 68, 0.5); margin: 10px 0; background: var(--white); padding: 5px; object-fit: contain;" onerror="this.style.display='none'; document.getElementById('icone-sirene').style.display='block';"><h2 id="call-paciente" style="margin:0; font-size: 1.5rem; color: #FFF; font-weight: 800; letter-spacing: -0.5px;"></h2><h1 id="call-rota" style="margin:5px 0 10px 0; font-size: 2rem; color: var(--warning); font-weight: 800; letter-spacing: -1px; text-shadow: 0 4px 10px rgba(0,0,0,0.5);"></h1><p id="call-equip" style="color: #94A3B8; font-size: 1rem; margin-bottom: 20px; font-weight: 500;"></p><div style="width:320px; max-width: 90vw; height:70px; background:#1E293B; border-radius:38px; position:relative; display:flex; align-items:center; justify-content:center; border: 2px solid #334155; box-shadow: inset 0 4px 10px rgba(0,0,0,0.5);"><span style="color:#64748B; font-weight:700; letter-spacing: 0.5px;">DESLIZE PARA ACEITAR</span><input type="range" min="0" max="100" value="0" id="swipe-accept"></div><button onclick="passarVezCall()" style="background:none; border:none; color:var(--danger); margin-top:20px; font-weight:700; font-size:1rem; letter-spacing: 1px; cursor: pointer; transition: 0.2s;">RECUSAR CHAMADO</button></div>
     <div id="toast" class="toast-notif" onclick="this.style.display='none'"><i class="fa fa-envelope" style="font-size:1.5rem; color:var(--warning)"></i> <div><b id="toast-autor"></b><br><span id="toast-msg"></span></div></div>
 
-    <audio id="audio-alerta" src="https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3" loop></audio>
-    <audio id="audio-emergencia" src="https://assets.mixkit.co/active_storage/sfx/951/951-preview.mp3" loop></audio>
+   <audio id="audio-alerta" src="https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3" loop preload="auto"></audio>
+    <audio id="audio-emergencia" src="https://assets.mixkit.co/active_storage/sfx/951/951-preview.mp3" loop preload="auto"></audio>
 
     <script>
-        // === MOTOR DO TOQUE FANTASMA ===
+       // === MOTOR DO TOQUE FANTASMA (AGORA REATIVA AO VOLTAR PRO APP) ===
         function destravarAudios() { 
             if(audioLigado) return; 
-            try { 
-                const a1 = document.getElementById('audio-alerta');
-                const a2 = document.getElementById('audio-emergencia');
-                if (a1) a1.play().then(() => a1.pause()).catch(e => console.log("Bloqueio de audio")); 
-                if (a2) a2.play().then(() => a2.pause()).catch(e => console.log("Bloqueio de audio")); 
-                audioLigado = true; 
-                const btnSom = document.getElementById('btn-som');
-                if(btnSom) btnSom.style.display = 'none';
-            } catch(e) {} 
+            
+            const a1 = document.getElementById('audio-alerta');
+            const a2 = document.getElementById('audio-emergencia');
+            
+            // Toca mudo rapidinho para o celular liberar a trava
+            if(a1) { a1.volume = 0.01; a1.play().then(() => { a1.pause(); a1.currentTime = 0; a1.volume = 1; }).catch(()=>{}); }
+            if(a2) { a2.volume = 0.01; a2.play().then(() => { a2.pause(); a2.currentTime = 0; a2.volume = 1; }).catch(()=>{}); }
+            
+            audioLigado = true; 
         }
-        document.addEventListener('click', destravarAudios, { once: true });
-        document.addEventListener('touchstart', destravarAudios, { once: true });
+        
+        // Escuta qualquer toque na tela para destravar
+        window.addEventListener('click', destravarAudios);
+        window.addEventListener('touchstart', destravarAudios);
+
+        // A MÁGICA AQUI 👇: Se ele sair do app e voltar, a trava reseta.
+        // O primeiro toque que ele der na tela vai reativar o áudio sozinho.
+        document.addEventListener("visibilitychange", () => {
+            if (document.visibilityState === 'visible') {
+                audioLigado = false; 
+            }
+        });
 
         function applyTheme(theme) {
             try {
