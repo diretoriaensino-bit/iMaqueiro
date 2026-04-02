@@ -107,6 +107,21 @@ io.on('connection', async (socket) => {
     });
     socket.on('disconnect', () => { maqueirosOnline = maqueirosOnline.filter(m => m.id !== socket.id); atualizarTodos(); });
 });
+// Dentro do io.on('connection', (socket) => { ...
 
+    socket.on('paciente_pronto', async (id) => {
+        await supabase.from('pedidos').update({ pronto_pela_enfermagem: true }).eq('id', id);
+        atualizarTodos();
+    });
+
+    socket.on('esperar_equipamento', async (id) => {
+        await supabase.from('pedidos').update({ status: 'aguardando_equipamento' }).eq('id', id);
+        atualizarTodos();
+    });
+
+    socket.on('equipamento_conseguido', async (id) => {
+        await supabase.from('pedidos').update({ status: 'aceito' }).eq('id', id);
+        atualizarTodos();
+    });
 const PORT = process.env.PORT || 3000;
 server.listen(PORT, () => console.log(`🚀 iMaqueiro rodando na porta ${PORT}`));

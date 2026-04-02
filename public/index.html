@@ -103,6 +103,10 @@
         .sla-danger { background: var(--danger-light); color: var(--danger-dark); border-color: var(--danger); animation: piscarSla 1s infinite alternate; }
         @keyframes piscarSla { from { opacity: 1; } to { opacity: 0.5; transform: scale(1.05); } }
 
+        /* --- ADICIONADO PARA O EQUIPAMENTO --- */
+        .sla-paused { background: #A855F7 !important; color: white !important; border-color: #7E22CE !important; animation: none !important; }
+        .badge-preparo { background: #CBD5E1; color: #1E293B; }
+
         .form-section { background: var(--card-bg); border-radius: 12px; border: 1px solid var(--border-color); margin-bottom: 16px; overflow: hidden; box-shadow: var(--shadow-sm); transition: 0.3s; }
         .form-section-header { padding: 12px 16px; font-weight: 700; font-size: 0.95rem; border-bottom: 1px solid var(--border-color); display: flex; align-items: center; gap: 8px; }
         .form-section-body { padding: 16px; }
@@ -157,6 +161,9 @@
         .star-rating { display: flex; justify-content: center; gap: 10px; font-size: 3rem; color: #CBD5E1; cursor: pointer; margin-bottom: 20px; }
         .star-rating i { transition: 0.2s; }
         .star-rating i:hover, .star-rating i.active-star { color: var(--warning); transform: scale(1.1); }
+    /* Cores do SLA Pausado e Paciente em Preparo */
+.sla-paused { background: #A855F7 !important; color: white !important; border-color: #7E22CE !important; animation: none !important; }
+.badge-preparo { background: #CBD5E1 !important; color: #1E293B !important; }
     </style>
 </head>
 <body>
@@ -199,6 +206,18 @@
             </header>
 
             <div class="dashboard-container" style="flex-direction: column;">
+                
+                <div style="display:flex; gap:15px; margin-bottom:20px; background:var(--card-bg); padding:15px; border-radius:12px; border:1px solid var(--border-color); align-items:center; flex-wrap:wrap;">
+                    <div style="display:flex; align-items:center; gap:8px;"><label style="margin:0;">De:</label><input type="date" id="date-start" style="margin:0; width:auto;" onchange="filtrarDashboardPorData()"></div>
+                    <div style="display:flex; align-items:center; gap:8px;"><label style="margin:0;">Até:</label><input type="date" id="date-end" style="margin:0; width:auto;" onchange="filtrarDashboardPorData()"></div>
+                    <button class="btn" style="background:var(--primary-light); color:var(--primary-hover); padding:8px 15px;" onclick="limparFiltroData()">Limpar Filtro</button>
+                </div>
+
+                <div style="display:flex; gap:15px; margin-bottom:20px; background:var(--card-bg); padding:15px; border-radius:12px; border:1px solid var(--border-color); align-items:center; flex-wrap:wrap;">
+    <div style="display:flex; align-items:center; gap:8px;"><label style="margin:0;">De:</label><input type="date" id="date-start" style="margin:0; width:auto;" onchange="filtrarDashboardPorData()"></div>
+    <div style="display:flex; align-items:center; gap:8px;"><label style="margin:0;">Até:</label><input type="date" id="date-end" style="margin:0; width:auto;" onchange="filtrarDashboardPorData()"></div>
+    <button class="btn" style="background:var(--primary-light); color:var(--primary-hover); padding:8px 15px;" onclick="limparFiltroData()">Limpar Filtro</button>
+</div>
                 <div class="stats-bar">
                     <div class="stat-item"><label>SLA Médio (Atendimento)</label><h2 id="adm-sla-time" style="color:var(--primary)">0 min</h2></div>
                     <div class="stat-item"><label>Transportes Hoje</label><h2 id="adm-total-trips">0</h2></div>
@@ -317,7 +336,7 @@
                         </div>
                     </div>
                     
-                    <button class="btn" id="btn-som" onclick="ativarAudio()" style="background:var(--warning); color:var(--warning-dark); width:100%; margin-top:15px; padding: 15px; font-size: 1rem; box-shadow: 0 4px 15px rgba(245, 158, 11, 0.3);"><i class="fa fa-volume-up"></i> ATIVAR ALERTAS</button>
+                    <button class="btn" id="btn-som" onclick="ativarAudio()" style="background:var(--warning); color:var(--warning-dark); width:100%; margin-top:15px; padding: 20px; font-size: 1.1rem; box-shadow: 0 4px 15px rgba(245, 158, 11, 0.3);"><i class="fa fa-volume-up"></i> ATIVAR ALERTAS</button>
                     
                     <button class="btn" style="background:var(--danger-light); color:var(--danger-dark); width:100%; margin-top:10px; padding: 15px; font-size: 1rem; border: 1px solid var(--danger);" onclick="abrirRelatorioDefeito()"><i class="fa fa-wrench"></i> REPORTAR DEFEITO</button>
                     
@@ -395,6 +414,46 @@
     <audio id="audio-emergencia" src="https://assets.mixkit.co/active_storage/sfx/951/951-preview.mp3" loop></audio>
 
     <script>
+       // MOTOR DO TOQUE FANTASMA
+function destravarAudios() {
+    if(audioLigado) return;
+    try {
+        const a1 = document.getElementById('audio-alerta');
+        const a2 = document.getElementById('audio-emergencia');
+        if(a1) a1.play().then(() => a1.pause()).catch(()=>{});
+        if(a2) a2.play().then(() => a2.pause()).catch(()=>{});
+        audioLigado = true;
+    } catch(e) {}
+}
+// Aciona o destrave no primeiro clique que o usuário der em qualquer lugar da tela
+document.addEventListener('click', destravarAudios, { once: true });
+document.addEventListener('touchstart', destravarAudios, { once: true });
+       
+       
+       
+       // === REGRA DO TOQUE FANTASMA BLINDADA ===
+        function destravarAudios() {
+            if (audioLigado) return;
+            try {
+                const a1 = document.getElementById('audio-alerta');
+                const a2 = document.getElementById('audio-emergencia');
+                if (a1 && a2) {
+                    a1.muted = true; a1.play().then(() => { a1.pause(); a1.currentTime = 0; a1.muted = false; }).catch(()=>{});
+                    a2.muted = true; a2.play().then(() => { a2.pause(); a2.currentTime = 0; a2.muted = false; }).catch(()=>{});
+                }
+                if ('speechSynthesis' in window) {
+                    let voz = new SpeechSynthesisUtterance('');
+                    voz.volume = 0;
+                    window.speechSynthesis.speak(voz);
+                }
+                audioLigado = true;
+            } catch(e) {}
+        }
+        // Fica tentando destravar até o usuário interagir
+        document.addEventListener('click', destravarAudios);
+        document.addEventListener('touchstart', destravarAudios);
+        // ========================================
+
         function applyTheme(theme) {
             try {
                 document.documentElement.setAttribute('data-theme', theme);
@@ -422,10 +481,10 @@
         window.addEventListener('online', () => { document.getElementById('offline-banner').style.display = 'none'; });
 
         const socket = io();
-        let usuario, audioLigado = false, pedidosAtivos = [], historicoGlobal = [], idChamadoAtual, idChatAtivo, html5QrCode;
+        let usuario, pedidosAtivos = [], historicoGlobal = [], idChamadoAtual, idChatAtivo, html5QrCode;
         let chamadosRejeitados = []; let idChecklistAtual = null; let graficoSetoresInstancia = null; let qrcodeGerado = null;
 
-        // === MÁGICA DA MANUTENÇÃO DE FROTA (SALVO NO NAVEGADOR PARA APRESENTAÇÃO) ===
+        // === MÁGICA DA MANUTENÇÃO DE FROTA ===
         function abrirRelatorioDefeito() {
             document.getElementById('defeito-equipamento').value = 'Cadeira de Rodas';
             document.getElementById('defeito-obs').value = '';
@@ -438,7 +497,6 @@
             
             if(!obs) { alert("Por favor, descreva o problema!"); return; }
 
-            // Salva no navegador simulando o Banco de Dados
             let defeitos = JSON.parse(localStorage.getItem('imaqueiro_defeitos')) || [
                 { equip: 'Maca Padrão', obs: 'Grade lateral não trava', autor: 'Sistema' }
             ];
@@ -484,8 +542,8 @@
             localStorage.setItem('imaqueiro_defeitos', JSON.stringify(defeitos));
             carregarManutencao();
         }
-        // === FIM DA MANUTENÇÃO ===
 
+        // === MÁGICA DA AVALIAÇÃO ===
         let idChamadoParaAvaliar = null; let notaAtual = 0;
         function abrirAvaliacao(id) {
             idChamadoParaAvaliar = id; notaAtual = 0;
@@ -511,6 +569,7 @@
         }
         function pularAvaliacao() { socket.emit('finalizar_geral', idChamadoParaAvaliar); document.getElementById('rating-modal').style.display = 'none'; }
 
+        // === QR CODE ===
         function abrirGeradorQR() {
             document.getElementById('qr-text-input').value = ""; document.getElementById('qr-code-output').innerHTML = '<span style="color: #94A3B8;">O código aparecerá aqui</span>';
             document.getElementById('btn-imprimir-qr').style.display = 'none'; document.getElementById('gerador-qr-modal').style.display = 'flex';
@@ -528,6 +587,8 @@
             printWindow.document.write(`<html><head><title>Etiqueta iMaqueiro</title></head><body style="text-align:center; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; padding-top: 50px;"><div style="border: 2px dashed #000; display: inline-block; padding: 40px; border-radius: 20px;"><h2 style="margin: 0; color: #4F46E5; font-size: 24px;">iMaqueiro Enterprise</h2><p style="margin: 5px 0 20px 0; color: #666; font-size: 14px;">PONTO DE VALIDAÇÃO DE ROTA</p><h1 style="font-size: 36px; margin: 10px 0; text-transform: uppercase;">${texto}</h1><img src="${imgData}" style="width: 250px; height: 250px; margin: 20px 0;"><p style="margin: 10px 0 0 0; font-size: 18px; font-weight: bold;">Maqueiro:</p><p style="margin: 5px 0 0 0; font-size: 16px;">Escaneie este código pelo aplicativo<br>para confirmar a chegada do paciente.</p></div><script>window.onload = function() { setTimeout(function() { window.print(); window.close(); }, 500); }<\/script></body></html>`);
             printWindow.document.close();
         }
+
+        // === EXCEL ===
         function exportarParaExcel() {
             if (!historicoGlobal || historicoGlobal.length === 0) return alert("Você precisa de pelo menos uma corrida finalizada no histórico para exportar.");
             const dadosPlanilha = historicoGlobal.map(p => ({ "ID do Chamado": p.id, "Paciente": p.paciente, "Origem": p.origem, "Destino": p.destino, "Modalidade": p.tipo, "Prioridade": p.urgencia, "Precaução": p.risco_assistencial, "Status Final": p.status.toUpperCase().replace(/_/g, ' '), "Maqueiro Responsável": p.maqueiro_ida || "Não atribuído", "Data de Finalização": p.finalizado_at ? new Date(p.finalizado_at).toLocaleString('pt-BR') : "Sem data" }));
@@ -544,8 +605,17 @@
             try { const salvo = localStorage.getItem('imaqueiro_user'); if (salvo) { usuario = JSON.parse(salvo); socket.emit('relogar_maqueiro', usuario); abrirPainel(usuario); } } catch(e) { console.error("Erro ao carregar usuário salvo", e); localStorage.removeItem('imaqueiro_user'); }
         };
 
-        function tentarLogin() { 
-            try { if(document.activeElement) document.activeElement.blur(); const email = document.getElementById('login-email').value; const senha = document.getElementById('login-senha').value; if(email && senha) { socket.emit('fazer_login', { email: email, senha: senha }); } else { document.getElementById('login-msg').innerHTML = `<i class="fa fa-exclamation-triangle"></i> Preencha os dados!`; } } catch (e) { console.error("Erro no login", e); }
+       function tentarLogin() { 
+            try { 
+                if(document.activeElement) document.activeElement.blur(); 
+                const email = document.getElementById('login-email').value; 
+                const senha = document.getElementById('login-senha').value; 
+                if(email && senha) { 
+                    socket.emit('fazer_login', { email: email, senha: senha }); 
+                } else { 
+                    document.getElementById('login-msg').innerHTML = `<i class="fa fa-exclamation-triangle"></i> Preencha os dados!`; 
+                } 
+            } catch (e) { console.error("Erro no login", e); }
         }
         
         socket.on('login_sucesso', u => { usuario = u; localStorage.setItem('imaqueiro_user', JSON.stringify(u)); document.getElementById('login-animation').style.display = 'flex'; setTimeout(() => { document.getElementById('login-animation').style.display = 'none'; abrirPainel(u); }, 1000); });
@@ -591,13 +661,41 @@
             } catch(e) { console.error("Erro ao enviar pedido", e); }
         }
 
-        socket.on('atualizar_lista', data => { pedidosAtivos = data.ativos; historicoGlobal = data.historico; renderizar(data.ativos, data.historico); if(usuario && usuario.cargo === 'coordenador') renderizarDashboardADM(data.ativos, data.historico, data.online); });
+        // === FILTRO E BUSCA ===
+        function filtrarTabelaADM() { const t = document.getElementById('adm-search').value.toLowerCase(); document.querySelectorAll('#adm-live-table tbody tr').forEach(r => r.style.display = r.innerText.toLowerCase().includes(t) ? '' : 'none'); }
+        
+        function filtrarDashboardPorData() {
+            const inicio = document.getElementById('date-start').value;
+            const fim = document.getElementById('date-end').value;
+            if (!inicio || !fim) return;
+            const dataInicio = new Date(inicio + "T00:00:00");
+            const dataFim = new Date(fim + "T23:59:59");
+            const historicoFiltrado = historicoGlobal.filter(p => {
+                const dataPedido = new Date(p.finalizado_at || p.criado_em);
+                return dataPedido >= dataInicio && dataPedido <= dataFim;
+            });
+            renderizarDashboardADM(pedidosAtivos, historicoFiltrado, []); 
+        }
+
+        function limparFiltroData() {
+            document.getElementById('date-start').value = "";
+            document.getElementById('date-end').value = "";
+            renderizarDashboardADM(pedidosAtivos, historicoGlobal, []);
+        }
+
+        socket.on('atualizar_lista', data => { 
+            pedidosAtivos = data.ativos; historicoGlobal = data.historico; 
+            if (!document.getElementById('date-start') || !document.getElementById('date-start').value) {
+                renderizar(data.ativos, data.historico); 
+                if(usuario && usuario.cargo === 'coordenador') renderizarDashboardADM(data.ativos, data.historico, data.online); 
+            }
+        });
 
         function renderizarDashboardADM(ativos, historico, online) {
             try {
                 let tempoTotal = 0; let viagensLidas = 0; const setoresCount = {}; const rankingCount = {};
                 historico.forEach(p => { if(p.aceito_em && p.finalizado_at) { const diffMins = (new Date(p.finalizado_at) - new Date(p.aceito_em)) / 60000; if(diffMins > 0 && diffMins < 300) { tempoTotal += diffMins; viagensLidas++; } } setoresCount[p.origem] = (setoresCount[p.origem] || 0) + 1; if(p.maqueiro_ida) rankingCount[p.maqueiro_ida] = (rankingCount[p.maqueiro_ida] || 0) + 1; });
-                document.getElementById('adm-sla-time').innerText = (viagensLidas > 0 ? Math.round(tempoTotal / viagensLidas) : 0) + " min"; document.getElementById('adm-total-trips').innerText = historico.length; document.getElementById('adm-online-staff').innerText = online.length; document.getElementById('adm-delayed').innerText = ativos.filter(p => p.status === 'pendente').length;
+                document.getElementById('adm-sla-time').innerText = (viagensLidas > 0 ? Math.round(tempoTotal / viagensLidas) : 0) + " min"; document.getElementById('adm-total-trips').innerText = historico.length; document.getElementById('adm-online-staff').innerText = online.length || 0; document.getElementById('adm-delayed').innerText = ativos.filter(p => p.status === 'pendente').length;
                 const tbody = document.querySelector('#adm-live-table tbody'); tbody.innerHTML = "";
                 if(ativos.length === 0) tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; padding:30px; color:var(--text-muted);"><i class="fa fa-check-circle" style="font-size:2rem; margin-bottom:10px; color:var(--success-light);"></i><br>Operação fluindo perfeitamente. Nenhum gargalo.</td></tr>`;
                 ativos.forEach(p => { tbody.innerHTML += `<tr><td><b>#${p.id}</b></td><td>${p.paciente}</td><td><b>${p.origem}</b> ➔ ${p.destino}</td><td>${getUrgenciaBadge(p.urgencia)}</td><td style="color:var(--primary); font-weight:700;">${p.status.toUpperCase().replace(/_/g, ' ')}</td><td>${p.maqueiro_ida || p.maqueiro_sugerido || '<span style="color:var(--danger)">Procurando...</span>'}</td></tr>`; });
@@ -616,8 +714,7 @@
             try { const p = pedidosAtivos.find(x => x.id === id) || historicoGlobal.find(x => x.id === id); if (!p) return; document.getElementById('details-body').innerHTML = `<div style="margin-bottom:20px; font-size:1rem;"><b>Nome:</b> ${p.paciente}<br><b>Origem:</b> ${p.origem}<br><b>Destino:</b> ${p.destino}<br><b>Modalidade:</b> ${p.tipo}<br><b>Prioridade:</b> ${p.urgencia}<br><b>Precaução:</b> ${p.risco_assistencial}</div><div style="background:var(--danger-light); padding:15px; border-left:4px solid var(--danger); border-radius:8px;"><b style="color:var(--danger-dark)"><i class="fa fa-exclamation-circle"></i> Atenção Extra:</b><br><span style="color:var(--danger-dark); font-weight:500;">${p.dispositivos || 'Paciente Padrão.'}</span></div>`; document.getElementById('details-modal').style.display = 'flex'; } catch(e) { console.error("Erro em detalhes", e); }
         }
 
-        async function habilitarNotificacoes() { if (!('serviceWorker' in navigator && 'PushManager' in window)) return; const permissao = await Notification.requestPermission(); if (permissao === 'granted') { const reg = await navigator.serviceWorker.ready; const publicVapidKey = 'BEl62iUYgUivxIkv69yViEuiBIa-Ib9-SkvMeAtA3LFgDzkrxZJjSgSnfckjBJuB22-xHhZpM8S2X_4WvXhQ6A0'; const urlBase64ToUint8Array = (base64String) => { const padding = '='.repeat((4 - base64String.length % 4) % 4); const base64 = (base64String + padding).replace(/\-/g, '+').replace(/_/g, '/'); const rawData = window.atob(base64); const outputArray = new Uint8Array(rawData.length); for (let i = 0; i < rawData.length; ++i) { outputArray[i] = rawData.charCodeAt(i); } return outputArray; }; const sub = await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: urlBase64ToUint8Array(publicVapidKey) }); socket.emit('salvar_inscricao_push', { nomeMaqueiro: usuario.nome, sub_info: sub }); } }
-        function ativarAudio() { document.getElementById('audio-alerta').play().then(() => document.getElementById('audio-alerta').pause()); document.getElementById('audio-emergencia').play().then(() => document.getElementById('audio-emergencia').pause()); if ('speechSynthesis' in window) window.speechSynthesis.speak(new SpeechSynthesisUtterance('')); habilitarNotificacoes(); audioLigado = true; document.getElementById('btn-som').style.display = 'none'; }
+        function ativarAudio() { document.getElementById('audio-alerta').play().then(() => document.getElementById('audio-alerta').pause()); document.getElementById('audio-emergencia').play().then(() => document.getElementById('audio-emergencia').pause()); if ('speechSynthesis' in window) window.speechSynthesis.speak(new SpeechSynthesisUtterance('')); audioLigado = true; document.getElementById('btn-som').style.display = 'none'; }
         function falarAvisoRisco(risco) { if (!('speechSynthesis' in window)) return; window.speechSynthesis.cancel(); let texto = ""; if (risco === 'Contato') texto = "Atenção equipe. Risco de Contato. Paramente-se com luvas e avental."; else if (risco === 'Gotículas') texto = "Atenção. Risco de Gotículas. Coloque máscara cirúrgica."; else if (risco === 'Aerosol') texto = "Atenção. Risco de Aerossol. Utilize máscara N 95."; if (texto) { let locutor = new SpeechSynthesisUtterance(texto); locutor.lang = 'pt-BR'; window.speechSynthesis.speak(locutor); } }
         function abrirChecklist(id) { idChecklistAtual = id; document.querySelectorAll('.check-seguranca').forEach(cb => cb.checked = false); validarChecklist(); document.getElementById('checklist-modal').style.display = 'flex'; }
         function fecharChecklist() { document.getElementById('checklist-modal').style.display = 'none'; idChecklistAtual = null; }
@@ -644,6 +741,20 @@
 
                     if(usuario.cargo === 'enfermagem' && nList) {
                         let botoesExtras = "";
+                        
+                    if(p.status === 'pendente' && !p.pronto_pela_enfermagem) {
+    botoesExtras += `<button class="btn btn-main" style="margin-top:10px; width:100%;" onclick="socket.emit('paciente_pronto', ${p.id})">PACIENTE PRONTO</button>`;
+}
+if(p.status === 'aceito' || p.status === 'aceito_retorno') {
+    btnAcao += `<button class="btn" style="margin-top:10px; width:100%; background:#F1F5F9; color:#64748B; border: 1px solid var(--border-color);" onclick="socket.emit('esperar_equipamento', ${p.id})"><i class="fa fa-hourglass-start"></i> ESTOU SEM MACA/CADEIRA</button>`;
+} else if (p.status === 'aguardando_equipamento') {
+    btnAcao += `<button class="btn btn-main" style="margin-top:10px; width:100%; background:var(--success);" onclick="socket.emit('equipamento_conseguido', ${p.id})"><i class="fa fa-play"></i> CONSEGUI EQUIPAMENTO</button>`;
+}
+                        // Botão Paciente Pronto
+                        if(p.status === 'pendente' && !p.pronto_pela_enfermagem) {
+                            botoesExtras += `<button class="btn btn-main" style="margin-top:12px; background:var(--primary); font-size:0.9rem;" onclick="socket.emit('paciente_pronto', ${p.id})"><i class="fa fa-thumbs-up"></i> PACIENTE PRONTO</button>`;
+                        }
+                        
                         if(p.status === 'no_destino' && p.trajeto === 'ida_volta') { botoesExtras += `<button class="btn btn-main" style="margin-top:12px; background:var(--success); font-size:0.9rem;" onclick="socket.emit('pedir_retorno', ${p.id})"><i class="fa fa-undo"></i> EXIGIR RETORNO</button>`; }
                         botoesExtras += `<button class="btn" style="margin-top:10px; width:100%; background:var(--danger-light); color:var(--danger-dark); font-size:0.9rem; border: 1px solid var(--danger);" onclick="abrirAvaliacao(${p.id})"><i class="fa fa-check-circle"></i> FINALIZAR ATENDIMENTO</button>`;
                         nList.innerHTML += `<div>${cardBase}<div style="font-size:0.8rem; color:var(--text-muted); margin-top:8px; text-align:center; font-weight:500;">Responsável: <b>${p.maqueiro_ida || 'Aguardando aceite...'}</b></div>${botoesExtras}</div></div>`;
@@ -652,19 +763,30 @@
                     if(usuario.cargo === 'maqueiro') {
                         const isPendente = p.status === 'pendente' || p.status === 'aguardando_retorno'; const isMeu = p.maqueiro_ida === usuario.nome || p.maqueiro_volta === usuario.nome;
                         if(isPendente && mPendentes) {
-                            if((!p.maqueiro_sugerido || p.maqueiro_sugerido === usuario.nome) && !chamadosRejeitados.includes(p.id) && usuario.status_trabalho !== 'intervalo') {
+                            let btnText = p.pronto_pela_enfermagem ? "ACEITAR CHAMADO" : "AGUARDANDO PREPARO";
+                            let btnColor = p.pronto_pela_enfermagem ? "var(--success)" : "#CBD5E1";
+                            let badgePronto = `<span class="badge ${p.pronto_pela_enfermagem ? 'badge-success' : 'badge-preparo'}" style="margin-bottom:8px;">${p.pronto_pela_enfermagem ? 'PACIENTE PRONTO' : 'EM PREPARO'}</span><br>`;
+
+                            if(p.pronto_pela_enfermagem && (!p.maqueiro_sugerido || p.maqueiro_sugerido === usuario.nome) && !chamadosRejeitados.includes(p.id) && usuario.status_trabalho !== 'intervalo') {
                                 callNow = true; idChamadoAtual = p.id; document.getElementById('call-paciente').innerText = p.paciente; document.getElementById('call-rota').innerText = p.origem + " ➔ " + p.destino; document.getElementById('call-equip').innerText = p.tipo; 
                                 const faixaRisco = document.getElementById('call-risco-faixa'); const imgRisco = document.getElementById('img-aviso-risco'); const iconeSirene = document.getElementById('icone-sirene');
                                 if (p.risco_assistencial !== 'Nenhum') { faixaRisco.style.display = 'block'; imgRisco.style.display = 'block'; iconeSirene.style.display = 'none'; if(p.risco_assistencial === 'Contato') imgRisco.src = '/img-contato.png'; else if (p.risco_assistencial === 'Gotículas') imgRisco.src = '/img-goticulas.png'; else if (p.risco_assistencial === 'Aerosol') imgRisco.src = '/img-aerosol.png'; } else { faixaRisco.style.display = 'none'; imgRisco.style.display = 'none'; iconeSirene.style.display = 'block'; }
                                 if(audioLigado) { if (p.urgencia === 'Vermelho') document.getElementById('audio-emergencia').play(); else document.getElementById('audio-alerta').play(); if (p.risco_assistencial !== 'Nenhum') setTimeout(() => falarAvisoRisco(p.risco_assistencial), 1000); }
                             }
-                            mPendentes.innerHTML += `${cardBase}<button class="btn btn-main" style="background:var(--success); margin-top:15px; width:100%; box-shadow:0 4px 15px rgba(16,185,129,0.3);" onclick="aceitarChamadoManual(${p.id})"><i class="fa fa-hand-paper"></i> ACEITAR CHAMADO</button></div>`;
+                            mPendentes.innerHTML += `${cardBase}${badgePronto}<button class="btn btn-main" style="background:${btnColor}; margin-top:15px; width:100%; box-shadow:0 4px 15px rgba(16,185,129,0.3);" onclick="aceitarChamadoManual(${p.id})" ${p.pronto_pela_enfermagem ? '' : 'disabled'}><i class="fa fa-hand-paper"></i> ${btnText}</button></div>`;
                         } 
                         else if (isMeu && mAtivo) {
                             temAtivo = true; let btnAcao = "";
-                            if(p.status === 'aceito' || p.status === 'aceito_retorno') btnAcao = `<button class="btn btn-main" style="margin-top:15px; width:100%;" onclick="abrirQR(${p.id})"><i class="fa fa-qrcode"></i> LER QR DE DESTINO</button>`;
+                            
+                            // Botões de Equipamento Maqueiro
+                            if(p.status === 'aceito' || p.status === 'aceito_retorno') {
+                                btnAcao = `<button class="btn btn-main" style="margin-top:15px; width:100%;" onclick="abrirQR(${p.id})"><i class="fa fa-qrcode"></i> LER QR DE DESTINO</button>`;
+                                btnAcao += `<button class="btn" style="margin-top:10px; width:100%; background:#F1F5F9; color:#64748B; border: 1px solid var(--border-color);" onclick="socket.emit('esperar_equipamento', ${p.id})"><i class="fa fa-hourglass-start"></i> SEM CADEIRA/MACA AGORA</button>`;
+                            }
+                            else if(p.status === 'aguardando_equipamento') btnAcao = `<button class="btn" style="margin-top:15px; width:100%; background:var(--success); color:white;" onclick="socket.emit('equipamento_conseguido', ${p.id})"><i class="fa fa-play"></i> CONSEGUI O EQUIPAMENTO</button>`;
                             else if(p.status === 'na_origem') btnAcao = `<button class="btn" style="background:var(--warning); margin-top:15px; width:100%; color:var(--warning-dark);" onclick="abrirChecklist(${p.id})"><i class="fa fa-wheelchair"></i> INICIAR ROTA</button>`;
                             else if(p.status === 'em_transito_ida') btnAcao = `<button class="btn" style="background:var(--success); color:white; margin-top:15px; width:100%;" onclick="socket.emit('entregue_destino', ${p.id})"><i class="fa fa-check-circle"></i> CONFIRMAR ENTREGA</button>`;
+                            
                             mAtivo.innerHTML += `${cardBase}${btnAcao}</div>`;
                         }
                     }
@@ -677,13 +799,31 @@
                     historico.forEach(p => { if(p.maqueiro_ida === usuario.nome || p.maqueiro_volta === usuario.nome) { contHoje++; mHist.innerHTML += `<div style="background:var(--card-bg); padding:16px; border-radius:12px; margin-bottom:12px; border-left:4px solid var(--success); display:flex; justify-content:space-between; align-items:center; box-shadow:var(--shadow-sm); border: 1px solid var(--border-color);"><div><b style="font-size:0.95rem;">${p.origem} ➔ ${p.destino}</b><br><span style="color:var(--text-muted); font-size:0.85rem; font-weight:500;"><i class="fa fa-user" style="font-size:0.7rem;"></i> ${p.paciente}</span></div><i class="fa fa-check-circle" style="color:var(--success); font-size:1.5rem;"></i></div>`; } });
                     document.getElementById('total-hoje').innerText = contHoje;
                 }
-                document.getElementById('call-modal').style.display = callNow ? 'flex' : 'none';
+                
+                // BLINDAGEM DO ALARME: Só maqueiro vê
+                document.getElementById('call-modal').style.display = (callNow && usuario && usuario.cargo === 'maqueiro') ? 'flex' : 'none';
+                
             } catch(e) { console.error("Erro ao renderizar dados", e); }
         }
 
         setInterval(() => {
+            if (p.status === 'aguardando_equipamento') {
+    el.className = 'sla-timer sla-badge sla-paused';
+    el.innerHTML = `<i class="fa fa-pause"></i> PAUSADO (S/ MACA)`;
+    return;
+}
             document.querySelectorAll('.sla-timer').forEach(el => {
-                const startTime = new Date(el.getAttribute('data-time')).getTime(); const diffMins = Math.floor((Date.now() - startTime) / 60000);
+                const statusText = el.closest('.card').innerText.toLowerCase();
+                
+                // Pause do SLA Visual
+                if (statusText.includes('aguardando_equipamento') || statusText.includes('falta equip')) {
+                    el.className = 'sla-timer sla-badge sla-paused';
+                    el.innerHTML = `<i class="fa fa-pause"></i> PAUSADO (FALTA EQUIP.)`;
+                    return;
+                }
+                
+                const startTime = new Date(el.getAttribute('data-time')).getTime(); 
+                const diffMins = Math.floor((Date.now() - startTime) / 60000);
                 el.innerHTML = `<i class="fa fa-clock"></i> ${diffMins} min`;
                 if (diffMins >= 20) { el.className = 'sla-timer sla-badge sla-danger'; } else if (diffMins >= 10) { el.className = 'sla-timer sla-badge sla-warning'; } else { el.className = 'sla-timer sla-badge'; }
             });
@@ -697,6 +837,29 @@
         function enviarMensagem(texto) { socket.emit('enviar_mensagem', { idPedido: idChatAtivo, texto, autor: usuario.nome }); document.getElementById('chat-modal').style.display='none'; idChatAtivo=null; }
         function abrirQR(id) { document.getElementById('qr-modal').style.display = 'flex'; html5QrCode = new Html5Qrcode("qr-reader"); html5QrCode.start({ facingMode: "environment" }, { fps: 10, qrbox: 250 }, (txt) => { fecharQR(); socket.emit('cheguei_origem', id); }, () => {}); }
         function fecharQR() { if(html5QrCode) html5QrCode.stop().then(() => html5QrCode.clear()); document.getElementById('qr-modal').style.display = 'none'; }
-    </script>
+        // FUNÇÕES DO FILTRO DE DATAS
+function filtrarDashboardPorData() {
+    const inicio = document.getElementById('date-start').value;
+    const fim = document.getElementById('date-end').value;
+    if (!inicio || !fim) return;
+    const dataInicio = new Date(inicio + "T00:00:00");
+    const dataFim = new Date(fim + "T23:59:59");
+    
+    const historicoFiltrado = historicoGlobal.filter(p => {
+        const dataPedido = new Date(p.finalizado_at || p.criado_em);
+        return dataPedido >= dataInicio && dataPedido <= dataFim;
+    });
+    // Chama o renderizador do ADM passando o histórico filtrado
+    renderizarDashboardADM(pedidosAtivos, historicoFiltrado, []); 
+}
+
+function limparFiltroData() {
+    document.getElementById('date-start').value = "";
+    document.getElementById('date-end').value = "";
+    renderizarDashboardADM(pedidosAtivos, historicoGlobal, []);
+}
+   
+   
+   </script>
 </body>
 </html>
