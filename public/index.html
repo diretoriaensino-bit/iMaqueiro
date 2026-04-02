@@ -17,6 +17,7 @@
     <script src="https://unpkg.com/html5-qrcode"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     
     <style>
@@ -63,7 +64,7 @@
             .dashboard-container { flex-direction: column !important; height: auto !important; padding: 16px !important; gap: 20px !important; }
             .sidebar-form { width: 100% !important; margin-bottom: 10px; box-shadow: none !important; border: none !important; padding: 0 !important; }
             header { padding: 15px 20px !important; flex-direction: column; gap: 12px; align-items: center; border-radius: 0 0 15px 15px !important; }
-            .header-actions { width: 100%; justify-content: center; flex-wrap: wrap; }
+            .header-actions { width: 100%; justify-content: center; flex-wrap: wrap; gap: 8px !important; }
             .stats-bar { display: grid !important; grid-template-columns: 1fr 1fr !important; gap: 12px !important; margin-bottom: 20px !important;} 
             .stat-item { padding: 15px !important; }
             .stat-item h2 { font-size: 1.8rem !important; }
@@ -199,6 +200,8 @@
             <header>
                 <div class="header-title"><i class="fa fa-chart-pie" style="font-size: 1.8rem; color: #60A5FA;"></i><h3 style="margin:0; font-weight: 700; letter-spacing: -0.5px;">Centro de Comando</h3></div>
                 <div class="header-actions">
+                    <button class="btn" style="background:var(--primary-light); color:var(--primary-hover); font-size: 0.95rem; padding: 10px 15px;" onclick="abrirGeradorQR()"><i class="fa fa-qrcode"></i> GERAR QR ETIQUETA</button>
+                    
                     <button class="btn" style="background:var(--success); color:white; font-size: 0.95rem; padding: 10px 15px;" onclick="exportarParaExcel()"><i class="fa fa-file-excel"></i> RELATÓRIO EXCEL</button>
                     <button class="btn" style="background:var(--warning-light); color:var(--warning-dark); font-size: 0.95rem; padding: 10px 15px;" onclick="socket.emit('simular_pedidos')"><i class="fa fa-magic"></i> SIMULAR DADOS</button>
                     
@@ -351,6 +354,23 @@
 
     </div>
 
+    <div id="gerador-qr-modal" class="modal-overlay">
+        <div class="modal-content" style="text-align: center;">
+            <h3 style="margin-top:0; font-weight: 800; border-bottom: 2px solid var(--border-color); padding-bottom: 15px;"><i class="fa fa-qrcode" style="color: var(--primary);"></i> Gerador de Etiquetas QR</h3>
+            <p style="font-size:0.9rem; color:var(--text-muted); margin-bottom:20px;">Crie e imprima etiquetas de destino para colar nos leitos e salas.</p>
+            <label style="text-align: left;">Nome do Setor / Leito de Destino</label>
+            <input type="text" id="qr-text-input" placeholder="Ex: UTI 02 - Leito 05">
+            <button class="btn btn-main" style="margin-bottom: 20px; width: 100%;" onclick="gerarQRCodeEtiqueta()">GERAR CÓDIGO QR</button>
+            
+            <div id="qr-code-output" style="display:flex; justify-content:center; margin-bottom: 20px; background: white; padding: 20px; border-radius: 12px; border: 1px solid var(--border-color); min-height: 240px; align-items: center;">
+                <span style="color: #94A3B8;">O código aparecerá aqui</span>
+            </div>
+            
+            <button class="btn" style="background: var(--success); color: white; width: 100%; display: none;" id="btn-imprimir-qr" onclick="imprimirQR()"><i class="fa fa-print"></i> IMPRIMIR ETIQUETA</button>
+            <button class="btn" style="width:100%; margin-top:12px; background:var(--input-bg); color: var(--text-main);" onclick="document.getElementById('gerador-qr-modal').style.display='none'">Fechar Aba</button>
+        </div>
+    </div>
+
     <div id="details-modal" class="modal-overlay"><div class="modal-content"><h3 style="margin-top:0; font-weight: 800; border-bottom: 2px solid var(--border-color); padding-bottom: 15px;"><i class="fa fa-wheelchair" style="color: var(--primary);"></i> Prontuário Resumido</h3><div id="details-body" style="font-size:0.95rem; line-height:1.7; margin-top: 15px;"></div><button class="btn" style="width:100%; margin-top:24px; background:var(--input-bg); color: var(--text-main);" onclick="document.getElementById('details-modal').style.display='none'">Fechar</button></div></div>
     
     <div id="checklist-modal" class="modal-overlay"><div class="modal-content" style="max-width: 400px;"><h3 style="color:var(--warning-dark); margin-top:0; border-bottom: 3px solid var(--warning); padding-bottom: 15px; font-weight: 800;"><i class="fa fa-clipboard-check"></i> Checklist de Segurança</h3><p style="font-size:0.95rem; color:var(--text-muted); margin-bottom:24px; font-weight: 500;">Confirmação obrigatória para assumir o paciente:</p><label style="display:flex; align-items:center; gap:12px; margin-bottom:12px; font-size:0.95rem; background:var(--input-bg); padding:16px; border-radius:12px; border: 1px solid var(--border-color); font-weight: 600; cursor: pointer;"><input type="checkbox" class="check-seguranca" onchange="validarChecklist()"> Pulseira de Identificação conferida</label><label style="display:flex; align-items:center; gap:12px; margin-bottom:12px; font-size:0.95rem; background:var(--input-bg); padding:16px; border-radius:12px; border: 1px solid var(--border-color); font-weight: 600; cursor: pointer;"><input type="checkbox" class="check-seguranca" onchange="validarChecklist()"> Prontuário Físico em mãos</label><label style="display:flex; align-items:center; gap:12px; margin-bottom:24px; font-size:0.95rem; background:var(--input-bg); padding:16px; border-radius:12px; border: 1px solid var(--border-color); font-weight: 600; cursor: pointer;"><input type="checkbox" class="check-seguranca" onchange="validarChecklist()"> Sondas, Drenos e O2 seguros (ou Não se Aplica)</label><button id="btn-iniciar-viagem" class="btn btn-main" style="width:100%; opacity:0.5; cursor:not-allowed; background: var(--success); padding: 16px; font-size: 1.1rem;" disabled onclick="confirmarChecklist()"><i class="fa fa-lock"></i> INICIAR ROTA SEGURA</button><button class="btn" style="width:100%; margin-top:12px; background:var(--input-bg); color: var(--text-main);" onclick="fecharChecklist()">Cancelar</button></div></div>
@@ -395,16 +415,76 @@
 
         const socket = io();
         let usuario, audioLigado = false, pedidosAtivos = [], historicoGlobal = [], idChamadoAtual, idChatAtivo, html5QrCode;
-        let chamadosRejeitados = []; let idChecklistAtual = null; let graficoSetoresInstancia = null; 
+        let chamadosRejeitados = []; let idChecklistAtual = null; let graficoSetoresInstancia = null; let qrcodeGerado = null;
 
-        // === A MÁGICA DO EXCEL ACONTECE AQUI 👇 ===
+        // === MÁGICA DO GERADOR DE QR CODE ===
+        function abrirGeradorQR() {
+            document.getElementById('qr-text-input').value = "";
+            document.getElementById('qr-code-output').innerHTML = '<span style="color: #94A3B8;">O código aparecerá aqui</span>';
+            document.getElementById('btn-imprimir-qr').style.display = 'none';
+            document.getElementById('gerador-qr-modal').style.display = 'flex';
+        }
+
+        function gerarQRCodeEtiqueta() {
+            const texto = document.getElementById('qr-text-input').value;
+            if(!texto) return alert("Digite o nome do setor ou leito para gerar o código!");
+            
+            const container = document.getElementById('qr-code-output');
+            container.innerHTML = ""; // Limpa o placeholder ou QR antigo
+            
+            qrcodeGerado = new QRCode(container, {
+                text: texto,
+                width: 200,
+                height: 200,
+                colorDark : "#000000",
+                colorLight : "#ffffff",
+                correctLevel : QRCode.CorrectLevel.H
+            });
+            
+            document.getElementById('btn-imprimir-qr').style.display = 'block';
+        }
+
+        function imprimirQR() {
+            const texto = document.getElementById('qr-text-input').value;
+            const imgData = document.querySelector('#qr-code-output img').src;
+            
+            // Abre uma nova janela invisível só para formatar a impressão
+            const printWindow = window.open('', '_blank');
+            printWindow.document.write(`
+                <html><head><title>Etiqueta iMaqueiro</title></head>
+                <body style="text-align:center; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; padding-top: 50px;">
+                    <div style="border: 2px dashed #000; display: inline-block; padding: 40px; border-radius: 20px;">
+                        <h2 style="margin: 0; color: #4F46E5; font-size: 24px;">iMaqueiro Enterprise</h2>
+                        <p style="margin: 5px 0 20px 0; color: #666; font-size: 14px;">PONTO DE VALIDAÇÃO DE ROTA</p>
+                        
+                        <h1 style="font-size: 36px; margin: 10px 0; text-transform: uppercase;">${texto}</h1>
+                        
+                        <img src="${imgData}" style="width: 250px; height: 250px; margin: 20px 0;">
+                        
+                        <p style="margin: 10px 0 0 0; font-size: 18px; font-weight: bold;">Maqueiro:</p>
+                        <p style="margin: 5px 0 0 0; font-size: 16px;">Escaneie este código pelo aplicativo<br>para confirmar a chegada do paciente.</p>
+                    </div>
+                    <script>
+                        window.onload = function() { 
+                            setTimeout(function() {
+                                window.print(); 
+                                window.close(); 
+                            }, 500); // Aguarda a imagem carregar na aba de impressão
+                        }
+                    <\/script>
+                </body></html>
+            `);
+            printWindow.document.close();
+        }
+
+        // === FIM DA MÁGICA DO QR CODE ===
+
         function exportarParaExcel() {
             if (!historicoGlobal || historicoGlobal.length === 0) {
                 alert("Você precisa de pelo menos uma corrida finalizada no histórico para exportar.");
                 return;
             }
 
-            // Criando a formatação bonita para o diretor ler
             const dadosPlanilha = historicoGlobal.map(p => ({
                 "ID do Chamado": p.id,
                 "Paciente": p.paciente,
@@ -418,7 +498,6 @@
                 "Data de Finalização": p.finalizado_at ? new Date(p.finalizado_at).toLocaleString('pt-BR') : "Sem data"
             }));
 
-            // Usando a biblioteca SheetJS para forçar o download do arquivo .xlsx
             const worksheet = XLSX.utils.json_to_sheet(dadosPlanilha);
             const workbook = XLSX.utils.book_new();
             XLSX.utils.book_append_sheet(workbook, worksheet, "Corridas_iMaqueiro");
