@@ -28,35 +28,19 @@
             --warning: #F59E0B; --warning-light: #FEF3C7; --warning-dark: #92400E;
             --danger: #EF4444; --danger-light: #FEE2E2; --danger-dark: #991B1B;
             
-            --bg-color: #F1F5F9;
-            --card-bg: #FFFFFF;
-            --text-main: #0F172A;
-            --text-muted: #64748B;
-            --border-color: #E2E8F0;
-            --input-bg: #F8FAFC;
-            --header-bg: #0F172A;
-            --header-text: #FFFFFF;
+            --bg-color: #F1F5F9; --card-bg: #FFFFFF; --text-main: #0F172A; --text-muted: #64748B;
+            --border-color: #E2E8F0; --input-bg: #F8FAFC; --header-bg: #0F172A; --header-text: #FFFFFF;
             
-            --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-            --shadow-lg: 0 10px 25px -3px rgba(0, 0, 0, 0.1);
+            --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05); --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1); --shadow-lg: 0 10px 25px -3px rgba(0, 0, 0, 0.1);
         }
 
         [data-theme="dark"] {
-            --bg-color: #0F172A;
-            --card-bg: #1E293B;
-            --text-main: #F8FAFC;
-            --text-muted: #94A3B8;
-            --border-color: #334155;
-            --input-bg: #0F172A;
-            --header-bg: #0B1120;
-            --header-text: #F8FAFC;
+            --bg-color: #0F172A; --card-bg: #1E293B; --text-main: #F8FAFC; --text-muted: #94A3B8;
+            --border-color: #334155; --input-bg: #0F172A; --header-bg: #0B1120; --header-text: #F8FAFC;
         }
         
         *, *::before, *::after { box-sizing: border-box; }
-
         body { font-family: 'Inter', sans-serif; background: var(--bg-color); margin: 0; user-select: none; color: var(--text-main); overflow-x: hidden; -webkit-font-smoothing: antialiased; transition: background-color 0.3s, color 0.3s; }
-        
         .app-shell { width: 100%; min-height: 100vh; display: flex; flex-direction: column; }
         
         @media (max-width: 1000px) {
@@ -66,8 +50,7 @@
             header { padding: 15px 20px !important; flex-direction: column; gap: 12px; align-items: center; border-radius: 0 0 15px 15px !important; }
             .header-actions { width: 100%; justify-content: center; flex-wrap: wrap; gap: 8px !important; }
             .stats-bar { display: grid !important; grid-template-columns: 1fr 1fr !important; gap: 12px !important; margin-bottom: 20px !important;} 
-            .stat-item { padding: 15px !important; }
-            .stat-item h2 { font-size: 1.8rem !important; }
+            .stat-item { padding: 15px !important; } .stat-item h2 { font-size: 1.8rem !important; }
             .cards-grid { grid-template-columns: 1fr !important; }
             .form-row { flex-direction: column; gap: 0 !important; }
             .checkbox-grid { grid-template-columns: 1fr !important; padding: 12px !important; }
@@ -81,8 +64,7 @@
             .sidebar-form { width: 480px; background: transparent; padding: 0; border-radius: 16px; overflow-y: auto; flex-shrink: 0; }
             .main-panel { flex: 1; background: transparent; overflow-y: auto; }
             .cards-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 20px; }
-            .form-row { display: flex; gap: 15px; }
-            .form-col { flex: 1; }
+            .form-row { display: flex; gap: 15px; } .form-col { flex: 1; }
         }
 
         .screen { display: none; box-sizing: border-box; flex: 1; flex-direction: column; }
@@ -100,9 +82,7 @@
         .btn:active { transform: translateY(1px); }
         .btn-main { background: var(--primary); color: #FFF; width: 100%; box-shadow: 0 4px 14px rgba(79, 70, 229, 0.3); }
         
-        input:not([type="range"]):not([type="checkbox"]):not([type="file"]), select, textarea { 
-            -webkit-appearance: none; appearance: none; width: 100%; padding: 14px; margin-bottom: 16px; border: 1px solid var(--border-color); border-radius: 8px; background: var(--input-bg); font-size: 0.95rem; font-family: 'Inter', sans-serif; transition: 0.2s; color: var(--text-main); 
-        }
+        input:not([type="range"]):not([type="checkbox"]):not([type="file"]), select, textarea { -webkit-appearance: none; appearance: none; width: 100%; padding: 14px; margin-bottom: 16px; border: 1px solid var(--border-color); border-radius: 8px; background: var(--input-bg); font-size: 0.95rem; font-family: 'Inter', sans-serif; transition: 0.2s; color: var(--text-main); }
         input:focus, select:focus, textarea:focus { outline: none; border-color: var(--primary); background: var(--card-bg); box-shadow: 0 0 0 3px var(--primary-light); }
         
         label { font-size: 0.8rem; font-weight: 600; color: var(--text-muted); margin-bottom: 6px; display: block; text-transform: uppercase; letter-spacing: 0.5px; }
@@ -118,10 +98,14 @@
         .badge-success { background: var(--success-light); color: var(--success-dark); }
         .badge-primary { background: var(--primary-light); color: var(--primary-hover); }
 
+        .sla-badge { padding: 4px 8px; border-radius: 6px; font-weight: 700; font-size: 0.75rem; display: inline-flex; align-items: center; gap: 5px; background: var(--input-bg); color: var(--text-main); border: 1px solid var(--border-color); transition: 0.3s; }
+        .sla-warning { background: var(--warning-light); color: var(--warning-dark); border-color: var(--warning); }
+        .sla-danger { background: var(--danger-light); color: var(--danger-dark); border-color: var(--danger); animation: piscarSla 1s infinite alternate; }
+        @keyframes piscarSla { from { opacity: 1; } to { opacity: 0.5; transform: scale(1.05); } }
+
         .form-section { background: var(--card-bg); border-radius: 12px; border: 1px solid var(--border-color); margin-bottom: 16px; overflow: hidden; box-shadow: var(--shadow-sm); transition: 0.3s; }
         .form-section-header { padding: 12px 16px; font-weight: 700; font-size: 0.95rem; border-bottom: 1px solid var(--border-color); display: flex; align-items: center; gap: 8px; }
         .form-section-body { padding: 16px; }
-        
         .header-purple { background: rgba(79, 70, 229, 0.08); color: var(--primary); }
         .header-green { background: rgba(16, 185, 129, 0.08); color: var(--success); }
         .header-gray { background: var(--input-bg); color: var(--text-main); }
@@ -169,6 +153,10 @@
         .maca-icon { font-size: 5rem; animation: macaAndando 2s linear infinite; }
         @keyframes macaAndando { 0% { transform: translateX(-150%) scaleX(-1); } 100% { transform: translateX(150%) scaleX(-1); } }
         #offline-banner { display: none; background: var(--warning); color: var(--warning-dark); text-align: center; padding: 12px; font-weight: 700; font-size: 0.9rem; z-index: 10000; position: sticky; top: 0; width: 100%; border-bottom: 2px solid #D97706;}
+
+        .star-rating { display: flex; justify-content: center; gap: 10px; font-size: 3rem; color: #CBD5E1; cursor: pointer; margin-bottom: 20px; }
+        .star-rating i { transition: 0.2s; }
+        .star-rating i:hover, .star-rating i.active-star { color: var(--warning); transform: scale(1.1); }
     </style>
 </head>
 <body>
@@ -182,7 +170,6 @@
                 <div style="background: var(--primary-light); width: 110px; height: 110px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px auto; box-shadow: var(--shadow-md);">
                     <i class="fa fa-wheelchair" style="font-size: 4.5rem; color: var(--primary);"></i>
                 </div>
-                
                 <h2 style="color:#0F172A; margin:0 0 8px 0; font-size: 2rem; font-weight: 800; letter-spacing: -1px;">iMaqueiro <span style="color:var(--primary)">Pro</span></h2>
                 <p style="color:#64748B; margin-bottom: 30px; font-weight: 500; font-size: 0.95rem;">Gestão Logística Inteligente</p>
                 <div style="text-align: left;">
@@ -201,10 +188,8 @@
                 <div class="header-title"><i class="fa fa-chart-pie" style="font-size: 1.8rem; color: #60A5FA;"></i><h3 style="margin:0; font-weight: 700; letter-spacing: -0.5px;">Centro de Comando</h3></div>
                 <div class="header-actions">
                     <button class="btn" style="background:var(--primary-light); color:var(--primary-hover); font-size: 0.95rem; padding: 10px 15px;" onclick="abrirGeradorQR()"><i class="fa fa-qrcode"></i> GERAR QR ETIQUETA</button>
-                    
                     <button class="btn" style="background:var(--success); color:white; font-size: 0.95rem; padding: 10px 15px;" onclick="exportarParaExcel()"><i class="fa fa-file-excel"></i> RELATÓRIO EXCEL</button>
                     <button class="btn" style="background:var(--warning-light); color:var(--warning-dark); font-size: 0.95rem; padding: 10px 15px;" onclick="socket.emit('simular_pedidos')"><i class="fa fa-magic"></i> SIMULAR DADOS</button>
-                    
                     <button class="btn" style="background:transparent; color:inherit; font-size: 1.2rem; padding: 8px;" onclick="toggleTheme()"><i class="fa fa-moon" id="theme-icon-coord"></i></button>
                     <span id="user-name-coord" style="font-weight:600; font-size:0.95rem;"></span>
                     <img id="header-foto-coord" src="https://cdn-icons-png.flaticon.com/512/149/149071.png" class="miniatura-foto">
@@ -226,9 +211,16 @@
                         <h3 style="margin:0 0 20px 0; font-weight: 700;"><i class="fa fa-chart-column" style="color:var(--primary); margin-right: 8px;"></i> Volume por Setor</h3>
                         <canvas id="graficoSetores" style="max-height: 280px; width: 100%;"></canvas>
                     </div>
+                    
                     <div style="flex: 1; background: var(--card-bg); padding: 24px; border-radius: 16px; box-shadow: var(--shadow-sm); border: 1px solid var(--border-color); transition:0.3s;">
                         <h3 style="margin:0 0 20px 0; font-weight: 700;"><i class="fa fa-medal" style="color:var(--warning); margin-right: 8px;"></i> Top Produtividade</h3>
                         <div id="adm-ranking-list"></div>
+                    </div>
+                    
+                    <div style="flex: 1; background: var(--card-bg); padding: 24px; border-radius: 16px; box-shadow: var(--shadow-sm); border: 1px solid var(--border-color); transition:0.3s; display: flex; flex-direction: column;">
+                        <h3 style="margin:0 0 20px 0; font-weight: 700;"><i class="fa fa-wrench" style="color:var(--danger); margin-right: 8px;"></i> Manutenção</h3>
+                        <div id="adm-manutencao-list" style="overflow-y: auto; flex: 1;">
+                            </div>
                     </div>
                 </div>
 
@@ -324,6 +316,11 @@
                             <div style="font-size:0.75rem; opacity:0.9; margin-top:8px; pointer-events:none; font-weight: 500;"><i class="fa fa-hand-pointer"></i> Toque para alterar</div>
                         </div>
                     </div>
+                    
+                    <button class="btn" id="btn-som" onclick="ativarAudio()" style="background:var(--warning); color:var(--warning-dark); width:100%; margin-top:15px; padding: 15px; font-size: 1rem; box-shadow: 0 4px 15px rgba(245, 158, 11, 0.3);"><i class="fa fa-volume-up"></i> ATIVAR ALERTAS</button>
+                    
+                    <button class="btn" style="background:var(--danger-light); color:var(--danger-dark); width:100%; margin-top:10px; padding: 15px; font-size: 1rem; border: 1px solid var(--danger);" onclick="abrirRelatorioDefeito()"><i class="fa fa-wrench"></i> REPORTAR DEFEITO</button>
+                    
                     <h4 style="border-top: 1px solid var(--border-color); padding-top: 24px; margin-top: 24px; color: var(--text-muted);"><i class="fa fa-history"></i> Histórico Recente</h4>
                     <div id="maqueiro-history" style="font-size: 0.9rem;"></div>
                 </div>
@@ -354,33 +351,44 @@
 
     </div>
 
-    <div id="gerador-qr-modal" class="modal-overlay">
+    <div id="defeito-modal" class="modal-overlay">
         <div class="modal-content" style="text-align: center;">
-            <h3 style="margin-top:0; font-weight: 800; border-bottom: 2px solid var(--border-color); padding-bottom: 15px;"><i class="fa fa-qrcode" style="color: var(--primary);"></i> Gerador de Etiquetas QR</h3>
-            <p style="font-size:0.9rem; color:var(--text-muted); margin-bottom:20px;">Crie e imprima etiquetas de destino para colar nos leitos e salas.</p>
-            <label style="text-align: left;">Nome do Setor / Leito de Destino</label>
-            <input type="text" id="qr-text-input" placeholder="Ex: UTI 02 - Leito 05">
-            <button class="btn btn-main" style="margin-bottom: 20px; width: 100%;" onclick="gerarQRCodeEtiqueta()">GERAR CÓDIGO QR</button>
-            
-            <div id="qr-code-output" style="display:flex; justify-content:center; margin-bottom: 20px; background: white; padding: 20px; border-radius: 12px; border: 1px solid var(--border-color); min-height: 240px; align-items: center;">
-                <span style="color: #94A3B8;">O código aparecerá aqui</span>
-            </div>
-            
-            <button class="btn" style="background: var(--success); color: white; width: 100%; display: none;" id="btn-imprimir-qr" onclick="imprimirQR()"><i class="fa fa-print"></i> IMPRIMIR ETIQUETA</button>
-            <button class="btn" style="width:100%; margin-top:12px; background:var(--input-bg); color: var(--text-main);" onclick="document.getElementById('gerador-qr-modal').style.display='none'">Fechar Aba</button>
+            <h3 style="margin-top:0; font-weight: 800; color: var(--danger); border-bottom: 2px solid var(--border-color); padding-bottom: 15px;"><i class="fa fa-wrench"></i> Reportar Defeito</h3>
+            <p style="font-size:0.95rem; color:var(--text-muted); margin-bottom:20px;">Informe o equipamento que apresentou problema para a manutenção.</p>
+            <label style="text-align: left;">Equipamento</label>
+            <select id="defeito-equipamento">
+                <option value="Cadeira de Rodas">Cadeira de Rodas</option>
+                <option value="Maca Padrão">Maca Padrão</option>
+                <option value="Maca com Cilindro O2">Maca com Cilindro O2</option>
+                <option value="Incubadora">Incubadora Neonatal</option>
+            </select>
+            <label style="text-align: left;">Descrição do Problema</label>
+            <textarea id="defeito-obs" rows="2" placeholder="Ex: Roda dianteira direita travando..."></textarea>
+            <button class="btn btn-main" style="width: 100%; padding: 16px; font-size: 1.1rem; background: var(--danger);" onclick="enviarDefeito()">ENVIAR RELATÓRIO</button>
+            <button class="btn" style="width:100%; margin-top:12px; background:var(--input-bg); color: var(--text-main);" onclick="document.getElementById('defeito-modal').style.display='none'">Cancelar</button>
         </div>
     </div>
 
+    <div id="rating-modal" class="modal-overlay">
+        <div class="modal-content" style="text-align: center;">
+            <h3 style="margin-top:0; font-weight: 800; color: var(--text-main);"><i class="fa fa-star" style="color: var(--warning);"></i> Avaliar Atendimento</h3>
+            <p style="font-size:0.95rem; color:var(--text-muted); margin-bottom:20px;">Como foi o transporte deste paciente?</p>
+            <div class="star-rating" id="star-rating">
+                <i class="fa fa-star star-btn" data-value="1"></i><i class="fa fa-star star-btn" data-value="2"></i><i class="fa fa-star star-btn" data-value="3"></i><i class="fa fa-star star-btn" data-value="4"></i><i class="fa fa-star star-btn" data-value="5"></i>
+            </div>
+            <textarea id="rating-obs" rows="2" placeholder="Deixe um elogio ou observação (opcional)..." style="margin-bottom: 20px;"></textarea>
+            <button class="btn btn-main" style="width: 100%; padding: 16px; font-size: 1.1rem;" onclick="enviarAvaliacao()">AVALIAR E FINALIZAR</button>
+            <button class="btn" style="width:100%; margin-top:12px; background:var(--input-bg); color: var(--text-main);" onclick="pularAvaliacao()">Pular e Finalizar</button>
+        </div>
+    </div>
+
+    <div id="gerador-qr-modal" class="modal-overlay"><div class="modal-content" style="text-align: center;"><h3 style="margin-top:0; font-weight: 800; border-bottom: 2px solid var(--border-color); padding-bottom: 15px;"><i class="fa fa-qrcode" style="color: var(--primary);"></i> Gerador de Etiquetas QR</h3><p style="font-size:0.9rem; color:var(--text-muted); margin-bottom:20px;">Crie e imprima etiquetas de destino para colar nos leitos e salas.</p><label style="text-align: left;">Nome do Setor / Leito de Destino</label><input type="text" id="qr-text-input" placeholder="Ex: UTI 02 - Leito 05"><button class="btn btn-main" style="margin-bottom: 20px; width: 100%;" onclick="gerarQRCodeEtiqueta()">GERAR CÓDIGO QR</button><div id="qr-code-output" style="display:flex; justify-content:center; margin-bottom: 20px; background: white; padding: 20px; border-radius: 12px; border: 1px solid var(--border-color); min-height: 240px; align-items: center;"><span style="color: #94A3B8;">O código aparecerá aqui</span></div><button class="btn" style="background: var(--success); color: white; width: 100%; display: none;" id="btn-imprimir-qr" onclick="imprimirQR()"><i class="fa fa-print"></i> IMPRIMIR ETIQUETA</button><button class="btn" style="width:100%; margin-top:12px; background:var(--input-bg); color: var(--text-main);" onclick="document.getElementById('gerador-qr-modal').style.display='none'">Fechar Aba</button></div></div>
     <div id="details-modal" class="modal-overlay"><div class="modal-content"><h3 style="margin-top:0; font-weight: 800; border-bottom: 2px solid var(--border-color); padding-bottom: 15px;"><i class="fa fa-wheelchair" style="color: var(--primary);"></i> Prontuário Resumido</h3><div id="details-body" style="font-size:0.95rem; line-height:1.7; margin-top: 15px;"></div><button class="btn" style="width:100%; margin-top:24px; background:var(--input-bg); color: var(--text-main);" onclick="document.getElementById('details-modal').style.display='none'">Fechar</button></div></div>
-    
     <div id="checklist-modal" class="modal-overlay"><div class="modal-content" style="max-width: 400px;"><h3 style="color:var(--warning-dark); margin-top:0; border-bottom: 3px solid var(--warning); padding-bottom: 15px; font-weight: 800;"><i class="fa fa-clipboard-check"></i> Checklist de Segurança</h3><p style="font-size:0.95rem; color:var(--text-muted); margin-bottom:24px; font-weight: 500;">Confirmação obrigatória para assumir o paciente:</p><label style="display:flex; align-items:center; gap:12px; margin-bottom:12px; font-size:0.95rem; background:var(--input-bg); padding:16px; border-radius:12px; border: 1px solid var(--border-color); font-weight: 600; cursor: pointer;"><input type="checkbox" class="check-seguranca" onchange="validarChecklist()"> Pulseira de Identificação conferida</label><label style="display:flex; align-items:center; gap:12px; margin-bottom:12px; font-size:0.95rem; background:var(--input-bg); padding:16px; border-radius:12px; border: 1px solid var(--border-color); font-weight: 600; cursor: pointer;"><input type="checkbox" class="check-seguranca" onchange="validarChecklist()"> Prontuário Físico em mãos</label><label style="display:flex; align-items:center; gap:12px; margin-bottom:24px; font-size:0.95rem; background:var(--input-bg); padding:16px; border-radius:12px; border: 1px solid var(--border-color); font-weight: 600; cursor: pointer;"><input type="checkbox" class="check-seguranca" onchange="validarChecklist()"> Sondas, Drenos e O2 seguros (ou Não se Aplica)</label><button id="btn-iniciar-viagem" class="btn btn-main" style="width:100%; opacity:0.5; cursor:not-allowed; background: var(--success); padding: 16px; font-size: 1.1rem;" disabled onclick="confirmarChecklist()"><i class="fa fa-lock"></i> INICIAR ROTA SEGURA</button><button class="btn" style="width:100%; margin-top:12px; background:var(--input-bg); color: var(--text-main);" onclick="fecharChecklist()">Cancelar</button></div></div>
-    
     <div id="login-animation" class="login-animation-overlay"><i class="fa fa-wheelchair maca-icon"></i><h2 style="margin-top:24px; font-weight: 800; letter-spacing: -1px;">iMaqueiro Pro</h2><p style="font-weight: 500;">Autenticando credenciais...</p></div>
     <div id="chat-modal" class="modal-overlay"><div class="modal-content"><h3 style="margin-top:0; font-weight: 800; border-bottom: 2px solid var(--border-color); padding-bottom: 15px;"><i class="fa fa-comments" style="color: var(--primary);"></i> Comunicação Rápida</h3><div class="chat-box" id="chat-box"></div><div id="quick-replies" style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:15px;"></div><button class="btn" style="width:100%; margin-top:20px; background:var(--input-bg); color: var(--text-main);" onclick="document.getElementById('chat-modal').style.display='none'; idChatAtivo=null;">Fechar Chat</button></div></div>
     <div id="qr-modal" class="modal-overlay"><div class="modal-content"><h3 style="margin-top:0; font-weight: 800; text-align: center;"><i class="fa fa-qrcode" style="color: var(--primary);"></i> Validação de Leito</h3><p style="text-align: center; color: var(--text-muted); font-size: 0.9rem; margin-bottom: 20px;">Aponte a câmera para o leito</p><div id="qr-reader" style="width:100%; border-radius:16px; overflow:hidden; border: 2px solid var(--border-color);"></div><button class="btn" style="background:var(--danger-light); color:var(--danger-dark); width:100%; margin-top:20px;" onclick="fecharQR()">Cancelar Leitura</button></div></div>
-    
     <div id="call-modal"><div id="call-risco-faixa" style="background:var(--danger); width:100%; padding:10px; position:absolute; top:0; font-weight:800; font-size:1rem; display:none; letter-spacing: 1px; text-transform: uppercase; box-shadow: 0 4px 15px rgba(239, 68, 68, 0.4);">⚠️ PROTOCOLO DE ISOLAMENTO</div><i id="icone-sirene" class="fa fa-bell fa-shake" style="font-size: 2.5rem; color: var(--warning); margin-bottom: 5px; filter: drop-shadow(0 0 15px rgba(245,158,11,0.5));"></i><img id="img-aviso-risco" src="" alt="Aviso EPI" style="display: none; max-width: 100px; max-height: 100px; border-radius: 12px; border: 3px solid var(--danger); box-shadow: 0 0 20px rgba(239, 68, 68, 0.5); margin: 10px 0; background: var(--white); padding: 5px; object-fit: contain;" onerror="this.style.display='none'; document.getElementById('icone-sirene').style.display='block';"><h2 id="call-paciente" style="margin:0; font-size: 1.5rem; color: #FFF; font-weight: 800; letter-spacing: -0.5px;"></h2><h1 id="call-rota" style="margin:5px 0 10px 0; font-size: 2rem; color: var(--warning); font-weight: 800; letter-spacing: -1px; text-shadow: 0 4px 10px rgba(0,0,0,0.5);"></h1><p id="call-equip" style="color: #94A3B8; font-size: 1rem; margin-bottom: 20px; font-weight: 500;"></p><div style="width:320px; max-width: 90vw; height:70px; background:#1E293B; border-radius:38px; position:relative; display:flex; align-items:center; justify-content:center; border: 2px solid #334155; box-shadow: inset 0 4px 10px rgba(0,0,0,0.5);"><span style="color:#64748B; font-weight:700; letter-spacing: 0.5px;">DESLIZE PARA ACEITAR</span><input type="range" min="0" max="100" value="0" id="swipe-accept"></div><button onclick="passarVezCall()" style="background:none; border:none; color:var(--danger); margin-top:20px; font-weight:700; font-size:1rem; letter-spacing: 1px; cursor: pointer; transition: 0.2s;">RECUSAR CHAMADO</button></div>
-    
     <div id="toast" class="toast-notif" onclick="this.style.display='none'"><i class="fa fa-envelope" style="font-size:1.5rem; color:var(--warning)"></i> <div><b id="toast-autor"></b><br><span id="toast-msg"></span></div></div>
 
     <audio id="audio-alerta" src="https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3" loop></audio>
@@ -417,91 +425,113 @@
         let usuario, audioLigado = false, pedidosAtivos = [], historicoGlobal = [], idChamadoAtual, idChatAtivo, html5QrCode;
         let chamadosRejeitados = []; let idChecklistAtual = null; let graficoSetoresInstancia = null; let qrcodeGerado = null;
 
-        // === MÁGICA DO GERADOR DE QR CODE ===
-        function abrirGeradorQR() {
-            document.getElementById('qr-text-input').value = "";
-            document.getElementById('qr-code-output').innerHTML = '<span style="color: #94A3B8;">O código aparecerá aqui</span>';
-            document.getElementById('btn-imprimir-qr').style.display = 'none';
-            document.getElementById('gerador-qr-modal').style.display = 'flex';
+        // === MÁGICA DA MANUTENÇÃO DE FROTA (SALVO NO NAVEGADOR PARA APRESENTAÇÃO) ===
+        function abrirRelatorioDefeito() {
+            document.getElementById('defeito-equipamento').value = 'Cadeira de Rodas';
+            document.getElementById('defeito-obs').value = '';
+            document.getElementById('defeito-modal').style.display = 'flex';
         }
 
+        function enviarDefeito() {
+            const equip = document.getElementById('defeito-equipamento').value;
+            const obs = document.getElementById('defeito-obs').value;
+            
+            if(!obs) { alert("Por favor, descreva o problema!"); return; }
+
+            // Salva no navegador simulando o Banco de Dados
+            let defeitos = JSON.parse(localStorage.getItem('imaqueiro_defeitos')) || [
+                { equip: 'Maca Padrão', obs: 'Grade lateral não trava', autor: 'Sistema' }
+            ];
+            defeitos.push({ equip, obs, autor: usuario.nome.split(" ")[0] });
+            localStorage.setItem('imaqueiro_defeitos', JSON.stringify(defeitos));
+
+            document.getElementById('defeito-modal').style.display = 'none';
+            document.getElementById('toast-autor').innerText = 'Manutenção';
+            document.getElementById('toast-msg').innerText = `Relatório enviado!`;
+            document.getElementById('toast').style.display = 'flex'; 
+            document.getElementById('toast').style.borderLeft = '5px solid var(--danger)';
+            setTimeout(() => document.getElementById('toast').style.display='none', 4000);
+            
+            carregarManutencao();
+        }
+
+        function carregarManutencao() {
+            const lista = document.getElementById('adm-manutencao-list');
+            if (!lista) return;
+            
+            let defeitos = JSON.parse(localStorage.getItem('imaqueiro_defeitos')) || [
+                { equip: 'Cadeira de Rodas', obs: 'Apoio de pé solto. Risco de queda.', autor: 'Marcos' }
+            ];
+            
+            lista.innerHTML = '';
+            if(defeitos.length === 0) {
+                lista.innerHTML = `<div class="empty-state" style="padding: 20px; margin-top: 0; border: 1px dashed var(--success);"><i class="fa fa-check-circle" style="color:var(--success);"></i><p style="font-size:0.9rem;">Frota 100% Operacional</p></div>`;
+            } else {
+                defeitos.forEach((d, index) => {
+                    lista.innerHTML += `
+                    <div style="padding: 15px; border-left: 4px solid var(--danger); background: var(--input-bg); border-radius: 8px; margin-bottom: 12px; border: 1px solid var(--border-color); position: relative;">
+                        <button onclick="resolverDefeito(${index})" style="position:absolute; right:10px; top:10px; background:none; border:none; color:var(--success); cursor:pointer; font-size: 1.2rem; transition: 0.2s;" title="Marcar como Consertado"><i class="fa fa-check-circle"></i></button>
+                        <b style="color: var(--danger); font-size: 0.95rem;">${d.equip}</b>
+                        <p style="margin: 6px 0 0 0; font-size: 0.85rem; color: var(--text-main); width: 85%;">${d.obs} <br><span style="color:var(--text-muted); font-size:0.75rem; display:inline-block; margin-top:5px;"><i class="fa fa-user"></i> Reportado por: ${d.autor}</span></p>
+                    </div>`;
+                });
+            }
+        }
+
+        function resolverDefeito(index) {
+            let defeitos = JSON.parse(localStorage.getItem('imaqueiro_defeitos')) || [];
+            defeitos.splice(index, 1);
+            localStorage.setItem('imaqueiro_defeitos', JSON.stringify(defeitos));
+            carregarManutencao();
+        }
+        // === FIM DA MANUTENÇÃO ===
+
+        let idChamadoParaAvaliar = null; let notaAtual = 0;
+        function abrirAvaliacao(id) {
+            idChamadoParaAvaliar = id; notaAtual = 0;
+            document.querySelectorAll('.star-btn').forEach(s => { s.style.color = '#CBD5E1'; s.classList.remove('active-star'); });
+            document.getElementById('rating-obs').value = ''; document.getElementById('rating-modal').style.display = 'flex';
+        }
+        document.querySelectorAll('.star-btn').forEach(star => {
+            star.addEventListener('click', function() {
+                notaAtual = parseInt(this.getAttribute('data-value'));
+                document.querySelectorAll('.star-btn').forEach(s => {
+                    if(parseInt(s.getAttribute('data-value')) <= notaAtual) { s.style.color = 'var(--warning)'; s.classList.add('active-star'); } 
+                    else { s.style.color = '#CBD5E1'; s.classList.remove('active-star'); }
+                });
+            });
+        });
+        function enviarAvaliacao() {
+            if (notaAtual === 0) return alert('Por favor, selecione pelo menos 1 estrela para avaliar.');
+            socket.emit('finalizar_geral', idChamadoParaAvaliar);
+            document.getElementById('rating-modal').style.display = 'none';
+            document.getElementById('toast-autor').innerText = 'Sistema de Qualidade'; document.getElementById('toast-msg').innerText = 'Avaliação de ' + notaAtual + ' estrelas salva com sucesso!';
+            document.getElementById('toast').style.display = 'flex'; document.getElementById('toast').style.borderLeft = '5px solid var(--success)';
+            setTimeout(() => document.getElementById('toast').style.display='none', 4000);
+        }
+        function pularAvaliacao() { socket.emit('finalizar_geral', idChamadoParaAvaliar); document.getElementById('rating-modal').style.display = 'none'; }
+
+        function abrirGeradorQR() {
+            document.getElementById('qr-text-input').value = ""; document.getElementById('qr-code-output').innerHTML = '<span style="color: #94A3B8;">O código aparecerá aqui</span>';
+            document.getElementById('btn-imprimir-qr').style.display = 'none'; document.getElementById('gerador-qr-modal').style.display = 'flex';
+        }
         function gerarQRCodeEtiqueta() {
             const texto = document.getElementById('qr-text-input').value;
             if(!texto) return alert("Digite o nome do setor ou leito para gerar o código!");
-            
-            const container = document.getElementById('qr-code-output');
-            container.innerHTML = ""; // Limpa o placeholder ou QR antigo
-            
-            qrcodeGerado = new QRCode(container, {
-                text: texto,
-                width: 200,
-                height: 200,
-                colorDark : "#000000",
-                colorLight : "#ffffff",
-                correctLevel : QRCode.CorrectLevel.H
-            });
-            
+            const container = document.getElementById('qr-code-output'); container.innerHTML = ""; 
+            qrcodeGerado = new QRCode(container, { text: texto, width: 200, height: 200, colorDark : "#000000", colorLight : "#ffffff", correctLevel : QRCode.CorrectLevel.H });
             document.getElementById('btn-imprimir-qr').style.display = 'block';
         }
-
         function imprimirQR() {
-            const texto = document.getElementById('qr-text-input').value;
-            const imgData = document.querySelector('#qr-code-output img').src;
-            
-            // Abre uma nova janela invisível só para formatar a impressão
+            const texto = document.getElementById('qr-text-input').value; const imgData = document.querySelector('#qr-code-output img').src;
             const printWindow = window.open('', '_blank');
-            printWindow.document.write(`
-                <html><head><title>Etiqueta iMaqueiro</title></head>
-                <body style="text-align:center; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; padding-top: 50px;">
-                    <div style="border: 2px dashed #000; display: inline-block; padding: 40px; border-radius: 20px;">
-                        <h2 style="margin: 0; color: #4F46E5; font-size: 24px;">iMaqueiro Enterprise</h2>
-                        <p style="margin: 5px 0 20px 0; color: #666; font-size: 14px;">PONTO DE VALIDAÇÃO DE ROTA</p>
-                        
-                        <h1 style="font-size: 36px; margin: 10px 0; text-transform: uppercase;">${texto}</h1>
-                        
-                        <img src="${imgData}" style="width: 250px; height: 250px; margin: 20px 0;">
-                        
-                        <p style="margin: 10px 0 0 0; font-size: 18px; font-weight: bold;">Maqueiro:</p>
-                        <p style="margin: 5px 0 0 0; font-size: 16px;">Escaneie este código pelo aplicativo<br>para confirmar a chegada do paciente.</p>
-                    </div>
-                    <script>
-                        window.onload = function() { 
-                            setTimeout(function() {
-                                window.print(); 
-                                window.close(); 
-                            }, 500); // Aguarda a imagem carregar na aba de impressão
-                        }
-                    <\/script>
-                </body></html>
-            `);
+            printWindow.document.write(`<html><head><title>Etiqueta iMaqueiro</title></head><body style="text-align:center; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; padding-top: 50px;"><div style="border: 2px dashed #000; display: inline-block; padding: 40px; border-radius: 20px;"><h2 style="margin: 0; color: #4F46E5; font-size: 24px;">iMaqueiro Enterprise</h2><p style="margin: 5px 0 20px 0; color: #666; font-size: 14px;">PONTO DE VALIDAÇÃO DE ROTA</p><h1 style="font-size: 36px; margin: 10px 0; text-transform: uppercase;">${texto}</h1><img src="${imgData}" style="width: 250px; height: 250px; margin: 20px 0;"><p style="margin: 10px 0 0 0; font-size: 18px; font-weight: bold;">Maqueiro:</p><p style="margin: 5px 0 0 0; font-size: 16px;">Escaneie este código pelo aplicativo<br>para confirmar a chegada do paciente.</p></div><script>window.onload = function() { setTimeout(function() { window.print(); window.close(); }, 500); }<\/script></body></html>`);
             printWindow.document.close();
         }
-
-        // === FIM DA MÁGICA DO QR CODE ===
-
         function exportarParaExcel() {
-            if (!historicoGlobal || historicoGlobal.length === 0) {
-                alert("Você precisa de pelo menos uma corrida finalizada no histórico para exportar.");
-                return;
-            }
-
-            const dadosPlanilha = historicoGlobal.map(p => ({
-                "ID do Chamado": p.id,
-                "Paciente": p.paciente,
-                "Origem": p.origem,
-                "Destino": p.destino,
-                "Modalidade": p.tipo,
-                "Prioridade": p.urgencia,
-                "Precaução": p.risco_assistencial,
-                "Status Final": p.status.toUpperCase().replace(/_/g, ' '),
-                "Maqueiro Responsável": p.maqueiro_ida || "Não atribuído",
-                "Data de Finalização": p.finalizado_at ? new Date(p.finalizado_at).toLocaleString('pt-BR') : "Sem data"
-            }));
-
-            const worksheet = XLSX.utils.json_to_sheet(dadosPlanilha);
-            const workbook = XLSX.utils.book_new();
-            XLSX.utils.book_append_sheet(workbook, worksheet, "Corridas_iMaqueiro");
-            XLSX.writeFile(workbook, "Relatorio_Operacao_iMaqueiro.xlsx");
+            if (!historicoGlobal || historicoGlobal.length === 0) return alert("Você precisa de pelo menos uma corrida finalizada no histórico para exportar.");
+            const dadosPlanilha = historicoGlobal.map(p => ({ "ID do Chamado": p.id, "Paciente": p.paciente, "Origem": p.origem, "Destino": p.destino, "Modalidade": p.tipo, "Prioridade": p.urgencia, "Precaução": p.risco_assistencial, "Status Final": p.status.toUpperCase().replace(/_/g, ' '), "Maqueiro Responsável": p.maqueiro_ida || "Não atribuído", "Data de Finalização": p.finalizado_at ? new Date(p.finalizado_at).toLocaleString('pt-BR') : "Sem data" }));
+            const worksheet = XLSX.utils.json_to_sheet(dadosPlanilha); const workbook = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(workbook, worksheet, "Corridas_iMaqueiro"); XLSX.writeFile(workbook, "Relatorio_Operacao_iMaqueiro.xlsx");
         }
 
         function getUrgenciaBadge(urgencia) {
@@ -511,23 +541,11 @@
         }
 
         window.onload = () => { 
-            try {
-                const salvo = localStorage.getItem('imaqueiro_user'); 
-                if (salvo) { usuario = JSON.parse(salvo); socket.emit('relogar_maqueiro', usuario); abrirPainel(usuario); } 
-            } catch(e) { console.error("Erro ao carregar usuário salvo", e); localStorage.removeItem('imaqueiro_user'); }
+            try { const salvo = localStorage.getItem('imaqueiro_user'); if (salvo) { usuario = JSON.parse(salvo); socket.emit('relogar_maqueiro', usuario); abrirPainel(usuario); } } catch(e) { console.error("Erro ao carregar usuário salvo", e); localStorage.removeItem('imaqueiro_user'); }
         };
 
         function tentarLogin() { 
-            try {
-                if(document.activeElement) document.activeElement.blur();
-                const email = document.getElementById('login-email').value;
-                const senha = document.getElementById('login-senha').value;
-                if(email && senha) {
-                    socket.emit('fazer_login', { email: email, senha: senha }); 
-                } else {
-                    document.getElementById('login-msg').innerHTML = `<i class="fa fa-exclamation-triangle"></i> Preencha os dados!`;
-                }
-            } catch (e) { console.error("Erro no login", e); }
+            try { if(document.activeElement) document.activeElement.blur(); const email = document.getElementById('login-email').value; const senha = document.getElementById('login-senha').value; if(email && senha) { socket.emit('fazer_login', { email: email, senha: senha }); } else { document.getElementById('login-msg').innerHTML = `<i class="fa fa-exclamation-triangle"></i> Preencha os dados!`; } } catch (e) { console.error("Erro no login", e); }
         }
         
         socket.on('login_sucesso', u => { usuario = u; localStorage.setItem('imaqueiro_user', JSON.stringify(u)); document.getElementById('login-animation').style.display = 'flex'; setTimeout(() => { document.getElementById('login-animation').style.display = 'none'; abrirPainel(u); }, 1000); });
@@ -535,29 +553,13 @@
         function fazerLogout() { localStorage.removeItem('imaqueiro_user'); location.reload(); }
 
         function atualizarFotosUI() {
-            try {
-                const fotoUrl = usuario.foto || 'https://cdn-icons-png.flaticon.com/512/149/149071.png';
-                ['header-foto-nurse', 'header-foto-maq', 'header-foto-coord', 'painel-foto-maq', 'perfil-foto-preview'].forEach(id => {
-                    if (document.getElementById(id)) document.getElementById(id).src = fotoUrl;
-                });
-                if (usuario.cargo === 'maqueiro') atualizarUIStatus(usuario.status_trabalho);
-            } catch(e) { console.error("Erro na foto", e); }
+            try { const fotoUrl = usuario.foto || 'https://cdn-icons-png.flaticon.com/512/149/149071.png'; ['header-foto-nurse', 'header-foto-maq', 'header-foto-coord', 'painel-foto-maq', 'perfil-foto-preview'].forEach(id => { if (document.getElementById(id)) document.getElementById(id).src = fotoUrl; }); if (usuario.cargo === 'maqueiro') atualizarUIStatus(usuario.status_trabalho); } catch(e) { console.error("Erro na foto", e); }
         }
 
-        function forcarScrollTopo() {
-            const zeraScroll = () => { window.scrollTo(0, 0); document.body.scrollTop = 0; document.documentElement.scrollTop = 0; };
-            zeraScroll(); setTimeout(zeraScroll, 50); setTimeout(zeraScroll, 150);
-        }
-
+        function forcarScrollTopo() { const zeraScroll = () => { window.scrollTo(0, 0); document.body.scrollTop = 0; document.documentElement.scrollTop = 0; }; zeraScroll(); setTimeout(zeraScroll, 50); setTimeout(zeraScroll, 150); }
         function esconderTelas() { document.querySelectorAll('.screen').forEach(s => { s.classList.remove('active'); }); }
 
-        function abrirPerfil() {
-            esconderTelas();
-            document.getElementById('screen-perfil').classList.add('active');
-            document.getElementById('perfil-nome').value = usuario.nome || ''; document.getElementById('perfil-email').value = usuario.email || ''; document.getElementById('perfil-cargo').value = usuario.cargo || ''; document.getElementById('perfil-telefone').value = usuario.telefone || '';
-            atualizarFotosUI(); forcarScrollTopo();
-        }
-
+        function abrirPerfil() { esconderTelas(); document.getElementById('screen-perfil').classList.add('active'); document.getElementById('perfil-nome').value = usuario.nome || ''; document.getElementById('perfil-email').value = usuario.email || ''; document.getElementById('perfil-cargo').value = usuario.cargo || ''; document.getElementById('perfil-telefone').value = usuario.telefone || ''; atualizarFotosUI(); forcarScrollTopo(); }
         function fecharPerfil() { abrirPainel(usuario); }
         function lerFoto(event) { const file = event.target.files[0]; if (!file) return; const reader = new FileReader(); reader.onload = function(e) { document.getElementById('perfil-foto-preview').src = e.target.result; }; reader.readAsDataURL(file); }
         function salvarPerfil() { const telefone = document.getElementById('perfil-telefone').value; const foto = document.getElementById('perfil-foto-preview').src; socket.emit('atualizar_perfil', { email: usuario.email, telefone, foto }); }
@@ -567,41 +569,25 @@
         socket.on('status_atualizado', (status) => { usuario.status_trabalho = status; localStorage.setItem('imaqueiro_user', JSON.stringify(usuario)); atualizarUIStatus(status); });
 
         function atualizarUIStatus(status, isOcupado = false) {
-            try {
-                const card = document.getElementById('card-status-maq'); const select = document.getElementById('select-status-maq'); if(!card || !select) return;
-                if (isOcupado) { card.style.background = 'var(--primary)'; select.innerHTML = '<option value="ocupado" style="color:white;">🚑 OCUPADO</option>'; select.value = 'ocupado'; select.style.color = 'white'; select.disabled = true; } 
-                else { select.disabled = false; select.innerHTML = '<option value="disponivel" style="color:white;">🟢 DISPONÍVEL</option><option value="intervalo" style="color:var(--text-main);">☕ INTERVALO</option>'; select.value = status || 'disponivel'; if (select.value === 'intervalo') { card.style.background = 'var(--warning-light)'; select.style.color = 'var(--warning-dark)'; } else { card.style.background = 'var(--success)'; select.style.color = 'white'; } }
-            } catch(e) { console.error("Erro no status", e); }
+            try { const card = document.getElementById('card-status-maq'); const select = document.getElementById('select-status-maq'); if(!card || !select) return; if (isOcupado) { card.style.background = 'var(--primary)'; select.innerHTML = '<option value="ocupado" style="color:white;">🚑 OCUPADO</option>'; select.value = 'ocupado'; select.style.color = 'white'; select.disabled = true; } else { select.disabled = false; select.innerHTML = '<option value="disponivel" style="color:white;">🟢 DISPONÍVEL</option><option value="intervalo" style="color:var(--text-main);">☕ INTERVALO</option>'; select.value = status || 'disponivel'; if (select.value === 'intervalo') { card.style.background = 'var(--warning-light)'; select.style.color = 'var(--warning-dark)'; } else { card.style.background = 'var(--success)'; select.style.color = 'white'; } } } catch(e) { console.error("Erro no status", e); }
         }
 
         function abrirPainel(u) {
             try {
-                esconderTelas();
-                const primeiroNome = u.nome ? u.nome.split(" ")[0] : "Usuário";
-
+                esconderTelas(); const primeiroNome = u.nome ? u.nome.split(" ")[0] : "Usuário";
                 if (u.cargo === 'enfermagem') { document.getElementById('screen-nurse').classList.add('active'); document.getElementById('user-name-nurse').innerText = primeiroNome; }
-                else if (u.cargo === 'coordenador') { document.getElementById('screen-coordinator').classList.add('active'); document.getElementById('user-name-coord').innerText = primeiroNome; }
+                else if (u.cargo === 'coordenador') { document.getElementById('screen-coordinator').classList.add('active'); document.getElementById('user-name-coord').innerText = primeiroNome; carregarManutencao(); }
                 else { document.getElementById('screen-maqueiro').classList.add('active'); document.getElementById('user-name-maq').innerText = primeiroNome; }
-                
                 atualizarFotosUI(); socket.emit('solicitar_lista'); forcarScrollTopo();
             } catch(e) { console.error("Erro crítico ao abrir painel", e); }
         }
 
         function enviarPedido() {
             try {
-                const checkboxes = document.querySelectorAll('.cb-disp:checked'); let selecionados = Array.from(checkboxes).map(cb => cb.value);
-                let obs = document.getElementById('obs').value; let dispositivosFinal = selecionados.join(', '); if(obs) dispositivosFinal += (dispositivosFinal ? " | " : "") + obs; if(!dispositivosFinal) dispositivosFinal = "Nenhuma observação reportada.";
-                
-                const d = { 
-                    paciente: document.getElementById('paciente').value, origem: document.getElementById('origem').value, destino: document.getElementById('destino').value, 
-                    tipo: document.getElementById('tipo').value, urgencia: document.getElementById('urgencia').value, trajeto: document.getElementById('trajeto').value, 
-                    risco_assistencial: document.getElementById('risco').value, dispositivos: dispositivosFinal 
-                };
-                
+                const checkboxes = document.querySelectorAll('.cb-disp:checked'); let selecionados = Array.from(checkboxes).map(cb => cb.value); let obs = document.getElementById('obs').value; let dispositivosFinal = selecionados.join(', '); if(obs) dispositivosFinal += (dispositivosFinal ? " | " : "") + obs; if(!dispositivosFinal) dispositivosFinal = "Nenhuma observação reportada.";
+                const d = { paciente: document.getElementById('paciente').value, origem: document.getElementById('origem').value, destino: document.getElementById('destino').value, tipo: document.getElementById('tipo').value, urgencia: document.getElementById('urgencia').value, trajeto: document.getElementById('trajeto').value, risco_assistencial: document.getElementById('risco').value, dispositivos: dispositivosFinal };
                 if(!d.paciente || !d.origem || !d.destino) return alert("Preencha origem e destino!"); 
-                
-                socket.emit('novo_pedido', d);
-                document.getElementById('paciente').value = ""; document.getElementById('origem').value = ""; document.getElementById('destino').value = ""; document.getElementById('obs').value = ""; checkboxes.forEach(cb => cb.checked = false); window.scrollTo(0,0);
+                socket.emit('novo_pedido', d); document.getElementById('paciente').value = ""; document.getElementById('origem').value = ""; document.getElementById('destino').value = ""; document.getElementById('obs').value = ""; checkboxes.forEach(cb => cb.checked = false); window.scrollTo(0,0);
             } catch(e) { console.error("Erro ao enviar pedido", e); }
         }
 
@@ -627,25 +613,10 @@
         socket.on('notificacao_mensagem', d => { if(d.autor !== usuario.nome && idChatAtivo !== d.idPedido) { document.getElementById('toast-autor').innerText = d.autor; document.getElementById('toast-msg').innerText = d.texto; document.getElementById('toast').style.display = 'flex'; setTimeout(() => document.getElementById('toast').style.display='none', 5000); } });
 
         function abrirDetalhes(id) {
-            try {
-                const p = pedidosAtivos.find(x => x.id === id) || historicoGlobal.find(x => x.id === id); if (!p) return;
-                document.getElementById('details-body').innerHTML = `<div style="margin-bottom:20px; font-size:1rem;"><b>Nome:</b> ${p.paciente}<br><b>Origem:</b> ${p.origem}<br><b>Destino:</b> ${p.destino}<br><b>Modalidade:</b> ${p.tipo}<br><b>Prioridade:</b> ${p.urgencia}<br><b>Precaução:</b> ${p.risco_assistencial}</div><div style="background:var(--danger-light); padding:15px; border-left:4px solid var(--danger); border-radius:8px;"><b style="color:var(--danger-dark)"><i class="fa fa-exclamation-circle"></i> Atenção Extra:</b><br><span style="color:var(--danger-dark); font-weight:500;">${p.dispositivos || 'Paciente Padrão.'}</span></div>`;
-                document.getElementById('details-modal').style.display = 'flex';
-            } catch(e) { console.error("Erro em detalhes", e); }
+            try { const p = pedidosAtivos.find(x => x.id === id) || historicoGlobal.find(x => x.id === id); if (!p) return; document.getElementById('details-body').innerHTML = `<div style="margin-bottom:20px; font-size:1rem;"><b>Nome:</b> ${p.paciente}<br><b>Origem:</b> ${p.origem}<br><b>Destino:</b> ${p.destino}<br><b>Modalidade:</b> ${p.tipo}<br><b>Prioridade:</b> ${p.urgencia}<br><b>Precaução:</b> ${p.risco_assistencial}</div><div style="background:var(--danger-light); padding:15px; border-left:4px solid var(--danger); border-radius:8px;"><b style="color:var(--danger-dark)"><i class="fa fa-exclamation-circle"></i> Atenção Extra:</b><br><span style="color:var(--danger-dark); font-weight:500;">${p.dispositivos || 'Paciente Padrão.'}</span></div>`; document.getElementById('details-modal').style.display = 'flex'; } catch(e) { console.error("Erro em detalhes", e); }
         }
 
-        async function habilitarNotificacoes() {
-            if (!('serviceWorker' in navigator && 'PushManager' in window)) return;
-            const permissao = await Notification.requestPermission();
-            if (permissao === 'granted') {
-                const reg = await navigator.serviceWorker.ready;
-                const publicVapidKey = 'BEl62iUYgUivxIkv69yViEuiBIa-Ib9-SkvMeAtA3LFgDzkrxZJjSgSnfckjBJuB22-xHhZpM8S2X_4WvXhQ6A0';
-                const urlBase64ToUint8Array = (base64String) => { const padding = '='.repeat((4 - base64String.length % 4) % 4); const base64 = (base64String + padding).replace(/\-/g, '+').replace(/_/g, '/'); const rawData = window.atob(base64); const outputArray = new Uint8Array(rawData.length); for (let i = 0; i < rawData.length; ++i) { outputArray[i] = rawData.charCodeAt(i); } return outputArray; };
-                const sub = await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: urlBase64ToUint8Array(publicVapidKey) });
-                socket.emit('salvar_inscricao_push', { nomeMaqueiro: usuario.nome, sub_info: sub });
-            }
-        }
-
+        async function habilitarNotificacoes() { if (!('serviceWorker' in navigator && 'PushManager' in window)) return; const permissao = await Notification.requestPermission(); if (permissao === 'granted') { const reg = await navigator.serviceWorker.ready; const publicVapidKey = 'BEl62iUYgUivxIkv69yViEuiBIa-Ib9-SkvMeAtA3LFgDzkrxZJjSgSnfckjBJuB22-xHhZpM8S2X_4WvXhQ6A0'; const urlBase64ToUint8Array = (base64String) => { const padding = '='.repeat((4 - base64String.length % 4) % 4); const base64 = (base64String + padding).replace(/\-/g, '+').replace(/_/g, '/'); const rawData = window.atob(base64); const outputArray = new Uint8Array(rawData.length); for (let i = 0; i < rawData.length; ++i) { outputArray[i] = rawData.charCodeAt(i); } return outputArray; }; const sub = await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: urlBase64ToUint8Array(publicVapidKey) }); socket.emit('salvar_inscricao_push', { nomeMaqueiro: usuario.nome, sub_info: sub }); } }
         function ativarAudio() { document.getElementById('audio-alerta').play().then(() => document.getElementById('audio-alerta').pause()); document.getElementById('audio-emergencia').play().then(() => document.getElementById('audio-emergencia').pause()); if ('speechSynthesis' in window) window.speechSynthesis.speak(new SpeechSynthesisUtterance('')); habilitarNotificacoes(); audioLigado = true; document.getElementById('btn-som').style.display = 'none'; }
         function falarAvisoRisco(risco) { if (!('speechSynthesis' in window)) return; window.speechSynthesis.cancel(); let texto = ""; if (risco === 'Contato') texto = "Atenção equipe. Risco de Contato. Paramente-se com luvas e avental."; else if (risco === 'Gotículas') texto = "Atenção. Risco de Gotículas. Coloque máscara cirúrgica."; else if (risco === 'Aerosol') texto = "Atenção. Risco de Aerossol. Utilize máscara N 95."; if (texto) { let locutor = new SpeechSynthesisUtterance(texto); locutor.lang = 'pt-BR'; window.speechSynthesis.speak(locutor); } }
         function abrirChecklist(id) { idChecklistAtual = id; document.querySelectorAll('.check-seguranca').forEach(cb => cb.checked = false); validarChecklist(); document.getElementById('checklist-modal').style.display = 'flex'; }
@@ -667,27 +638,22 @@
                     const badgeRisco = p.risco_assistencial !== 'Nenhum' ? `<span class="badge badge-danger"><i class="fa fa-biohazard"></i> ${p.risco_assistencial}</span>` : "";
                     if(p.risco_assistencial !== 'Nenhum') cRisco++; if(p.status === 'pendente') cPendente++; else cCurso++;
 
-                    const cardBase = `<div class="card" style="${borderRisco}"><button onclick="abrirDetalhes(${p.id})" style="position:absolute; right:15px; top:15px; border:none; background:none; cursor:pointer; font-size:1.2rem; color:var(--text-muted); transition:0.2s;"><i class="fa fa-wheelchair"></i></button><div style="display:flex; justify-content:space-between; align-items:start; margin-bottom:12px; padding-right:30px;"><b style="font-size:1.15rem; letter-spacing:-0.5px;">${p.origem} ➔ ${p.destino}</b></div><div style="display:flex; gap:8px; margin-bottom: 12px; flex-wrap:wrap;">${getUrgenciaBadge(p.urgencia)} ${badgeRisco}</div><div style="font-size:0.95rem; margin-bottom:6px; font-weight:500;"><i class="fa fa-user" style="color:var(--text-muted); width:15px;"></i> ${p.paciente}</div><div style="font-size:0.85rem; color:var(--text-muted); margin-bottom:12px; font-weight:500;"><i class="fa fa-wheelchair" style="width:15px;"></i> ${p.tipo}</div><div style="font-size:0.85rem; padding: 8px 12px; background: var(--input-bg); border-radius: 8px; font-weight: 600; display:flex; justify-content:space-between; border: 1px solid var(--border-color);"><span>Status:</span> <b style="color:var(--primary)">${p.status.toUpperCase().replace(/_/g, ' ')}</b></div><button onclick="abrirChat(${p.id})" style="position:absolute; right:15px; bottom:15px; border:none; background:var(--primary-light); width:38px; height:38px; border-radius:50%; cursor:pointer; transition:0.2s;"><i class="fa fa-comment" style="color:var(--primary-hover)"></i></button>`;
+                    const tempoBadge = p.status === 'pendente' || p.status === 'aceito' ? `<div class="sla-timer sla-badge" data-time="${p.criado_em || new Date().toISOString()}"><i class="fa fa-clock"></i> 0 min</div>` : '';
+
+                    const cardBase = `<div class="card" style="${borderRisco}"><button onclick="abrirDetalhes(${p.id})" style="position:absolute; right:15px; top:15px; border:none; background:none; cursor:pointer; font-size:1.2rem; color:var(--text-muted); transition:0.2s;"><i class="fa fa-wheelchair"></i></button><div style="display:flex; justify-content:space-between; align-items:start; margin-bottom:12px; padding-right:30px;"><b style="font-size:1.15rem; letter-spacing:-0.5px;">${p.origem} ➔ ${p.destino}</b></div><div style="display:flex; gap:8px; margin-bottom: 12px; flex-wrap:wrap;">${getUrgenciaBadge(p.urgencia)} ${badgeRisco} ${tempoBadge}</div><div style="font-size:0.95rem; margin-bottom:6px; font-weight:500;"><i class="fa fa-user" style="color:var(--text-muted); width:15px;"></i> ${p.paciente}</div><div style="font-size:0.85rem; color:var(--text-muted); margin-bottom:12px; font-weight:500;"><i class="fa fa-wheelchair" style="width:15px;"></i> ${p.tipo}</div><div style="font-size:0.85rem; padding: 8px 12px; background: var(--input-bg); border-radius: 8px; font-weight: 600; display:flex; justify-content:space-between; border: 1px solid var(--border-color);"><span>Status:</span> <b style="color:var(--primary)">${p.status.toUpperCase().replace(/_/g, ' ')}</b></div><button onclick="abrirChat(${p.id})" style="position:absolute; right:15px; bottom:15px; border:none; background:var(--primary-light); width:38px; height:38px; border-radius:50%; cursor:pointer; transition:0.2s;"><i class="fa fa-comment" style="color:var(--primary-hover)"></i></button>`;
 
                     if(usuario.cargo === 'enfermagem' && nList) {
                         let botoesExtras = "";
-                        if(p.status === 'no_destino' && p.trajeto === 'ida_volta') {
-                            botoesExtras += `<button class="btn btn-main" style="margin-top:12px; background:var(--success); font-size:0.9rem;" onclick="socket.emit('pedir_retorno', ${p.id})"><i class="fa fa-undo"></i> EXIGIR RETORNO</button>`;
-                        }
-                        
-                        botoesExtras += `<button class="btn" style="margin-top:10px; width:100%; background:var(--danger-light); color:var(--danger-dark); font-size:0.9rem; border: 1px solid var(--danger);" onclick="if(confirm('Tem certeza que deseja finalizar ou cancelar este chamado?')) socket.emit('finalizar_geral', ${p.id})"><i class="fa fa-check-circle"></i> FINALIZAR ATENDIMENTO</button>`;
-
+                        if(p.status === 'no_destino' && p.trajeto === 'ida_volta') { botoesExtras += `<button class="btn btn-main" style="margin-top:12px; background:var(--success); font-size:0.9rem;" onclick="socket.emit('pedir_retorno', ${p.id})"><i class="fa fa-undo"></i> EXIGIR RETORNO</button>`; }
+                        botoesExtras += `<button class="btn" style="margin-top:10px; width:100%; background:var(--danger-light); color:var(--danger-dark); font-size:0.9rem; border: 1px solid var(--danger);" onclick="abrirAvaliacao(${p.id})"><i class="fa fa-check-circle"></i> FINALIZAR ATENDIMENTO</button>`;
                         nList.innerHTML += `<div>${cardBase}<div style="font-size:0.8rem; color:var(--text-muted); margin-top:8px; text-align:center; font-weight:500;">Responsável: <b>${p.maqueiro_ida || 'Aguardando aceite...'}</b></div>${botoesExtras}</div></div>`;
                     }
                     
                     if(usuario.cargo === 'maqueiro') {
-                        const isPendente = p.status === 'pendente' || p.status === 'aguardando_retorno';
-                        const isMeu = p.maqueiro_ida === usuario.nome || p.maqueiro_volta === usuario.nome;
-
+                        const isPendente = p.status === 'pendente' || p.status === 'aguardando_retorno'; const isMeu = p.maqueiro_ida === usuario.nome || p.maqueiro_volta === usuario.nome;
                         if(isPendente && mPendentes) {
                             if((!p.maqueiro_sugerido || p.maqueiro_sugerido === usuario.nome) && !chamadosRejeitados.includes(p.id) && usuario.status_trabalho !== 'intervalo') {
-                                callNow = true; idChamadoAtual = p.id;
-                                document.getElementById('call-paciente').innerText = p.paciente; document.getElementById('call-rota').innerText = p.origem + " ➔ " + p.destino; document.getElementById('call-equip').innerText = p.tipo; 
+                                callNow = true; idChamadoAtual = p.id; document.getElementById('call-paciente').innerText = p.paciente; document.getElementById('call-rota').innerText = p.origem + " ➔ " + p.destino; document.getElementById('call-equip').innerText = p.tipo; 
                                 const faixaRisco = document.getElementById('call-risco-faixa'); const imgRisco = document.getElementById('img-aviso-risco'); const iconeSirene = document.getElementById('icone-sirene');
                                 if (p.risco_assistencial !== 'Nenhum') { faixaRisco.style.display = 'block'; imgRisco.style.display = 'block'; iconeSirene.style.display = 'none'; if(p.risco_assistencial === 'Contato') imgRisco.src = '/img-contato.png'; else if (p.risco_assistencial === 'Gotículas') imgRisco.src = '/img-goticulas.png'; else if (p.risco_assistencial === 'Aerosol') imgRisco.src = '/img-aerosol.png'; } else { faixaRisco.style.display = 'none'; imgRisco.style.display = 'none'; iconeSirene.style.display = 'block'; }
                                 if(audioLigado) { if (p.urgencia === 'Vermelho') document.getElementById('audio-emergencia').play(); else document.getElementById('audio-alerta').play(); if (p.risco_assistencial !== 'Nenhum') setTimeout(() => falarAvisoRisco(p.risco_assistencial), 1000); }
@@ -706,8 +672,7 @@
 
                 if(usuario.cargo === 'enfermagem') { document.getElementById('stat-pendente').innerText = cPendente; document.getElementById('stat-curso').innerText = cCurso; document.getElementById('stat-risco').innerText = cRisco; }
                 if(usuario.cargo === 'maqueiro' && mHist) {
-                    document.getElementById('area-corrida-ativa').style.display = temAtivo ? 'block' : 'none';
-                    atualizarUIStatus(usuario.status_trabalho, temAtivo);
+                    document.getElementById('area-corrida-ativa').style.display = temAtivo ? 'block' : 'none'; atualizarUIStatus(usuario.status_trabalho, temAtivo);
                     if (historico.filter(x => x.maqueiro_ida === usuario.nome || x.maqueiro_volta === usuario.nome).length === 0) { mHist.innerHTML = `<div class="empty-state" style="padding: 20px;"><i class="fa fa-wheelchair" style="font-size:2rem;"></i><p style="font-size:0.9rem;">Nenhum transporte hoje.</p></div>`; }
                     historico.forEach(p => { if(p.maqueiro_ida === usuario.nome || p.maqueiro_volta === usuario.nome) { contHoje++; mHist.innerHTML += `<div style="background:var(--card-bg); padding:16px; border-radius:12px; margin-bottom:12px; border-left:4px solid var(--success); display:flex; justify-content:space-between; align-items:center; box-shadow:var(--shadow-sm); border: 1px solid var(--border-color);"><div><b style="font-size:0.95rem;">${p.origem} ➔ ${p.destino}</b><br><span style="color:var(--text-muted); font-size:0.85rem; font-weight:500;"><i class="fa fa-user" style="font-size:0.7rem;"></i> ${p.paciente}</span></div><i class="fa fa-check-circle" style="color:var(--success); font-size:1.5rem;"></i></div>`; } });
                     document.getElementById('total-hoje').innerText = contHoje;
@@ -715,6 +680,14 @@
                 document.getElementById('call-modal').style.display = callNow ? 'flex' : 'none';
             } catch(e) { console.error("Erro ao renderizar dados", e); }
         }
+
+        setInterval(() => {
+            document.querySelectorAll('.sla-timer').forEach(el => {
+                const startTime = new Date(el.getAttribute('data-time')).getTime(); const diffMins = Math.floor((Date.now() - startTime) / 60000);
+                el.innerHTML = `<i class="fa fa-clock"></i> ${diffMins} min`;
+                if (diffMins >= 20) { el.className = 'sla-timer sla-badge sla-danger'; } else if (diffMins >= 10) { el.className = 'sla-timer sla-badge sla-warning'; } else { el.className = 'sla-timer sla-badge'; }
+            });
+        }, 10000);
 
         function aceitarChamadoManual(id) { socket.emit('aceitar_chamado', { idPedido: id, nomeMaqueiro: usuario.nome }); }
         document.getElementById('swipe-accept').addEventListener('input', function() { if(this.value > 85) { this.value = 0; pararAlarme(); socket.emit('aceitar_chamado', {idPedido: idChamadoAtual, nomeMaqueiro: usuario.nome}); } });
