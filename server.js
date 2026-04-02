@@ -108,7 +108,20 @@ io.on('connection', async (socket) => {
         await supabase.from('pedidos').update({ status: 'aceito', maqueiro_ida: dados.nomeMaqueiro, aceito_em: new Date().toISOString() }).eq('id', dados.idPedido);
         atualizarTodos();
     });
+socket.on('cheguei_origem', async (id) => {
+        await supabase.from('pedidos').update({ status: 'na_origem' }).eq('id', id);
+        atualizarTodos();
+    });
 
+    socket.on('iniciar_ida', async (id) => {
+        await supabase.from('pedidos').update({ status: 'em_transito_ida' }).eq('id', id);
+        atualizarTodos();
+    });
+
+    socket.on('entregue_destino', async (id) => {
+        await supabase.from('pedidos').update({ status: 'no_destino' }).eq('id', id);
+        atualizarTodos();
+    });
     // --- FUNÇÕES NOVAS MOVIDAS PARA DENTRO DA CONEXÃO DO SOCKET ---
     socket.on('paciente_pronto', async (id) => {
         await supabase.from('pedidos').update({ pronto_pela_enfermagem: true }).eq('id', id);
