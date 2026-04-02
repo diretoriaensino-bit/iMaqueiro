@@ -390,31 +390,44 @@
     <audio id="audio-emergencia" src="https://assets.mixkit.co/active_storage/sfx/951/951-preview.mp3" loop preload="auto"></audio>
 
     <script>
-       // === MOTOR DO TOQUE FANTASMA (AGORA REATIVA AO VOLTAR PRO APP) ===
-        function destravarAudios() { 
-            if(audioLigado) return; 
-            
+      // 1. SUA FUNÇÃO ORIGINAL RESTAURADA (Destrava sirene, voz do EPI e apaga o botão)
+        function ativarAudio() {
             const a1 = document.getElementById('audio-alerta');
             const a2 = document.getElementById('audio-emergencia');
-            
-            // Toca mudo rapidinho para o celular liberar a trava
-            if(a1) { a1.volume = 0.01; a1.play().then(() => { a1.pause(); a1.currentTime = 0; a1.volume = 1; }).catch(()=>{}); }
-            if(a2) { a2.volume = 0.01; a2.play().then(() => { a2.pause(); a2.currentTime = 0; a2.volume = 1; }).catch(()=>{}); }
-            
-            audioLigado = true; 
+            try {
+                if(a1) { a1.play().then(() => a1.pause()).catch(e => console.log("Áudio bloqueado", e)); }
+                if(a2) { a2.play().then(() => a2.pause()).catch(e => console.log("Áudio bloqueado", e)); }
+                
+                // Destrava a voz da paramentação
+                if ('speechSynthesis' in window) {
+                    window.speechSynthesis.speak(new SpeechSynthesisUtterance(''));
+                }
+                
+                audioLigado = true;
+                
+                // Apaga o botão amarelo da tela
+                const btnSom = document.getElementById('btn-som');
+                if(btnSom) btnSom.style.display = 'none';
+            } catch(e) { console.error("Erro no audio", e); }
         }
-        
-        // Escuta qualquer toque na tela para destravar
-        window.addEventListener('click', destravarAudios);
-        window.addEventListener('touchstart', destravarAudios);
 
-        // A MÁGICA AQUI 👇: Se ele sair do app e voltar, a trava reseta.
-        // O primeiro toque que ele der na tela vai reativar o áudio sozinho.
-        document.addEventListener("visibilitychange", () => {
-            if (document.visibilityState === 'visible') {
-                audioLigado = false; 
-            }
-        });
+        // 2. SEU LOGIN AGORA ACIONA O ÁUDIO AUTOMATICAMENTE
+        function tentarLogin() { 
+            try { 
+                if(document.activeElement) document.activeElement.blur(); 
+                
+                // MÁGICA: O clique no botão "Acessar Sistema" já conta para destravar tudo!
+                ativarAudio(); 
+                
+                const email = document.getElementById('login-email').value; 
+                const senha = document.getElementById('login-senha').value; 
+                if(email && senha) { 
+                    socket.emit('fazer_login', { email: email, senha: senha }); 
+                } else { 
+                    document.getElementById('login-msg').innerHTML = `<i class="fa fa-exclamation-triangle"></i> Preencha os dados!`; 
+                } 
+            } catch (e) { console.error("Erro no login", e); }
+        }
 
         function applyTheme(theme) {
             try {
@@ -693,8 +706,14 @@
 
                     const tempoBadge = p.status === 'pendente' || p.status === 'aceito' ? `<div class="sla-timer sla-badge" data-time="${p.criado_em || new Date().toISOString()}"><i class="fa fa-clock"></i> 0 min</div>` : '';
 
-                    const cardBase = `<div class="card" style="${borderRisco}"><button onclick="abrirDetalhes(${p.id})" style="position:absolute; right:15px; top:15px; border:none; background:none; cursor:pointer; font-size:1.2rem; color:var(--text-muted); transition:0.2s;"><i class="fa fa-wheelchair"></i></button><div style="display:flex; justify-content:space-between; align-items:start; margin-bottom:12px; padding-right:30px;"><b style="font-size:1.15rem; letter-spacing:-0.5px;">${p.origem} ➔ ${p.destino}</b></div><div style="display:flex; gap:8px; margin-bottom: 12px; flex-wrap:wrap;">${getUrgenciaBadge(p.urgencia)} ${badgeRisco} ${tempoBadge}</div><div style="font-size:0.95rem; margin-bottom:6px; font-weight:500;"><i class="fa fa-user" style="color:var(--text-muted); width:15px;"></i> ${p.paciente}</div><div style="font-size:0.85rem; color:var(--text-muted); margin-bottom:12px; font-weight:500;"><i class="fa fa-wheelchair" style="width:15px;"></i> ${p.tipo}</div><div style="font-size:0.85rem; padding: 8px 12px; background: var(--input-bg); border-radius: 8px; font-weight: 600; display:flex; justify-content:space-between; border: 1px solid var(--border-color);"><span>Status:</span> <b style="color:var(--primary)">${p.status.toUpperCase().replace(/_/g, ' ')}</b></div><button onclick="abrirChat(${p.id})" style="position:absolute; right:15px; bottom:15px; border:none; background:var(--primary-light); width:38px; height:38px; border-radius:50%; cursor:pointer; transition:0.2s;"><i class="fa fa-comment" style="color:var(--primary-hover)"></i></button>`;
+                    // AS DUAS LINHAS DE INVERSÃO
+                    let telaOrigem = p.status.includes('retorno') ? p.destino : p.origem;
+                    let telaDestino = p.status.includes('retorno') ? p.origem : p.destino;
 
+                    // O SEU NOVO cardBase ÚNICO E EXCLUSIVO (NÃO DEIXE NENHUM OUTRO const cardBase AQUI)
+                    const cardBase = `<div class="card" style="${borderRisco}"><button onclick="abrirDetalhes(${p.id})" style="position:absolute; right:15px; top:15px; border:none; background:none; cursor:pointer; font-size:1.2rem; color:var(--text-muted); transition:0.2s;"><i class="fa fa-wheelchair"></i></button><div style="display:flex; justify-content:space-between; align-items:start; margin-bottom:12px; padding-right:30px;"><b style="font-size:1.15rem; letter-spacing:-0.5px;">${telaOrigem} ➔ ${telaDestino}</b></div><div style="display:flex; gap:8px; margin-bottom: 12px; flex-wrap:wrap;">${getUrgenciaBadge(p.urgencia)} ${badgeRisco} ${tempoBadge}</div><div style="font-size:0.95rem; margin-bottom:6px; font-weight:500;"><i class="fa fa-user" style="color:var(--text-muted); width:15px;"></i> ${p.paciente}</div><div style="font-size:0.85rem; color:var(--text-muted); margin-bottom:12px; font-weight:500;"><i class="fa fa-wheelchair" style="width:15px;"></i> ${p.tipo}</div><div style="font-size:0.85rem; padding: 8px 12px; background: var(--input-bg); border-radius: 8px; font-weight: 600; display:flex; justify-content:space-between; border: 1px solid var(--border-color);"><span>Status:</span> <b style="color:var(--primary)">${p.status.toUpperCase().replace(/_/g, ' ')}</b></div><button onclick="abrirChat(${p.id})" style="position:absolute; right:15px; bottom:15px; border:none; background:var(--primary-light); width:38px; height:38px; border-radius:50%; cursor:pointer; transition:0.2s;"><i class="fa fa-comment" style="color:var(--primary-hover)"></i></button>`;
+
+                    // Daqui pra baixo continua normal com: if(usuario.cargo === 'enfermagem' && nList) { ...="font-size:1.15rem; letter-spacing:-0.5px;">${telaOrigem} ➔ ${telaDestino}</b></div><div style="display:flex; gap:8px; margin-bottom: 12px; flex-wrap:wrap;">${getUrgenciaBadge(p.urgencia)} ${badgeRisco} ${tempoBadge}</div><div style="font-size:0.95rem; margin-bottom:6px; font-weight:500;"><i class="fa fa-user" style="color:var(--text-muted); width:15px;"></i> ${p.paciente}</div><div style="font-size:0.85rem; color:var(--text-muted); margin-bottom:12px; font-weight:500;"><i class="fa fa-wheelchair" style="width:15px;"></i> ${p.tipo}</div><div style="font-size:0.85rem; padding: 8px 12px; background: var(--input-bg); border-radius: 8px; font-weight: 600; display:flex; justify-content:space-between; border: 1px solid var(--border-color);"><span>Status:</span> <b style="color:var(--primary)">${p.status.toUpperCase().replace(/_/g, ' ')}</b></div><button onclick="abrirChat(${p.id})" style="position:absolute; right:15px; bottom:15px; border:none; background:var(--primary-light); width:38px; height:38px; border-radius:50%; cursor:pointer; transition:0.2s;"><i class="fa fa-comment" style="color:var(--primary-hover)"></i></button>`;
                     if(usuario.cargo === 'enfermagem' && nList) {
                         let botoesExtras = "";
                         let statusText = "Aguardando maqueiro...";
