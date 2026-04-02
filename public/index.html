@@ -792,7 +792,22 @@ if(p.status === 'aceito' || p.status === 'aceito_retorno') {
                     }
                 });
 
-                if(usuario.cargo === 'enfermagem') { document.getElementById('stat-pendente').innerText = cPendente; document.getElementById('stat-curso').innerText = cCurso; document.getElementById('stat-risco').innerText = cRisco; }
+                if(usuario.cargo === 'enfermagem' && nList) {
+                        let botoesExtras = "";
+                        
+                        // APENAS UM BOTÃO DE PACIENTE PRONTO
+                        if(p.status === 'pendente' && !p.pronto_pela_enfermagem) {
+                            botoesExtras += `<button class="btn btn-main" style="margin-top:12px; background:var(--primary); font-size:0.9rem;" onclick="socket.emit('paciente_pronto', ${p.id})"><i class="fa fa-thumbs-up"></i> PACIENTE PRONTO</button>`;
+                        }
+                        
+                        if(p.status === 'no_destino' && p.trajeto === 'ida_volta') { 
+                            botoesExtras += `<button class="btn btn-main" style="margin-top:12px; background:var(--success); font-size:0.9rem;" onclick="socket.emit('pedir_retorno', ${p.id})"><i class="fa fa-undo"></i> EXIGIR RETORNO</button>`; 
+                        }
+                        
+                        botoesExtras += `<button class="btn" style="margin-top:10px; width:100%; background:var(--danger-light); color:var(--danger-dark); font-size:0.9rem; border: 1px solid var(--danger);" onclick="abrirAvaliacao(${p.id})"><i class="fa fa-check-circle"></i> FINALIZAR ATENDIMENTO</button>`;
+                        
+                        nList.innerHTML += `<div>${cardBase}<div style="font-size:0.8rem; color:var(--text-muted); margin-top:8px; text-align:center; font-weight:500;">Responsável: <b>${p.maqueiro_ida || 'Aguardando aceite...'}</b></div>${botoesExtras}</div></div>`;
+                    }
                 if(usuario.cargo === 'maqueiro' && mHist) {
                     document.getElementById('area-corrida-ativa').style.display = temAtivo ? 'block' : 'none'; atualizarUIStatus(usuario.status_trabalho, temAtivo);
                     if (historico.filter(x => x.maqueiro_ida === usuario.nome || x.maqueiro_volta === usuario.nome).length === 0) { mHist.innerHTML = `<div class="empty-state" style="padding: 20px;"><i class="fa fa-wheelchair" style="font-size:2rem;"></i><p style="font-size:0.9rem;">Nenhum transporte hoje.</p></div>`; }
