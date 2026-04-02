@@ -72,7 +72,6 @@ io.on('connection', async (socket) => {
 
     socket.on('solicitar_lista', atualizarTodos);
 
-    // --- NOVA LÓGICA: MODO SIMULAÇÃO ---
     socket.on('simular_pedidos', async () => {
         const pacientes = ["Carlos Silva", "Ana Oliveira", "Marcos Pereira", "Julia Costa", "Roberto Souza"];
         const locais = ["UTI 1", "Emergência", "Raio-X", "Centro Cirúrgico", "Enfermaria 2", "Tomografia"];
@@ -100,15 +99,17 @@ io.on('connection', async (socket) => {
         atualizarTodos();
     });
 
-    socket.on('finalizar_geral', async (id) => { await supabase.from('pedidos').update({ status: 'finalizado', finalizado_at: new Date().toISOString() }).eq('id', id); atualizarTodos(); });
+    socket.on('finalizar_geral', async (id) => { 
+        await supabase.from('pedidos').update({ status: 'finalizado', finalizado_at: new Date().toISOString() }).eq('id', id); 
+        atualizarTodos(); 
+    });
+    
     socket.on('aceitar_chamado', async (dados) => {
         await supabase.from('pedidos').update({ status: 'aceito', maqueiro_ida: dados.nomeMaqueiro, aceito_em: new Date().toISOString() }).eq('id', dados.idPedido);
         atualizarTodos();
     });
-    socket.on('disconnect', () => { maqueirosOnline = maqueirosOnline.filter(m => m.id !== socket.id); atualizarTodos(); });
-});
-// Dentro do io.on('connection', (socket) => { ...
 
+    // --- FUNÇÕES NOVAS MOVIDAS PARA DENTRO DA CONEXÃO DO SOCKET ---
     socket.on('paciente_pronto', async (id) => {
         await supabase.from('pedidos').update({ pronto_pela_enfermagem: true }).eq('id', id);
         atualizarTodos();
@@ -123,5 +124,13 @@ io.on('connection', async (socket) => {
         await supabase.from('pedidos').update({ status: 'aceito' }).eq('id', id);
         atualizarTodos();
     });
+    // --------------------------------------------------------------
+
+    socket.on('disconnect', () => { 
+        maqueirosOnline = maqueirosOnline.filter(m => m.id !== socket.id); 
+        atualizarTodos(); 
+    });
+}); // A CHAVE QUE FECHA TUDO FICA AQUI NO FINAL!
+
 const PORT = process.env.PORT || 3000;
 server.listen(PORT, () => console.log(`🚀 iMaqueiro rodando na porta ${PORT}`));
