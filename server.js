@@ -122,6 +122,10 @@ socket.on('cheguei_origem', async (id) => {
         await supabase.from('pedidos').update({ status: 'no_destino' }).eq('id', id);
         atualizarTodos();
     });
+    socket.on('pedir_retorno', async (id) => {
+        await supabase.from('pedidos').update({ status: 'aguardando_retorno' }).eq('id', id);
+        atualizarTodos();
+    });
     // --- FUNÇÕES NOVAS MOVIDAS PARA DENTRO DA CONEXÃO DO SOCKET ---
     socket.on('paciente_pronto', async (id) => {
         await supabase.from('pedidos').update({ pronto_pela_enfermagem: true }).eq('id', id);
