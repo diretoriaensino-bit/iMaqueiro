@@ -9,7 +9,14 @@ const webpush = require('web-push');
 // MOTOR DE NOTIFICAÇÕES NATIVAS (FIREBASE)
 // =========================================================
 const admin = require("firebase-admin");
-const serviceAccount = require("./firebase-key.json");
+let serviceAccount;
+if (process.env.FIREBASE_JSON) {
+  // Se estiver no Render, lê a chave secreta da memória
+  serviceAccount = JSON.parse(process.env.FIREBASE_JSON);
+} else {
+  // Se estiver no seu PC, lê o arquivo físico
+  serviceAccount = require("./firebase-key.json");
+}
 
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount)
