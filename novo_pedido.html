@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>iMaqueiro - Novo Pedido</title>
+    <style>
+        /* CSS para estilizar o App (iFood Style) */
+        body { font-family: sans-serif; background-color: #f4f7f6; padding: 20px; }
+        .container { background-color: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        h1 { font-size: 1.5em; color: #333; text-align: center; }
+        .form-group { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 5px; color: #555; }
+        input[type="text"], select { width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 8px; font-size: 1em; box-sizing: border-radius; }
+        
+        /* Estilo dos ícones de transporte (Botões grandes) */
+        .transport-icons { display: flex; gap: 10px; justify-content: space-around; }
+        .icon-option { border: 2px solid #ddd; padding: 15px; border-radius: 8px; cursor: pointer; text-align: center; flex: 1; }
+        .icon-option.selected { border-color: #007bff; background-color: #e6f0ff; }
+        .icon-option img { width: 40px; }
+
+        /* Estilo das Urgências (Cores de segurança) */
+        .urgencia-options { display: flex; gap: 10px; }
+        .urgencia-btn { flex: 1; padding: 10px; text-align: center; border-radius: 8px; cursor: pointer; color: white; font-weight: bold; border: none; }
+        .urgencia-verde { background-color: #28a745; }
+        .urgencia-amarelo { background-color: #ffc107; color: #333; }
+        .urgencia-vermelho { background-color: #dc3545; }
+        .urgencia-btn.selected { border: 2px solid #333; }
+
+        .btn-confirm { background-color: #dc3545; color: white; padding: 15px; border: none; border-radius: 8px; width: 100%; font-size: 1.2em; font-weight: bold; cursor: pointer; margin-top: 20px; }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>iMaqueiro</h1>
+        <h2>Solicitar Novo Transporte</h2>
+
+        <div class="form-group">
+            <label>Leito de Origem:</label>
+            <input type="text" id="origem" placeholder="Ex: UTI B / 202A">
+        </div>
+
+        <div class="form-group">
+            <label>Destino:</label>
+            <select id="destino">
+                <option value="">Selecione...</option>
+                <option value="Tomografia">Tomografia</option>
+                <option value="Centro Cirúrgico">Centro Cirúrgico</option>
+                <option value="Alta">Alta Hospitalar</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label>Tipo de Transporte:</label>
+            <div class="transport-icons">
+                <div class="icon-option" onclick="selecionarTransporte(this, 'Cadeira')">
+                    <img src="https://img.icons8.com/color/48/wheelchair.png" alt="Cadeira">
+                    <p>Cadeira</p>
+                </div>
+                <div class="icon-option" onclick="selecionarTransporte(this, 'Maca')">
+                    <img src="https://img.icons8.com/color/48/gurney.png" alt="Maca">
+                    <p>Maca</p>
+                </div>
+                <div class="icon-option" onclick="selecionarTransporte(this, 'MacaO2')">
+                    <img src="https://img.icons8.com/color/48/oxygen-tank.png" alt="Maca O2">
+                    <p>Maca c/ O₂</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label>Urgência:</label>
+            <div class="urgencia-options">
+                <button class="urgencia-btn urgencia-verde" onclick="selecionarUrgencia(this, 'Verde')">Verde (Alta)</button>
+                <button class="urgencia-btn urgencia-amarelo" onclick="selecionarUrgencia(this, 'Amarelo')">Amarelo (Exame)</button>
+                <button class="urgencia-btn urgencia-vermelho" onclick="selecionarUrgencia(this, 'Vermelho')">Vermelho (Emergência)</button>
+            </div>
+        </div>
+
+        <button class="btn-confirm" onclick="confirmarPedido()">CONFIRMAR PEDIDO</button>
+    </div>
+
+    <script>
+        // Variáveis para armazenar as seleções atuais
+        let transporteSelecionado = '';
+        let urgenciaSelecionada = '';
+
+        // Funções para lidar com a seleção visual
+        function selecionarTransporte(el, tipo) {
+            // Remove 'selected' de todos
+            document.querySelectorAll('.icon-option').forEach(opt => opt.classList.remove('selected'));
+            // Adiciona no clicado
+            el.classList.add('selected');
+            transporteSelecionado = tipo;
+        }
+
+        function selecionarUrgencia(el, nivel) {
+            document.querySelectorAll('.urgencia-btn').forEach(btn => btn.classList.remove('selected'));
+            el.classList.add('selected');
+            urgenciaSelecionada = nivel;
+        }
+
+        function confirmarPedido() {
+            const origem = document.getElementById('origem').value;
+            const destino = document.getElementById('destino').value;
+
+            // Validação básica
+            if(!origem || !destino || !transporteSelecionado || !urgenciaSelecionada) {
+                alert('Por favor, preencha todos os campos!');
+                return;
+            }
+
+            // Para o MVP: Apenas simulando a confirmação
+            alert(`Pedido Confirmado!\nOrigem: ${origem}\nDestino: ${destino}\nTransporte: ${transporteSelecionado}\nUrgência: ${urgenciaSelecionada}`);
+            // No futuro, aqui enviaremos os dados para o servidor Node.js
+        }
+    </script>
+
+</body>
+</html>

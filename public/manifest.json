@@ -1,0 +1,16 @@
+{
+  "name": "iMaqueiro Pro",
+  "short_name": "iMaqueiro",
+  "description": "Sistema de Gestão de Transportes Hospitalares",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0F172A",
+  "theme_color": "#10B981",
+  "icons": [
+    {
+      "src": "/logo-app.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}

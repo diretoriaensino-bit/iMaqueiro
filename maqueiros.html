@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>iMaqueiro - Radar</title>
+    <style>
+        body { font-family: sans-serif; background-color: #1a1a1a; color: white; padding: 20px; }
+        h1 { text-align: center; color: #ffc107; }
+        
+        .status-bar { background: #333; padding: 10px; border-radius: 8px; margin-bottom: 20px; text-align: center; }
+        
+        .chamado-card { 
+            background: #fff; color: #333; padding: 15px; border-radius: 12px; 
+            margin-bottom: 15px; border-left: 10px solid #ccc;
+        }
+        
+        /* Cores de Urgência no Card */
+        .urg-vermelho { border-left-color: #dc3545; }
+        .urg-amarelo { border-left-color: #ffc107; }
+        .urg-verde { border-left-color: #28a745; }
+
+        .info-linha { margin: 5px 0; font-size: 1.1em; }
+        .btn-aceitar { 
+            background: #28a745; color: white; border: none; padding: 15px; 
+            width: 100%; border-radius: 8px; font-weight: bold; font-size: 1em; cursor: pointer;
+        }
+        
+        .badge { padding: 4px 8px; border-radius: 4px; font-size: 0.8em; font-weight: bold; text-transform: uppercase; }
+        .badge-maca { background: #e3f2fd; color: #0d47a1; }
+    </style>
+</head>
+<body>
+
+    <h1>📡 Radar de Chamados</h1>
+    
+    <div class="status-bar">
+        Status: 🟢 <strong>Disponível</strong>
+    </div>
+
+    <div id="lista-chamados">
+        <div class="chamado-card urg-vermelho">
+            <div style="display: flex; justify-content: space-between;">
+                <span class="badge badge-maca">Maca c/ O₂</span>
+                <span style="color: #dc3545; font-weight: bold;">EMERGÊNCIA</span>
+            </div>
+            <div class="info-linha"><strong>Origem:</strong> UTI Adulto - Leito 202</div>
+            <div class="info-linha"><strong>Destino:</strong> Tomografia</div>
+            <div class="info-linha" style="font-size: 0.8em; color: #666;">Solicitado há 2 min</div>
+            <button class="btn-aceitar" onclick="aceitarTarefa(this)">ACEITAR CHAMADO</button>
+        </div>
+    </div>
+
+    <script>
+        function aceitarTarefa(botao) {
+            if(confirm("Deseja assumir este transporte?")) {
+                botao.innerHTML = "✅ EM ANDAMENTO...";
+                botao.style.background = "#007bff";
+                // Aqui enviaremos a confirmação para o servidor
+            }
+        }
+    </script>
+</body>
+</html>

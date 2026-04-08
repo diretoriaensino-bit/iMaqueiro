@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">iMaqueiro</string>
+    <string name="title_activity_main">iMaqueiro</string>
+    <string name="package_name">com.hospital.imaqueiro</string>
+    <string name="custom_url_scheme">com.hospital.imaqueiro</string>
+</resources>

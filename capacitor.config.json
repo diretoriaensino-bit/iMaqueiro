@@ -1,0 +1,6 @@
+{
+  "appId": "com.hospital.imaqueiro",
+  "appName": "iMaqueiro",
+  "webDir": "public",
+  "bundledWebRuntime": false
+}

@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="pt-br" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>iMaqueiro Enterprise</title>
+    
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#0F172A">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="iMaqueiro">
+    
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 512 512%22><path fill=%22%234F46E5%22 d=%22M192 112c0-26.5 21.5-48 48-48s48 21.5 48 48s-21.5 48-48 48s-48-21.5-48-48zm39.6 96c-36.5 0-66.4 29.6-66.4 66.4l0 61.6H120c-13.3 0-24 10.7-24 24s10.7 24 24 24h64c13.3 0 24-10.7 24-24l0-61.6c0-10 8.4-18.4 18.4-18.4h55.4c14.2 0 27.5-6.8 36.1-18.2l34.8-46.4c5.4-7.2 4-17.5-3.2-22.9s-17.5-4-22.9 3.2l-34.8 46.4c-2.9 3.8-7.3 6.1-12 6.1H231.6zM224 400c0-53 43-96 96-96s96 43 96 96s-43 96-96 96s-96-43-96-96zm64 0c0 17.7 14.3 32 32 32s32-14.3 32-32s-14.3-32-32-32s-32 14.3-32 32z%22/></svg>">
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    
+    <link rel="stylesheet" href="style.css?v=3">
+    
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/sw.js')
+                    .then(reg => console.log('PWA registrado com sucesso!', reg.scope))
+                    .catch(err => console.error('Erro no PWA:', err));
+            });
+        }
+    </script>
+    
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="https://unpkg.com/html5-qrcode"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+</head>
+<body>
+
+    <div id="cancel-modal" class="modal-overlay">
+        <div class="modal-content" style="text-align: center; transition: border 0.3s;">
+            <h3 style="margin-top:0; font-weight: 800; color: var(--danger); border-bottom: 2px solid var(--border-color); padding-bottom: 15px;"><i class="fa fa-ban modern-icon"></i> Motivo do Cancelamento</h3>
+            <p style="font-size:0.95rem; color:var(--text-muted); margin-bottom:20px;">Por que este transporte está sendo cancelado?</p>
+            <label style="text-align: left; color: var(--danger);"><i class="fa fa-asterisk"></i> Motivo Obrigatório</label>
+            <select id="cancel-motivo">
+                <option value="" disabled selected>Selecione um motivo...</option>
+                <option value="Paciente teve Alta">Paciente teve Alta</option>
+                <option value="Recusou Transporte">Recusou Transporte</option>
+                <option value="Piora Clínica / Óbito">Piora Clínica / Óbito</option>
+                <option value="Erro de Digitação">Erro de Digitação</option>
+                <option value="Outro">Outro (Especificar na obs)</option>
+            </select>
+            <label style="text-align: left; margin-top: 10px;">Observação</label>
+            <textarea id="cancel-obs" rows="2" placeholder="Detalhes adicionais..."></textarea>
+            <button class="btn btn-main" style="width: 100%; padding: 16px; font-size: 1.1rem; background: var(--danger);" onclick="confirmarCancelamento()">CONFIRMAR CANCELAMENTO</button>
+            <button class="btn" style="width:100%; margin-top:12px; background:var(--input-bg); color: var(--text-main);" onclick="document.getElementById('cancel-modal').style.display='none'; document.querySelector('#cancel-modal .modal-content').style.border = '1px solid var(--border-color)';">Voltar</button>
+        </div>
+    </div>
+
+    <div id="offline-banner"><i class="fa fa-wifi modern-icon" style="margin-right: 8px;"></i> Modo Offline Ativado. Sincronização pendente.</div>
+
+    <div class="app-shell">
+        
+        <div id="screen-login" class="screen active login-bg" style="justify-content:center; align-items:center; padding: 0;">
+            <div class="login-box">
+                <div style="background: var(--primary-light); width: 110px; height: 110px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px auto; box-shadow: var(--shadow-md);">
+                    <i class="fa fa-wheelchair modern-icon" style="font-size: 4.5rem; color: var(--primary);"></i>
+                </div>
+                <h2 style="color:#0F172A; margin:0 0 8px 0; font-size: 2rem; font-weight: 800; letter-spacing: -1px;">iMaqueiro <span style="color:var(--primary)">Pro</span></h2>
+                <p style="color:#64748B; margin-bottom: 30px; font-weight: 500; font-size: 0.95rem;">Gestão Logística Inteligente</p>
+                <div style="text-align: left;">
+                    <label style="color:#64748B;">E-mail Corporativo</label>
+                    <input type="email" id="login-email" placeholder="usuario@hospital.com.br" style="background:#F8FAFC; color:#0F172A; border:1px solid #CBD5E1;">
+                    <label style="color:#64748B;">Senha de Acesso</label>
+                    <input type="password" id="login-senha" placeholder="••••••••" style="background:#F8FAFC; color:#0F172A; border:1px solid #CBD5E1;">
+                </div>
+                <button class="btn btn-main" style="margin-top: 10px; font-size: 1.1rem; padding: 14px;" onclick="tentarLogin()"><i class="fa fa-sign-in-alt modern-icon"></i> ACESSAR SISTEMA</button>
+                <p id="login-msg" style="color:var(--danger); font-weight: 600; font-size:0.85rem; margin-top:15px;"></p>
+            </div>
+        </div>
+
+        <div id="screen-coordinator" class="screen" style="padding: 0;">
+            <header>
+                <div class="header-title"><i class="fa fa-chart-pie modern-icon" style="font-size: 1.8rem; color: #60A5FA;"></i><h3 style="margin:0; font-weight: 700; letter-spacing: -0.5px;">Centro de Comando</h3></div>
+                <div class="header-actions">
+                    <button class="btn" style="background:var(--primary-light); color:var(--primary-hover); font-size: 0.95rem; padding: 10px 15px;" onclick="abrirGeradorQR()"><i class="fa fa-qrcode modern-icon"></i> GERAR QR ETIQUETA</button>
+                    <button class="btn" style="background:var(--success); color:white; font-size: 0.95rem; padding: 10px 15px;" onclick="exportarParaExcel()"><i class="fa fa-file-excel modern-icon"></i> RELATÓRIO EXCEL</button>
+                    <button class="btn" style="background:transparent; color:inherit; font-size: 1.2rem; padding: 8px;" onclick="toggleTheme()"><i class="fa fa-moon modern-icon" id="theme-icon-coord"></i></button>
+                    <span id="user-name-coord" style="font-weight:600; font-size:0.95rem;"></span>
+                    <img id="header-foto-coord" src="https://cdn-icons-png.flaticon.com/512/149/149071.png" class="miniatura-foto">
+                    <button class="btn" style="background:rgba(255,255,255,0.15); color:white; padding:10px; border-radius:50%; width: 40px; height: 40px;" onclick="abrirPerfil()"><i class="fa fa-cog modern-icon"></i></button>
+                    <button class="btn" style="background:var(--danger); color:white; padding:10px 20px;" onclick="fazerLogout()"><i class="fa fa-power-off modern-icon"></i> Sair</button>
+                </div>
+            </header>
+
+            <div class="dashboard-container" style="flex-direction: column; overflow-y: auto; padding-bottom: 80px;">
+                <div class="stats-bar">
+                    <div class="stat-item"><label>SLA Médio (Atendimento)</label><h2 id="adm-sla-time" style="color:var(--primary)">0 min</h2></div>
+                    <div class="stat-item"><label>Transportes Hoje</label><h2 id="adm-total-trips">0</h2></div>
+                    <div class="stat-item"><label>Equipe Ativa</label><h2 id="adm-online-staff" style="color:var(--success)">0</h2></div>
+                    <div class="stat-item" style="border-bottom: 4px solid var(--danger);"><label>Em Atraso</label><h2 id="adm-delayed" style="color:var(--danger)">0</h2></div>
+                </div>
+
+                <div class="adm-row">
+                    <div style="flex: 2; background: var(--card-bg); padding: 24px; border-radius: 16px; box-shadow: var(--shadow-sm); border: 1px solid var(--border-color); transition:0.3s;">
+                        <h3 style="margin:0 0 20px 0; font-weight: 700;"><i class="fa fa-chart-column modern-icon" style="color:var(--primary); margin-right: 8px;"></i> Volume por Setor</h3>
+                        <canvas id="graficoSetores" style="max-height: 280px; width: 100%;"></canvas>
+                    </div>
+                    
+                    <div style="flex: 1; background: var(--card-bg); padding: 24px; border-radius: 16px; box-shadow: var(--shadow-sm); border: 1px solid var(--border-color); transition:0.3s;">
+                        <h3 style="margin:0 0 20px 0; font-weight: 700;"><i class="fa fa-medal modern-icon" style="color:var(--warning); margin-right: 8px;"></i> Top Produtividade</h3>
+                        <div id="adm-ranking-list"></div>
+                    </div>
+                    
+                    <div style="flex: 1; background: var(--card-bg); padding: 24px; border-radius: 16px; box-shadow: var(--shadow-sm); border: 1px solid var(--border-color); transition:0.3s; display: flex; flex-direction: column;">
+                        <h3 style="margin:0 0 20px 0; font-weight: 700;"><i class="fa fa-wrench modern-icon" style="color:var(--danger); margin-right: 8px;"></i> Manutenção</h3>
+                        <div id="adm-manutencao-list" style="overflow-y: auto; flex: 1;"></div>
+                    </div>
+                </div>
+
+                <div style="background: var(--card-bg); padding: 24px; border-radius: 16px; box-shadow: var(--shadow-sm); margin-bottom: 30px; border: 1px solid var(--border-color); transition:0.3s;">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px; flex-wrap: wrap; gap: 10px;">
+                        <h3 style="margin:0;"><i class="fa fa-broadcast-tower modern-icon"></i> Pátio em Tempo Real</h3>
+                        <div class="fast-pass-filters">
+                            <button class="filter-pill active" onclick="filtrarTabelaADM('todos', this)"><i class="fa fa-list"></i> Todos</button>
+                            <button class="filter-pill" onclick="filtrarTabelaADM('vermelhos', this)"><i class="fa fa-circle" style="color:#EF4444;"></i> Críticos</button>
+                            <button class="filter-pill" onclick="filtrarTabelaADM('cadeiras', this)"><i class="fa fa-wheelchair"></i> Cadeiras</button>
+                            <button class="filter-pill" onclick="filtrarTabelaADM('macas', this)"><i class="fa fa-procedures"></i> Macas</button>
+                            <button class="filter-pill" onclick="filtrarTabelaADM('atrasos', this)"><i class="fa fa-clock"></i> Em Atraso</button>
+                        </div>
+                    </div>
+                    <div style="overflow-x: auto;">
+                        <table class="adm-table" id="adm-live-table">
+                            <thead><tr><th>ID</th><th>Paciente</th><th>Rota</th><th>Urgência</th><th>Status</th><th>Maqueiro</th></tr></thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="screen-nurse" class="screen" style="padding: 0;">
+            <header>
+                <div class="header-title"><i class="fa fa-user-nurse modern-icon" style="font-size: 1.8rem; color: #60A5FA;"></i><h3 style="margin:0; font-weight: 700; letter-spacing: -0.5px;">Solicitar Transporte</h3></div>
+                <div class="header-actions">
+                    <button class="btn" style="background:transparent; color:inherit; font-size: 1.2rem; padding: 8px;" onclick="toggleTheme()"><i class="fa fa-moon modern-icon" id="theme-icon-nurse"></i></button>
+                    <span id="user-name-nurse" style="font-weight:600; font-size:0.95rem;"></span>
+                    <img id="header-foto-nurse" src="https://cdn-icons-png.flaticon.com/512/149/149071.png" class="miniatura-foto">
+                    <button class="btn" style="background:rgba(255,255,255,0.15); color:white; padding:10px; border-radius:50%; width: 40px; height: 40px;" onclick="abrirPerfil()"><i class="fa fa-cog modern-icon"></i></button>
+                    <button class="btn" style="background:var(--danger); color:white; padding:10px 20px;" onclick="fazerLogout()"><i class="fa fa-power-off modern-icon"></i> Sair</button>
+                </div>
+            </header>
+            
+            <div class="dashboard-container">
+                <div class="sidebar-form">
+                    
+                    <div style="display: flex; background: var(--input-bg); padding: 5px; border-radius: 12px; margin-bottom: 20px; border: 1px solid var(--border-color);">
+                        <button id="btn-tab-imediato" class="btn" style="flex: 1; background: var(--primary); color: white; border-radius: 8px;" onclick="mudarAbaPedido('imediato')"><i class="fa fa-bolt modern-icon"></i> Imediato</button>
+                        <button id="btn-tab-agendado" class="btn" style="flex: 1; background: transparent; color: var(--text-muted); border-radius: 8px;" onclick="mudarAbaPedido('agendado')"><i class="fa fa-calendar-alt modern-icon"></i> Agendado</button>
+                    </div>
+
+                    <div class="form-section">
+                        <div class="form-section-header header-purple"><i class="fa fa-map-marker-alt modern-icon"></i> Origem e Paciente</div>
+                        <div class="form-section-body">
+                            <label style="color:var(--primary); font-weight: 800;"><i class="fa fa-database modern-icon"></i> Buscar Prontuário (TASY)</label>
+                            <div style="display:flex; gap:10px; margin-bottom:16px;">
+                                <input type="number" id="busca-tasy" placeholder="Ex: 12345" style="margin-bottom:0; border-color:var(--primary);">
+                                <button class="btn btn-main" style="width:auto; padding: 0 20px;" onclick="simularTasy()"><i class="fa fa-search modern-icon"></i></button>
+                            </div>
+                            <label>Nome do Paciente</label><input type="text" id="paciente" placeholder="Digite o nome...">
+                            <label>Setor de Origem</label><input type="text" id="origem" placeholder="Ex: Enfermaria 1">
+                        </div>
+                    </div>
+                    
+                    <div class="form-section">
+                        <div class="form-section-header header-green"><i class="fa fa-flag-checkered modern-icon"></i> Destino</div>
+                        <div class="form-section-body">
+                            <label>Setor de Destino</label>
+                            <input type="text" id="destino" placeholder="Ex: Raio-X" style="margin-bottom: 8px;">
+                            <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 16px;">
+                                <button type="button" class="btn" style="background: var(--input-bg); color: var(--text-main); font-size: 0.75rem; padding: 6px 12px; border: 1px solid var(--border-color); border-radius: 20px;" onclick="document.getElementById('destino').value = 'Raio-X'">Raio-X</button>
+                                <button type="button" class="btn" style="background: var(--input-bg); color: var(--text-main); font-size: 0.75rem; padding: 6px 12px; border: 1px solid var(--border-color); border-radius: 20px;" onclick="document.getElementById('destino').value = 'Tomografia'">Tomografia</button>
+                                <button type="button" class="btn" style="background: var(--input-bg); color: var(--text-main); font-size: 0.75rem; padding: 6px 12px; border: 1px solid var(--border-color); border-radius: 20px;" onclick="document.getElementById('destino').value = 'Centro Cirúrgico'">C. Cirúrgico</button>
+                                <button type="button" class="btn" style="background: var(--input-bg); color: var(--text-main); font-size: 0.75rem; padding: 6px 12px; border: 1px solid var(--border-color); border-radius: 20px;" onclick="document.getElementById('destino').value = 'UTI'">UTI</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-section">
+                        <div class="form-section-header header-gray"><i class="fa fa-clipboard-list modern-icon"></i> Detalhes</div>
+                        <div class="form-section-body">
+                            <div class="form-row">
+                                <div class="form-col"><label>Equipamento</label><select id="tipo"><option value="Maca Padrão">Maca Padrão</option><option value="Cadeira de Rodas">Cadeira</option><option value="Maca com O2">Maca com O2</option><option value="Incubadora">Incubadora</option></select></div>
+                                <div class="form-col">
+                                    <label style="display:flex; align-items:center;">
+                                        Prioridade 
+                                        <div class="info-tooltip">
+                                            <i class="fa fa-info-circle modern-icon"></i>
+                                            <div class="info-tooltip-text">
+                                                <span style="color:var(--success-light)">● Normal:</span> Sem risco de vida (Rotina).<br>
+                                                <span style="color:var(--warning)">● Urgente:</span> Prioritário (Ex: Alta, Transf. UTI).<br>
+                                                <span style="color:var(--danger-light)">● Emergência:</span> Imediato / Fura-fila (Ex: Risco de Morte, Bloco Cirúrgico).
+                                            </div>
+                                        </div>
+                                    </label>
+                                    <select id="urgencia"><option value="Verde">Normal</option><option value="Amarelo">Urgente</option><option value="Vermelho">Emergência</option></select>
+                                </div>
+                            </div>
+                            <div class="form-row">
+                                <div class="form-col"><label>Rota</label><select id="trajeto"><option value="ida_volta">Ida e Volta</option><option value="so_ida">Somente Ida</option></select></div>
+                                <div class="form-col"><label>Isolamento</label><select id="risco"><option value="Nenhum">Padrão</option><option value="Contato">Contato</option><option value="Gotículas">Gotículas</option><option value="Aerosol">Aerossóis</option></select></div>
+                            </div>
+                            
+                            <label><i class="fa fa-stethoscope modern-icon" style="color:var(--danger);"></i> Condições Críticas (POP 004/2018)</label>
+                            <div class="checkbox-grid">
+                                <label><input type="checkbox" class="cb-disp" value="Ventilação Mecânica"> <b style="color:var(--danger)">Ventilação Mecânica</b></label>
+                                <label><input type="checkbox" class="cb-disp" value="Droga Vasoativa"> <b style="color:var(--danger)">Droga Vasoativa</b></label>
+                                <label><input type="checkbox" class="cb-disp" value="VNI"> <b style="color:var(--danger)">VNI</b></label>
+                                <label><input type="checkbox" class="cb-disp" value="Confuso/Agitado"> <b style="color:var(--warning)">Confuso/Agitado</b></label>
+                                <label><input type="checkbox" class="cb-disp" value="SVD"> SVD</label>
+                                <label><input type="checkbox" class="cb-disp" value="SNE/SNG"> SNE/SNG</label>
+                                <label><input type="checkbox" class="cb-disp" value="Acesso Venoso"> Acesso Venoso</label>
+                                <label><input type="checkbox" class="cb-disp" value="O2 Contínuo"> O2 Contínuo</label>
+                                <label><input type="checkbox" class="cb-disp" value="Drenos"> Drenos</label>
+                            </div>
+                            
+                            <div id="box-agendamento" style="display: none; background: var(--warning-light); padding: 15px; border-radius: 12px; margin-bottom: 15px; border: 1px solid var(--warning);">
+                                <label style="color: var(--warning-dark);"><i class="fa fa-clock modern-icon"></i> Data e Hora do Transporte</label>
+                                <input type="datetime-local" id="data_agendamento" style="border-color: var(--warning); margin-bottom: 0; background: #FFF;">
+                            </div>
+
+                            <label>Observações</label><textarea id="obs" rows="2" placeholder="Opcional..."></textarea>
+                            <button class="btn btn-main" style="padding:16px; margin-top: 5px; font-size: 1.05rem;" onclick="enviarPedido()"><i class="fa fa-paper-plane modern-icon"></i> Solicitar Transporte</button>
+                        </div>
+                    </div>
+                </div>
+               <div class="main-panel">
+                    <div class="stats-bar"><div class="stat-item"><label>Aguardando</label><h2 id="stat-pendente">0</h2></div><div class="stat-item"><label>Em trânsito</label><h2 id="stat-curso">0</h2></div><div class="stat-item"><label>Riscos</label><h2 id="stat-risco" style="color:var(--danger)">0</h2></div></div>
+                    <h3 style="margin-bottom: 20px; font-weight: 700;">Chamados Ativos</h3>
+                    <div class="cards-grid" id="nurse-list"></div>
+                    <h3 style="margin: 40px 0 20px 0; font-weight: 700; color: var(--text-muted); border-top: 1px solid var(--border-color); padding-top: 20px;"><i class="fa fa-history modern-icon"></i> Últimos Finalizados</h3>
+                    <div class="cards-grid" id="nurse-history"></div>
+                </div>
+            </div>
+        </div>
+
+        <div id="screen-maqueiro" class="screen" style="padding: 0;">
+            <header>
+                <div class="header-title"><i class="fa fa-ambulance modern-icon" style="font-size: 1.8rem; color: var(--warning);"></i><h3 style="margin:0; font-weight: 700;">Painel do maqueiro</h3></div>
+                <div class="header-actions">
+                    <button class="btn" style="background:transparent; color:inherit; font-size: 1.2rem; padding: 8px;" onclick="toggleTheme()"><i class="fa fa-moon modern-icon" id="theme-icon-maq"></i></button>
+                    <button class="btn" style="background:rgba(255,255,255,0.15); color:white; padding:10px; border-radius:50%; width: 40px; height: 40px;" onclick="abrirPerfil()"><i class="fa fa-cog modern-icon"></i></button>
+                </div>
+            </header>
+            <div class="dashboard-container">
+                <div class="sidebar-form" style="background:var(--card-bg); border-color: var(--border-color); padding: 0; overflow: hidden;">
+                    <div class="sidebar-header-bg"></div>
+                    <div style="padding: 0 24px 24px 24px; text-align: center;">
+                        <div class="profile-avatar-container">
+                            <img id="painel-foto-maq" src="https://cdn-icons-png.flaticon.com/512/149/149071.png" style="width: 100px; height: 100px; border-radius: 50%; border: 4px solid var(--card-bg); object-fit: cover; box-shadow: var(--shadow-md); background: var(--input-bg);">
+                        </div>
+                        <h3 id="user-name-maq" style="margin:10px 0 2px 0; font-weight: 800; font-size: 1.4rem;">Usuário</h3>
+                        <p style="margin:0 0 24px 0; font-size: 0.85rem; color: var(--primary); font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;">Logística de Pacientes</p>
+                        
+                        <div class="stats-bar" style="flex-direction: column;">
+                            <div class="stat-item stat-clickable" style="background:var(--input-bg); border: 1px solid var(--border-color);" onclick="abrirHistoricoModal()">
+                                <h2 id="total-hoje" style="color:var(--primary);">0</h2>
+                                <label style="color:var(--text-main); cursor: pointer;"><i class="fa fa-list-alt modern-icon"></i> Corridas Hoje (Ver)</label>
+                            </div>
+                            
+                           <div id="card-status-maq" class="stat-item modern-status-card" onclick="toggleStatusMaqueiro()">
+                                <div class="ecg-track" id="anim-ecg"></div>
+                                <div class="smoke-track" id="anim-smoke"><i class="fa fa-cloud smoke-1"></i><i class="fa fa-cloud smoke-2"></i></div>
+                                
+                                <div class="status-switch">
+                                    <div class="status-knob" id="status-knob"><i id="status-icon" class="fa fa-running"></i></div>
+                                    <span id="status-text" class="status-label">DISPONÍVEL</span>
+                                </div>
+                                
+                                <div style="font-size:0.75rem; opacity:0.9; margin-top:12px; pointer-events:none; font-weight: 600; z-index: 1;">
+                                    <i class="fa fa-hand-pointer modern-icon"></i> Toque para alterar
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <button class="btn" id="btn-som" onclick="ativarAudio()" style="background:var(--warning); color:var(--warning-dark); width:100%; margin-top:15px; padding: 15px; font-size: 1rem; box-shadow: 0 4px 15px rgba(245, 158, 11, 0.3);"><i class="fa fa-volume-up modern-icon"></i> ATIVAR ALERTAS</button>
+                        <button class="btn" style="background:var(--danger-light); color:var(--danger-dark); width:100%; margin-top:10px; padding: 15px; font-size: 1rem; border: 1px solid var(--danger);" onclick="abrirRelatorioDefeito()"><i class="fa fa-wrench modern-icon"></i> REPORTAR DEFEITO</button>
+                    </div>
+                </div>
+                <div class="main-panel">
+                    <div id="area-corrida-ativa" style="display:none; margin-bottom: 40px;"><h3 style="color:var(--success); margin:0 0 15px 0; font-weight: 700; font-size: 1.3rem;"><i class="fa fa-location-arrow modern-icon"></i> Em Execução</h3><div class="cards-grid" id="maqueiro-ativo"></div></div>
+                    <h3 style="margin:0 0 15px 0; font-weight: 700; font-size: 1.3rem;"><i class="fa fa-clipboard-list modern-icon" style="color:var(--primary);"></i> Chamados Disponíveis</h3><div class="cards-grid" id="maqueiro-pendentes"></div>
+                </div>
+            </div>
+        </div>
+
+        <div id="screen-perfil" class="screen" style="justify-content:center; align-items:center; padding: 20px;">
+            <div style="background:var(--card-bg); padding:0; border-radius:24px; box-shadow:var(--shadow-lg); width:100%; max-width:420px; position: relative; border: 1px solid var(--border-color); overflow: hidden;">
+                <div class="profile-header-bg"></div>
+                <button class="btn" style="position: absolute; top: 15px; left: 15px; background: rgba(255,255,255,0.2); color: #FFF; padding: 8px 12px; border-radius: 12px; backdrop-filter: blur(5px);" onclick="fecharPerfil()"><i class="fa fa-arrow-left modern-icon"></i> Voltar</button>
+                
+                <div style="padding: 0 24px 24px 24px;">
+                    <div class="profile-avatar-container">
+                        <div style="position: relative; display: inline-block; width: 120px; height: 120px;">
+                            <img id="perfil-foto-preview" src="https://cdn-icons-png.flaticon.com/512/149/149071.png" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover; border: 4px solid var(--card-bg); background: var(--input-bg); box-shadow: var(--shadow-md);">
+                            <label for="perfil-upload" style="position: absolute; bottom: 0; right: 0; background: var(--primary); color: #FFF; width: 36px; height: 36px; border-radius: 50%; display: flex; justify-content: center; align-items: center; cursor: pointer; border: 3px solid var(--card-bg);"><i class="fa fa-camera modern-icon" style="font-size: 1rem;"></i></label>
+                            <input type="file" id="perfil-upload" accept="image/*" style="display:none;" onchange="lerFoto(event)">
+                        </div>
+                    </div>
+                    
+                    <h2 style="margin:10px 0 25px 0; text-align: center; font-size: 1.5rem; font-weight: 800;">Configurações</h2>
+                    
+                    <label>Nome Completo</label>
+                    <div class="input-icon-wrapper">
+                        <i class="fa fa-user"></i>
+                        <input type="text" id="perfil-nome" disabled style="background:var(--input-bg); border-color: transparent; font-weight: 600; color: var(--text-muted);">
+                    </div>
+
+                    <label>E-mail Corporativo</label>
+                    <div class="input-icon-wrapper">
+                        <i class="fa fa-envelope"></i>
+                        <input type="email" id="perfil-email" disabled style="background:var(--input-bg); border-color: transparent; font-weight: 600; color: var(--text-muted);">
+                    </div>
+
+                    <label>Nível de Acesso</label>
+                    <div class="input-icon-wrapper">
+                        <i class="fa fa-id-badge"></i>
+                        <input type="text" id="perfil-cargo" disabled style="background:var(--primary-light); color:var(--primary-hover); font-weight: 800; border-color: transparent; text-transform: uppercase;">
+                    </div>
+
+                    <label>Telefone Celular</label>
+                    <div class="input-icon-wrapper">
+                        <i class="fa fa-phone"></i>
+                        <input type="tel" id="perfil-telefone" placeholder="(11) 99999-9999" style="border-color: var(--primary); background: var(--card-bg);">
+                    </div>
+
+                    <button class="btn btn-main" style="margin-top: 10px; font-size: 1.1rem; padding: 16px;" onclick="salvarPerfil()"><i class="fa fa-save modern-icon"></i> SALVAR DADOS</button>
+                    <button class="btn" style="background:var(--danger-light); color:var(--danger-dark); border: 1px solid var(--danger); margin-top: 10px; font-size: 1.1rem; padding: 16px; width: 100%;" onclick="fazerLogout()"><i class="fa fa-power-off modern-icon"></i> SAIR DA CONTA</button>
+                </div>
+            </div>
+        </div>
+
+        <footer>
+            <p>&copy; 2026 iMaqueiro Enterprise. Desenvolvido pelo <strong>Setor de Inovação do Hospital Universitário Sagrada Família</strong>.</p>
+        </footer>
+
+    </div>
+
+    <div id="historico-maq-modal" class="modal-overlay">
+        <div class="modal-content">
+            <h3 style="margin-top:0; font-weight: 800; border-bottom: 2px solid var(--border-color); padding-bottom: 15px;"><i class="fa fa-history modern-icon" style="color: var(--primary);"></i> Minhas Corridas (Hoje)</h3>
+            <div id="maqueiro-history-modal" style="font-size: 0.9rem; max-height: 400px; overflow-y: auto; padding-right: 5px;">
+                </div>
+            <button class="btn" style="width:100%; margin-top:15px; background:var(--input-bg); color: var(--text-main);" onclick="document.getElementById('historico-maq-modal').style.display='none'">Fechar</button>
+        </div>
+  
+
+    </div>
+
+    <div id="defeito-modal" class="modal-overlay">
+        <div class="modal-content" style="text-align: center;">
+            <h3 style="margin-top:0; font-weight: 800; color: var(--danger); border-bottom: 2px solid var(--border-color); padding-bottom: 15px;"><i class="fa fa-wrench modern-icon"></i> Reportar Defeito</h3>
+            <p style="font-size:0.95rem; color:var(--text-muted); margin-bottom:20px;">Informe o equipamento que apresentou problema para a manutenção.</p>
+            <label style="text-align: left;">Equipamento</label>
+            <select id="defeito-equipamento">
+                <option value="Cadeira de Rodas">Cadeira de Rodas</option>
+                <option value="Maca Padrão">Maca Padrão</option>
+                <option value="Maca com Cilindro O2">Maca com Cilindro O2</option>
+                <option value="Incubadora">Incubadora Neonatal</option>
+            </select>
+            <label style="text-align: left;">Descrição do Problema</label>
+            <textarea id="defeito-obs" rows="2" placeholder="Ex: Roda dianteira direita travando..."></textarea>
+            <button class="btn btn-main" style="width: 100%; padding: 16px; font-size: 1.1rem; background: var(--danger);" onclick="enviarDefeito()">ENVIAR RELATÓRIO</button>
+            <button class="btn" style="width:100%; margin-top:12px; background:var(--input-bg); color: var(--text-main);" onclick="document.getElementById('defeito-modal').style.display='none'">Cancelar</button>
+        </div>
+    </div>
+
+    <div id="rating-modal" class="modal-overlay">
+        <div class="modal-content" style="text-align: center;">
+            <h3 style="margin-top:0; font-weight: 800; color: var(--text-main);"><i class="fa fa-star modern-icon" style="color: var(--warning);"></i> Avaliar Atendimento</h3>
+            <p style="font-size:0.95rem; color:var(--text-muted); margin-bottom:20px;">Como foi o transporte deste paciente?</p>
+            <div class="star-rating" id="star-rating">
+                <i class="fa fa-star star-btn modern-icon" data-value="1"></i><i class="fa fa-star star-btn modern-icon" data-value="2"></i><i class="fa fa-star star-btn modern-icon" data-value="3"></i><i class="fa fa-star star-btn modern-icon" data-value="4"></i><i class="fa fa-star star-btn modern-icon" data-value="5"></i>
+            </div>
+            <textarea id="rating-obs" rows="2" placeholder="Deixe um elogio ou observação (opcional)..." style="margin-bottom: 20px;"></textarea>
+            <button class="btn btn-main" style="width: 100%; padding: 16px; font-size: 1.1rem;" onclick="enviarAvaliacao()">AVALIAR E FINALIZAR</button>
+            <button class="btn" style="width:100%; margin-top:12px; background:var(--input-bg); color: var(--text-main);" onclick="pularAvaliacao()">Pular e Finalizar</button>
+        </div>
+    </div>
+
+    <div id="gerador-qr-modal" class="modal-overlay"><div class="modal-content" style="text-align: center;"><h3 style="margin-top:0; font-weight: 800; border-bottom: 2px solid var(--border-color); padding-bottom: 15px;"><i class="fa fa-qrcode modern-icon" style="color: var(--primary);"></i> Gerador de Etiquetas QR</h3><p style="font-size:0.9rem; color:var(--text-muted); margin-bottom:20px;">Crie e imprima etiquetas de destino para colar nos leitos e salas.</p><label style="text-align: left;">Nome do Setor / Leito de Destino</label><input type="text" id="qr-text-input" placeholder="Ex: UTI 02 - Leito 05"><button class="btn btn-main" style="margin-bottom: 20px; width: 100%;" onclick="gerarQRCodeEtiqueta()">GERAR CÓDIGO QR</button><div id="qr-code-output" style="display:flex; justify-content:center; margin-bottom: 20px; background: white; padding: 20px; border-radius: 12px; border: 1px solid var(--border-color); min-height: 240px; align-items: center;"><span style="color: #94A3B8;">O código aparecerá aqui</span></div><button class="btn" style="background: var(--success); color: white; width: 100%; display: none;" id="btn-imprimir-qr" onclick="imprimirQR()"><i class="fa fa-print modern-icon"></i> IMPRIMIR ETIQUETA</button><button class="btn" style="width:100%; margin-top:12px; background:var(--input-bg); color: var(--text-main);" onclick="document.getElementById('gerador-qr-modal').style.display='none'">Fechar Aba</button></div></div>
+    
+    <div id="details-modal" class="modal-overlay"><div class="modal-content"><h3 style="margin-top:0; font-weight: 800; border-bottom: 2px solid var(--border-color); padding-bottom: 15px;"><i class="fa fa-wheelchair modern-icon" style="color: var(--primary);"></i> Prontuário Resumido</h3><div id="details-body" style="font-size:0.95rem; line-height:1.7; margin-top: 15px;"></div><button class="btn" style="width:100%; margin-top:24px; background:var(--input-bg); color: var(--text-main);" onclick="document.getElementById('details-modal').style.display='none'">Fechar</button></div></div>
+    
+    <div id="checklist-modal" class="modal-overlay"><div class="modal-content" style="max-width: 400px;"><h3 style="color:var(--warning-dark); margin-top:0; border-bottom: 3px solid var(--warning); padding-bottom: 15px; font-weight: 800;"><i class="fa fa-clipboard-check modern-icon"></i> Checklist de Segurança</h3><div id="checklist-dinamico"></div><button id="btn-iniciar-viagem" class="btn btn-main" style="width:100%; opacity:0.5; cursor:not-allowed; background: var(--success); padding: 16px; font-size: 1.1rem;" disabled onclick="confirmarChecklist()"><i class="fa fa-lock modern-icon"></i> INICIAR ROTA SEGURA</button><button class="btn" style="width:100%; margin-top:12px; background:var(--input-bg); color: var(--text-main);" onclick="fecharChecklist()">Cancelar</button></div></div>
+    
+    <div id="login-animation" class="login-animation-overlay"><i class="fa fa-wheelchair maca-icon modern-icon"></i><h2 style="margin-top:24px; font-weight: 800; letter-spacing: -1px;">iMaqueiro Pro</h2><p style="font-weight: 500;">Autenticando credenciais...</p></div>
+    
+    <div id="chat-modal" class="modal-overlay"><div class="modal-content"><h3 style="margin-top:0; font-weight: 800; border-bottom: 2px solid var(--border-color); padding-bottom: 15px;"><i class="fa fa-comments modern-icon" style="color: var(--primary);"></i> Comunicação Rápida</h3><div class="chat-box" id="chat-box"></div><div id="quick-replies" style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:15px;"></div><button class="btn" style="width:100%; margin-top:20px; background:var(--input-bg); color: var(--text-main);" onclick="document.getElementById('chat-modal').style.display='none'; idChatAtivo=null;">Fechar Chat</button></div></div>
+    
+    <div id="qr-modal" class="modal-overlay"><div class="modal-content"><h3 style="margin-top:0; font-weight: 800; text-align: center;"><i class="fa fa-qrcode modern-icon" style="color: var(--primary);"></i> Validação de Leito</h3><p style="text-align: center; color: var(--text-muted); font-size: 0.9rem; margin-bottom: 20px;">Aponte a câmera para o leito</p><div id="qr-reader" style="width:100%; border-radius:16px; overflow:hidden; border: 2px solid var(--border-color);"></div><button class="btn" style="background:var(--danger-light); color:var(--danger-dark); width:100%; margin-top:20px;" onclick="fecharQR()">Cancelar Leitura</button></div></div>
+    
+    <div id="call-modal">
+        <div id="call-risco-faixa" style="background:var(--danger); width:100%; padding:10px; position:absolute; top:0; font-weight:800; font-size:1rem; display:none; letter-spacing: 1px; text-transform: uppercase; box-shadow: 0 4px 15px rgba(239, 68, 68, 0.4);">⚠️ PROTOCOLO DE ISOLAMENTO</div>
+        <i id="icone-sirene" class="fa fa-bell fa-shake modern-icon" style="font-size: 2.5rem; color: var(--warning); margin-bottom: 5px; filter: drop-shadow(0 0 15px rgba(245,158,11,0.5));"></i>
+        <img id="img-aviso-risco" src="" alt="Aviso EPI" style="display: none; max-width: 100px; max-height: 100px; border-radius: 12px; border: 3px solid var(--danger); box-shadow: 0 0 20px rgba(239, 68, 68, 0.5); margin: 10px 0; background: var(--white); padding: 5px; object-fit: contain;" onerror="this.style.display='none'; document.getElementById('icone-sirene').style.display='block';">
+        <h2 id="call-paciente" style="margin:0; font-size: 1.5rem; color: #FFF; font-weight: 800; letter-spacing: -0.5px;"></h2>
+        <h1 id="call-rota" style="margin:5px 0 10px 0; font-size: 2rem; color: var(--warning); font-weight: 800; letter-spacing: -1px; text-shadow: 0 4px 10px rgba(0,0,0,0.5);"></h1>
+        <p id="call-equip" style="color: #94A3B8; font-size: 1rem; margin-bottom: 20px; font-weight: 500;"></p>
+        
+        <div style="width:320px; max-width: 90vw; height:70px; background:#1E293B; border-radius:38px; position:relative; display:flex; align-items:center; justify-content:center; border: 2px solid #334155; box-shadow: inset 0 4px 10px rgba(0,0,0,0.5);">
+            <span style="color:#64748B; font-weight:700; letter-spacing: 0.5px;">DESLIZE PARA ACEITAR</span>
+            <input type="range" min="0" max="100" value="0" id="swipe-accept">
+        </div>
+        
+        <div style="width: 320px; max-width: 90vw; margin-top: 15px;">
+            <div style="display:flex; justify-content:space-between; font-size:0.8rem; color:#94A3B8; font-weight:700; margin-bottom:5px;">
+                <span>Tempo para aceitar:</span>
+                <span id="timer-text">15s</span>
+            </div>
+            <div style="width: 100%; height: 6px; background: #334155; border-radius: 3px; overflow: hidden;">
+                <div id="progress-bar" style="width: 100%; height: 100%; background: var(--warning); transition: width 1s linear;"></div>
+            </div>
+        </div>
+
+        <button onclick="passarVezCall()" style="background:none; border:none; color:var(--danger); margin-top:20px; font-weight:700; font-size:1rem; letter-spacing: 1px; cursor: pointer; transition: 0.2s;">RECUSAR CHAMADO</button>
+    </div>
+    
+    <div id="toast" class="toast-notif" onclick="this.style.display='none'"><i class="fa fa-envelope modern-icon" style="font-size:1.5rem; color:var(--warning)"></i> <div><b id="toast-autor"></b><br><span id="toast-msg"></span></div></div>
+
+    <audio id="audio-alerta" src="https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3" loop preload="auto"></audio>
+    <audio id="audio-emergencia" src="https://assets.mixkit.co/active_storage/sfx/951/951-preview.mp3" loop preload="auto"></audio>
+
+    <div id="anim-overlay" class="anim-overlay">
+        <div id="anim-spinner" class="anim-icon" style="color: var(--primary-light);"><i class="fa fa-spinner fa-spin modern-icon"></i></div>
+        <div id="anim-success" class="anim-icon" style="display:none;"><i class="fa fa-check modern-icon"></i></div>
+        <h2 id="anim-text" style="font-weight: 800; margin-top: 25px; letter-spacing: -0.5px;">Processando...</h2>
+    </div>
+
+    <script src="app.js?v=3"></script>
+</body>
+</html>
