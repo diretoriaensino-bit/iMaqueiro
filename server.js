@@ -117,7 +117,13 @@ io.on('connection', async (socket) => {
             console.log(`[FCM] Token registrado para: ${dados.nome}`);
         }
     });
-
+socket.on('paciente_pronto', async (id) => {
+    // Atualiza no banco de dados que o paciente está pronto
+    await supabase.from('pedidos').update({ pronto_pela_enfermagem: true }).eq('id', id);
+    
+    // Avisa todo mundo para atualizar a tela (o maqueiro verá o botão de aceitar liberar)
+    atualizarTodos();
+});
     socket.on('fazer_login', async (dados) => {
         const { data, error } = await supabase.from('usuarios').select('*').eq('email', dados.email).eq('senha', dados.senha).single(); 
         if (error) return socket.emit('login_erro', "Usuário ou senha inválidos.");
