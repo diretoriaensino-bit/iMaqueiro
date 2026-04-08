@@ -168,10 +168,27 @@ socket.on('paciente_pronto', async (id) => {
     });
 
     // ... (Mantendo os outros sockets de aceitar, finalizar, etc) ...
-    socket.on('aceitar_chamado', async (data) => {
-        await supabase.from('pedidos').update({ status: 'aceito', maqueiro_ida: data.nomeMaqueiro, aceito_em: new Date().toISOString() }).eq('id', data.idPedido);
+   socket.on('aceitar_chamado', async (data) => {
+    console.log(`[SOCKET] Maqueiro ${data.nomeMaqueiro} tentando aceitar chamado #${data.idPedido}`);
+    
+    try {
+        const { error } = await supabase
+            .from('pedidos')
+            .update({ 
+                status: 'aceito', 
+                maqueiro_ida: data.nomeMaqueiro, 
+                aceito_em: new Date().toISOString() 
+            })
+            .eq('id', data.idPedido);
+
+        if (error) throw error;
+
+        console.log(`[SUCESSO] Chamado #${data.idPedido} aceito.`);
         atualizarTodos();
-    });
+    } catch (err) {
+        console.error("[ERRO] Falha ao aceitar chamado:", err);
+    }
+});
 
     socket.on('cancelar_pedido', async (dados) => { await supabase.from('pedidos').update({ status: 'cancelado', finalizado_at: new Date().toISOString() }).eq('id', dados.id); atualizarTodos(); });
     socket.on('finalizar_pedido', async (id) => { await supabase.from('pedidos').update({ status: 'finalizado', finalizado_at: new Date().toISOString() }).eq('id', id); atualizarTodos(); });
