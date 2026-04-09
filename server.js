@@ -11,10 +11,8 @@ const webpush = require('web-push');
 const admin = require("firebase-admin");
 let serviceAccount;
 if (process.env.FIREBASE_JSON) {
-  // Se estiver no Render, lê a chave secreta da memória
   serviceAccount = JSON.parse(process.env.FIREBASE_JSON);
 } else {
-  // Se estiver no seu PC, lê o arquivo físico
   serviceAccount = require("./firebase-key.json");
 }
 
@@ -39,7 +37,7 @@ const app = express();
 const server = http.createServer(app);
 const io = new Server(server, {
   cors: {
-    origin: "*", // Libera o acesso para qualquer aplicativo de celular
+    origin: "*",
     methods: ["GET", "POST"]
   }
 });
@@ -48,11 +46,8 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use(express.json()); 
 
 let maqueirosOnline = []; 
-let tokensCelulares = {}; // Guarda o endereço (token) do celular de cada maqueiro
+let tokensCelulares = {}; 
 
-// =========================================================
-// FUNÇÃO PARA DISPARAR NOTIFICAÇÃO NATIVA (FIREBASE)
-// =========================================================
 async function enviarNotificacaoNativa(nomeMaqueiro, titulo, mensagem, urgencia) {
     const token = tokensCelulares[nomeMaqueiro];
     if (!token) return console.log(`[FCM] Maqueiro ${nomeMaqueiro} sem token registrado.`);
@@ -75,9 +70,6 @@ async function enviarNotificacaoNativa(nomeMaqueiro, titulo, mensagem, urgencia)
     }
 }
 
-// =========================================================
-// O DESPERTADOR INTELIGENTE
-// =========================================================
 setInterval(async () => {
     try {
         const { data: agendados } = await supabase.from('pedidos').select('*').eq('status', 'agendado');
@@ -110,20 +102,13 @@ async function atualizarTodos() {
 }
 
 io.on('connection', async (socket) => {
-    // Registra o endereço do celular quando o App abre
     socket.on('registrar_token_fcm', (dados) => {
         if (dados.nome && dados.token) {
             tokensCelulares[dados.nome] = dados.token;
             console.log(`[FCM] Token registrado para: ${dados.nome}`);
         }
     });
-socket.on('paciente_pronto', async (id) => {
-    // Atualiza no banco de dados que o paciente está pronto
-    await supabase.from('pedidos').update({ pronto_pela_enfermagem: true }).eq('id', id);
-    
-    // Avisa todo mundo para atualizar a tela (o maqueiro verá o botão de aceitar liberar)
-    atualizarTodos();
-});
+
     socket.on('fazer_login', async (dados) => {
         const { data, error } = await supabase.from('usuarios').select('*').eq('email', dados.email).eq('senha', dados.senha).single(); 
         if (error) return socket.emit('login_erro', "Usuário ou senha inválidos.");
@@ -159,59 +144,91 @@ socket.on('paciente_pronto', async (id) => {
             data_agendamento: d.data_agendamento || null
         }]);
 
-        // GATILHO: Se houver maqueiro sugerido, manda o PUSH real no celular
         if (sugerido) {
             enviarNotificacaoNativa(sugerido, `Novo Chamado - ${d.urgencia}`, `Paciente: ${d.paciente} | Destino: ${d.destino}`, d.urgencia);
         }
-
         atualizarTodos();
     });
 
-    // ... (Mantendo os outros sockets de aceitar, finalizar, etc) ...
-   socket.on('aceitar_chamado', async (data) => {
-    console.log(`[SOCKET] Maqueiro ${data.nomeMaqueiro} tentando aceitar chamado #${data.idPedido}`);
-
-    // Avança para: Chegou no paciente (QR Code lido)
-    socket.on('cheguei_origem', async (id) => {
-        await supabase.from('pedidos').update({ status: 'na_origem' }).eq('id', id);
+    // EVENTOS EXTRAS DE ENFERMAGEM
+    socket.on('paciente_pronto', async (id) => {
+        await supabase.from('pedidos').update({ pronto_pela_enfermagem: true }).eq('id', id);
         atualizarTodos();
     });
 
-    // Avança para: Checkist preenchido e Rota iniciada
-    socket.on('iniciar_ida', async (id) => {
-        await supabase.from('pedidos').update({ status: 'em_transito_ida' }).eq('id', id);
-        atualizarTodos();
-    });
-
-    // Avança para: Paciente entregue no destino
-    socket.on('entregue_destino', async (id) => {
-        await supabase.from('pedidos').update({ status: 'no_destino' }).eq('id', id);
-        atualizarTodos();
+    socket.on('esperar_equipamento', async (id) => { 
+        await supabase.from('pedidos').update({ status: 'aguardando_equipamento' }).eq('id', id); 
+        atualizarTodos(); 
     });
     
-    try {
-        const { error } = await supabase
-            .from('pedidos')
-            .update({ 
-                status: 'aceito', 
-                maqueiro_ida: data.nomeMaqueiro, 
-                aceito_em: new Date().toISOString() 
-            })
-            .eq('id', data.idPedido);
+    socket.on('equipamento_conseguido', async (id) => { 
+        await supabase.from('pedidos').update({ status: 'aceito' }).eq('id', id); 
+        atualizarTodos(); 
+    });
 
-        if (error) throw error;
+    // ACEITAR CHAMADO COM LOG
+    socket.on('aceitar_chamado', async (data) => {
+        console.log(`[SOCKET] Maqueiro ${data.nomeMaqueiro} tentando aceitar chamado #${data.idPedido}`);
+        try {
+            const { error } = await supabase
+                .from('pedidos')
+                .update({ status: 'aceito', maqueiro_ida: data.nomeMaqueiro, aceito_em: new Date().toISOString() })
+                .eq('id', data.idPedido);
+            if (error) throw error;
+            console.log(`[SUCESSO] Chamado #${data.idPedido} aceito.`);
+            atualizarTodos();
+        } catch (err) {
+            console.error("[ERRO] Falha ao aceitar chamado:", err);
+        }
+    });
 
-        console.log(`[SUCESSO] Chamado #${data.idPedido} aceito.`);
-        atualizarTodos();
-    } catch (err) {
-        console.error("[ERRO] Falha ao aceitar chamado:", err);
-    }
-});
+    // ==========================================
+    // ETAPAS DO QR CODE E ROTA (Com Logs Blindados)
+    // ==========================================
+    socket.on('cheguei_origem', async (id) => {
+        console.log(`[SOCKET] Maqueiro chegou na origem do chamado #${id}`);
+        try {
+            const { error } = await supabase.from('pedidos').update({ status: 'na_origem' }).eq('id', id);
+            if (error) throw error;
+            console.log(`[SUCESSO] Chamado #${id} atualizado para 'na_origem'. Avisando celulares...`);
+            atualizarTodos();
+        } catch(e) { console.error("[ERRO NO BANCO] cheguei_origem:", e); }
+    });
 
+    socket.on('iniciar_ida', async (id) => {
+        console.log(`[SOCKET] Maqueiro iniciou a rota do chamado #${id}`);
+        try {
+            const { error } = await supabase.from('pedidos').update({ status: 'em_transito_ida' }).eq('id', id);
+            if (error) throw error;
+            console.log(`[SUCESSO] Chamado #${id} atualizado para 'em_transito_ida'.`);
+            atualizarTodos();
+        } catch(e) { console.error("[ERRO NO BANCO] iniciar_ida:", e); }
+    });
+
+    socket.on('entregue_destino', async (id) => {
+        console.log(`[SOCKET] Paciente entregue no destino do chamado #${id}`);
+        try {
+            const { error } = await supabase.from('pedidos').update({ status: 'no_destino' }).eq('id', id);
+            if (error) throw error;
+            console.log(`[SUCESSO] Chamado #${id} atualizado para 'no_destino'.`);
+            atualizarTodos();
+        } catch(e) { console.error("[ERRO NO BANCO] entregue_destino:", e); }
+    });
+
+    // CANCELAR E FINALIZAR
     socket.on('cancelar_pedido', async (dados) => { await supabase.from('pedidos').update({ status: 'cancelado', finalizado_at: new Date().toISOString() }).eq('id', dados.id); atualizarTodos(); });
     socket.on('finalizar_pedido', async (id) => { await supabase.from('pedidos').update({ status: 'finalizado', finalizado_at: new Date().toISOString() }).eq('id', id); atualizarTodos(); });
+    
+    socket.on('avaliar_pedido', async (data) => {
+        console.log(`Chamado ${data.id} avaliado com nota ${data.nota}`);
+    });
+
     socket.on('solicitar_lista', atualizarTodos);
-    socket.on('disconnect', () => { maqueirosOnline = maqueirosOnline.filter(m => m.id !== socket.id); atualizarTodos(); });
+    
+    socket.on('disconnect', () => { 
+        maqueirosOnline = maqueirosOnline.filter(m => m.id !== socket.id); 
+        atualizarTodos(); 
+    });
 });
 
 const PORT = process.env.PORT || 3000;
