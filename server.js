@@ -1,53 +1,60 @@
+// ============================================================================
+// [01] IMPORTAÇÕES E CONFIGURAÇÕES INICIAIS
+// ============================================================================
 const express = require('express');
 const http = require('http');
 const { Server } = require('socket.io');
 const path = require('path');
 const { createClient } = require('@supabase/supabase-js');
 const webpush = require('web-push');
-
-// =========================================================
-// MOTOR DE NOTIFICAÇÕES NATIVAS (FIREBASE)
-// =========================================================
 const admin = require("firebase-admin");
+
+// ============================================================================
+// [02] MOTOR DE NOTIFICAÇÕES NATIVAS (FIREBASE E WEBPUSH)
+// ============================================================================
 let serviceAccount;
 if (process.env.FIREBASE_JSON) {
-  serviceAccount = JSON.parse(process.env.FIREBASE_JSON);
+    // Se estiver no Render, lê a chave secreta da memória
+    serviceAccount = JSON.parse(process.env.FIREBASE_JSON);
 } else {
-  serviceAccount = require("./firebase-key.json");
+    // Se estiver no seu PC, lê o arquivo físico
+    serviceAccount = require("./firebase-key.json");
 }
 
 admin.initializeApp({
-  credential: admin.credential.cert(serviceAccount)
+    credential: admin.credential.cert(serviceAccount)
 });
-
-console.log("🔥 Firebase FCM ativado! O servidor agora tem permissão para furar bloqueios de tela.");
-
-// =========================================================
-// CONFIGURAÇÕES DE BANCO DE DADOS E SERVIDOR
-// =========================================================
-const supabaseUrl = 'https://yleinvhlnsgozeyajeom.supabase.co';
-const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlsZWludmhsbnNnb3pleWFqZW9tIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ5NDY3MDQsImV4cCI6MjA5MDUyMjcwNH0.EdvC4eM8ZG-RSh1zDExmIRd-kJLtCyAOpgbxBef6ebk';
-const supabase = createClient(supabaseUrl, supabaseKey);
+console.log("🔥 Firebase FCM ativado! O servidor tem permissão para furar bloqueios de tela.");
 
 const publicVapidKey = 'BEl62iUYgUivxIkv69yViEuiBIa-Ib9-SkvMeAtA3LFgDzkrxZJjSgSnfckjBJuB22-xHhZpM8S2X_4WvXhQ6A0';
 const privateVapidKey = 't1v8Q1jXgY9p37_HlQv_tH9eM5VvjF9YQ_V1x0X2oZ4';
 webpush.setVapidDetails('mailto:admin@imaqueiro.com', publicVapidKey, privateVapidKey);
 
+// ============================================================================
+// [03] CONEXÃO COM O BANCO DE DADOS (SUPABASE) E SERVIDOR
+// ============================================================================
+const supabaseUrl = 'https://yleinvhlnsgozeyajeom.supabase.co';
+const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlsZWludmhsbnNnb3pleWFqZW9tIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ5NDY3MDQsImV4cCI6MjA5MDUyMjcwNH0.EdvC4eM8ZG-RSh1zDExmIRd-kJLtCyAOpgbxBef6ebk';
+const supabase = createClient(supabaseUrl, supabaseKey);
+
 const app = express();
 const server = http.createServer(app);
 const io = new Server(server, {
-  cors: {
-    origin: "*",
-    methods: ["GET", "POST"]
-  }
+    cors: {
+        origin: "*", // Libera o acesso para qualquer aplicativo de celular
+        methods: ["GET", "POST"]
+    }
 });
 
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(express.json()); 
 
 let maqueirosOnline = []; 
-let tokensCelulares = {}; 
+let tokensCelulares = {}; // Guarda o endereço (token) do celular de cada maqueiro
 
+// ============================================================================
+// [04] FUNÇÕES AUXILIARES (NOTIFICAÇÃO E ATUALIZAÇÃO GERAL)
+// ============================================================================
 async function enviarNotificacaoNativa(nomeMaqueiro, titulo, mensagem, urgencia) {
     const token = tokensCelulares[nomeMaqueiro];
     if (!token) return console.log(`[FCM] Maqueiro ${nomeMaqueiro} sem token registrado.`);
@@ -70,6 +77,25 @@ async function enviarNotificacaoNativa(nomeMaqueiro, titulo, mensagem, urgencia)
     }
 }
 
+async function atualizarTodos() {
+    try {
+        console.log("[SISTEMA] Buscando pedidos no banco para atualizar telas...");
+        const { data: todosAtivos, error: errAtivos } = await supabase.from('pedidos').select('*').neq('status', 'finalizado').neq('status', 'cancelado');
+        const { data: historico, error: errHist } = await supabase.from('pedidos').select('*').or('status.eq.finalizado,status.eq.cancelado').order('finalizado_at', { ascending: false }).limit(100);
+        
+        if(errAtivos) console.error("[ERRO BD Ativos]", errAtivos);
+        if(errHist) console.error("[ERRO BD Histórico]", errHist);
+
+        console.log(`[SOCKET] Enviando ${todosAtivos?.length || 0} chamados ativos para ${maqueirosOnline.length} maqueiros online.`);
+        io.emit('atualizar_lista', { ativos: todosAtivos || [], historico: historico || [], online: maqueirosOnline });
+    } catch (e) { 
+        console.log("[ERRO CRÍTICO] Falha ao atualizar listas:", e); 
+    }
+}
+
+// ============================================================================
+// [05] O DESPERTADOR INTELIGENTE (VERIFICA AGENDAMENTOS A CADA 30s)
+// ============================================================================
 setInterval(async () => {
     try {
         const { data: agendados } = await supabase.from('pedidos').select('*').eq('status', 'agendado');
@@ -93,15 +119,12 @@ setInterval(async () => {
     } catch(e) { console.error("Erro no despertador:", e); }
 }, 30000); 
 
-async function atualizarTodos() {
-    try {
-        const { data: todosAtivos } = await supabase.from('pedidos').select('*').neq('status', 'finalizado').neq('status', 'cancelado');
-        const { data: historico } = await supabase.from('pedidos').select('*').or('status.eq.finalizado,status.eq.cancelado').order('finalizado_at', { ascending: false }).limit(100);
-        io.emit('atualizar_lista', { ativos: todosAtivos || [], historico: historico || [], online: maqueirosOnline });
-    } catch (e) { console.log("Erro ao atualizar listas:", e); }
-}
-
+// ============================================================================
+// [06] EVENTOS SOCKET.IO (A COMUNICAÇÃO EM TEMPO REAL)
+// ============================================================================
 io.on('connection', async (socket) => {
+
+    // --- 6.1. SISTEMA E AUTENTICAÇÃO ---
     socket.on('registrar_token_fcm', (dados) => {
         if (dados.nome && dados.token) {
             tokensCelulares[dados.nome] = dados.token;
@@ -120,6 +143,15 @@ io.on('connection', async (socket) => {
         atualizarTodos();
     });
 
+    socket.on('relogar_maqueiro', (usuario) => {
+        if (usuario && usuario.cargo === 'maqueiro') {
+            maqueirosOnline = maqueirosOnline.filter(m => m.nome !== usuario.nome);
+            maqueirosOnline.push({ id: socket.id, nome: usuario.nome, status: usuario.status_trabalho || 'disponivel' });
+            console.log(`[SISTEMA] Maqueiro reconectado: ${usuario.nome}`);
+            atualizarTodos();
+        }
+    });
+
     socket.on('mudar_status', async (dados) => {
         const { email, nome, status } = dados;
         await supabase.from('usuarios').update({ status_trabalho: status }).eq('email', email);
@@ -129,6 +161,17 @@ io.on('connection', async (socket) => {
         atualizarTodos();
     });
 
+    socket.on('atualizar_perfil', async (dados) => {
+        console.log(`[PERFIL] Atualizando dados de: ${dados.email}`);
+        try {
+            const { data, error } = await supabase.from('usuarios').update({ telefone: dados.telefone, foto: dados.foto }).eq('email', dados.email).select().single();
+            if (error) { console.error("[ERRO PERFIL]:", error.message); return; }
+            console.log(`[SUCESSO] Perfil atualizado!`);
+            socket.emit('perfil_atualizado', data);
+        } catch (e) { console.error("[ERRO INTERNO PERFIL]:", e); }
+    });
+
+    // --- 6.2. CRIAÇÃO DE CHAMADOS E ENFERMAGEM ---
     socket.on('novo_pedido', async (d) => {
         let sugerido = null;
         let statusInicial = d.data_agendamento ? 'agendado' : 'pendente';
@@ -150,41 +193,27 @@ io.on('connection', async (socket) => {
         atualizarTodos();
     });
 
-    // EVENTOS EXTRAS DE ENFERMAGEM
     socket.on('paciente_pronto', async (id) => {
         await supabase.from('pedidos').update({ pronto_pela_enfermagem: true }).eq('id', id);
         atualizarTodos();
     });
 
-    socket.on('esperar_equipamento', async (id) => { 
-        await supabase.from('pedidos').update({ status: 'aguardando_equipamento' }).eq('id', id); 
-        atualizarTodos(); 
-    });
-    
-    socket.on('equipamento_conseguido', async (id) => { 
-        await supabase.from('pedidos').update({ status: 'aceito' }).eq('id', id); 
-        atualizarTodos(); 
-    });
-
-    // ACEITAR CHAMADO COM LOG
+    // --- 6.3. CICLO DE VIDA DO TRANSPORTE (O MAQUEIRO EM AÇÃO) ---
     socket.on('aceitar_chamado', async (data) => {
-        console.log(`[SOCKET] Maqueiro ${data.nomeMaqueiro} tentando aceitar chamado #${data.idPedido}`);
+        console.log(`[SOCKET] Maqueiro ${data.nomeMaqueiro} aceitando chamado #${data.idPedido}`);
         try {
-            const { error } = await supabase
-                .from('pedidos')
-                .update({ status: 'aceito', maqueiro_ida: data.nomeMaqueiro, aceito_em: new Date().toISOString() })
-                .eq('id', data.idPedido);
+            const { error } = await supabase.from('pedidos').update({ 
+                status: 'aceito', 
+                maqueiro_ida: data.nomeMaqueiro, 
+                aceito_em: new Date().toISOString() 
+            }).eq('id', data.idPedido);
+
             if (error) throw error;
             console.log(`[SUCESSO] Chamado #${data.idPedido} aceito.`);
             atualizarTodos();
-        } catch (err) {
-            console.error("[ERRO] Falha ao aceitar chamado:", err);
-        }
+        } catch (err) { console.error("[ERRO] Falha ao aceitar chamado:", err); }
     });
 
-    // ==========================================
-    // ETAPAS DO QR CODE E ROTA (Com Logs Blindados)
-    // ==========================================
     socket.on('cheguei_origem', async (id) => {
         console.log(`[SOCKET] Maqueiro chegou na origem do chamado #${id}`);
         try {
@@ -215,14 +244,17 @@ io.on('connection', async (socket) => {
         } catch(e) { console.error("[ERRO NO BANCO] entregue_destino:", e); }
     });
 
-    // CANCELAR E FINALIZAR
-    socket.on('cancelar_pedido', async (dados) => { await supabase.from('pedidos').update({ status: 'cancelado', finalizado_at: new Date().toISOString() }).eq('id', dados.id); atualizarTodos(); });
-    socket.on('finalizar_pedido', async (id) => { await supabase.from('pedidos').update({ status: 'finalizado', finalizado_at: new Date().toISOString() }).eq('id', id); atualizarTodos(); });
-    
-    socket.on('avaliar_pedido', async (data) => {
-        console.log(`Chamado ${data.id} avaliado com nota ${data.nota}`);
+    // --- 6.4. FINALIZAÇÃO E GESTÃO ---
+    socket.on('cancelar_pedido', async (dados) => { 
+        await supabase.from('pedidos').update({ status: 'cancelado', finalizado_at: new Date().toISOString() }).eq('id', dados.id); 
+        atualizarTodos(); 
     });
-
+    
+    socket.on('finalizar_pedido', async (id) => { 
+        await supabase.from('pedidos').update({ status: 'finalizado', finalizado_at: new Date().toISOString() }).eq('id', id); 
+        atualizarTodos(); 
+    });
+    
     socket.on('solicitar_lista', atualizarTodos);
     
     socket.on('disconnect', () => { 
@@ -231,7 +263,10 @@ io.on('connection', async (socket) => {
     });
 });
 
+// ============================================================================
+// [07] INICIALIZAÇÃO DO SERVIDOR WEB
+// ============================================================================
 const PORT = process.env.PORT || 3000;
 server.listen(PORT, '0.0.0.0', () => {
-  console.log(`🚀 Servidor online na porta ${PORT}`);
+    console.log(`🚀 Servidor online na porta ${PORT}`);
 });

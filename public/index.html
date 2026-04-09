@@ -36,7 +36,10 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </head>
+
 <body>
+
+    <div id="offline-banner"><i class="fa fa-wifi modern-icon" style="margin-right: 8px;"></i> Modo Offline Ativado. Sincronização pendente.</div>
 
     <div id="cancel-modal" class="modal-overlay">
         <div class="modal-content" style="text-align: center; transition: border 0.3s;">
@@ -58,7 +61,128 @@
         </div>
     </div>
 
-    <div id="offline-banner"><i class="fa fa-wifi modern-icon" style="margin-right: 8px;"></i> Modo Offline Ativado. Sincronização pendente.</div>
+    <div id="historico-maq-modal" class="modal-overlay">
+        <div class="modal-content">
+            <h3 style="margin-top:0; font-weight: 800; border-bottom: 2px solid var(--border-color); padding-bottom: 15px;"><i class="fa fa-history modern-icon" style="color: var(--primary);"></i> Minhas Corridas (Hoje)</h3>
+            <div id="maqueiro-history-modal" style="font-size: 0.9rem; max-height: 400px; overflow-y: auto; padding-right: 5px;"></div>
+            <button class="btn" style="width:100%; margin-top:15px; background:var(--input-bg); color: var(--text-main);" onclick="document.getElementById('historico-maq-modal').style.display='none'">Fechar</button>
+        </div>
+    </div>
+
+    <div id="defeito-modal" class="modal-overlay">
+        <div class="modal-content" style="text-align: center;">
+            <h3 style="margin-top:0; font-weight: 800; color: var(--danger); border-bottom: 2px solid var(--border-color); padding-bottom: 15px;"><i class="fa fa-wrench modern-icon"></i> Reportar Defeito</h3>
+            <p style="font-size:0.95rem; color:var(--text-muted); margin-bottom:20px;">Informe o equipamento que apresentou problema para a manutenção.</p>
+            <label style="text-align: left;">Equipamento</label>
+            <select id="defeito-equipamento">
+                <option value="Cadeira de Rodas">Cadeira de Rodas</option>
+                <option value="Maca Padrão">Maca Padrão</option>
+                <option value="Maca com Cilindro O2">Maca com Cilindro O2</option>
+                <option value="Incubadora">Incubadora Neonatal</option>
+            </select>
+            <label style="text-align: left;">Descrição do Problema</label>
+            <textarea id="defeito-obs" rows="2" placeholder="Ex: Roda dianteira direita travando..."></textarea>
+            <button class="btn btn-main" style="width: 100%; padding: 16px; font-size: 1.1rem; background: var(--danger);" onclick="enviarDefeito()">ENVIAR RELATÓRIO</button>
+            <button class="btn" style="width:100%; margin-top:12px; background:var(--input-bg); color: var(--text-main);" onclick="document.getElementById('defeito-modal').style.display='none'">Cancelar</button>
+        </div>
+    </div>
+
+    <div id="rating-modal" class="modal-overlay">
+        <div class="modal-content" style="text-align: center;">
+            <h3 style="margin-top:0; font-weight: 800; color: var(--text-main);"><i class="fa fa-star modern-icon" style="color: var(--warning);"></i> Avaliar Atendimento</h3>
+            <p style="font-size:0.95rem; color:var(--text-muted); margin-bottom:20px;">Como foi o transporte deste paciente?</p>
+            <div class="star-rating" id="star-rating">
+                <i class="fa fa-star star-btn modern-icon" data-value="1"></i>
+                <i class="fa fa-star star-btn modern-icon" data-value="2"></i>
+                <i class="fa fa-star star-btn modern-icon" data-value="3"></i>
+                <i class="fa fa-star star-btn modern-icon" data-value="4"></i>
+                <i class="fa fa-star star-btn modern-icon" data-value="5"></i>
+            </div>
+            <textarea id="rating-obs" rows="2" placeholder="Deixe um elogio ou observação (opcional)..." style="margin-bottom: 20px;"></textarea>
+            <button class="btn btn-main" style="width: 100%; padding: 16px; font-size: 1.1rem;" onclick="enviarAvaliacao()">AVALIAR E FINALIZAR</button>
+            <button class="btn" style="width:100%; margin-top:12px; background:var(--input-bg); color: var(--text-main);" onclick="pularAvaliacao()">Pular e Finalizar</button>
+        </div>
+    </div>
+
+    <div id="gerador-qr-modal" class="modal-overlay">
+        <div class="modal-content" style="text-align: center;">
+            <h3 style="margin-top:0; font-weight: 800; border-bottom: 2px solid var(--border-color); padding-bottom: 15px;"><i class="fa fa-qrcode modern-icon" style="color: var(--primary);"></i> Gerador de Etiquetas QR</h3>
+            <p style="font-size:0.9rem; color:var(--text-muted); margin-bottom:20px;">Crie e imprima etiquetas de destino para colar nos leitos e salas.</p>
+            <label style="text-align: left;">Nome do Setor / Leito de Destino</label>
+            <input type="text" id="qr-text-input" placeholder="Ex: UTI 02 - Leito 05">
+            <button class="btn btn-main" style="margin-bottom: 20px; width: 100%;" onclick="gerarQRCodeEtiqueta()">GERAR CÓDIGO QR</button>
+            <div id="qr-code-output" style="display:flex; justify-content:center; margin-bottom: 20px; background: white; padding: 20px; border-radius: 12px; border: 1px solid var(--border-color); min-height: 240px; align-items: center;">
+                <span style="color: #94A3B8;">O código aparecerá aqui</span>
+            </div>
+            <button class="btn" style="background: var(--success); color: white; width: 100%; display: none;" id="btn-imprimir-qr" onclick="imprimirQR()"><i class="fa fa-print modern-icon"></i> IMPRIMIR ETIQUETA</button>
+            <button class="btn" style="width:100%; margin-top:12px; background:var(--input-bg); color: var(--text-main);" onclick="document.getElementById('gerador-qr-modal').style.display='none'">Fechar Aba</button>
+        </div>
+    </div>
+    
+    <div id="details-modal" class="modal-overlay">
+        <div class="modal-content">
+            <h3 style="margin-top:0; font-weight: 800; border-bottom: 2px solid var(--border-color); padding-bottom: 15px;"><i class="fa fa-wheelchair modern-icon" style="color: var(--primary);"></i> Prontuário Resumido</h3>
+            <div id="details-body" style="font-size:0.95rem; line-height:1.7; margin-top: 15px;"></div>
+            <button class="btn" style="width:100%; margin-top:24px; background:var(--input-bg); color: var(--text-main);" onclick="document.getElementById('details-modal').style.display='none'">Fechar</button>
+        </div>
+    </div>
+    
+    <div id="checklist-modal" class="modal-overlay">
+        <div class="modal-content" style="max-width: 400px;">
+            <h3 style="color:var(--warning-dark); margin-top:0; border-bottom: 3px solid var(--warning); padding-bottom: 15px; font-weight: 800;"><i class="fa fa-clipboard-check modern-icon"></i> Checklist de Segurança</h3>
+            <div id="checklist-dinamico"></div>
+            <button id="btn-iniciar-viagem" class="btn btn-main" style="width:100%; opacity:0.5; cursor:not-allowed; background: var(--success); padding: 16px; font-size: 1.1rem;" disabled onclick="confirmarChecklist()"><i class="fa fa-lock modern-icon"></i> INICIAR ROTA SEGURA</button>
+            <button class="btn" style="width:100%; margin-top:12px; background:var(--input-bg); color: var(--text-main);" onclick="fecharChecklist()">Cancelar</button>
+        </div>
+    </div>
+    
+    <div id="chat-modal" class="modal-overlay">
+        <div class="modal-content">
+            <h3 style="margin-top:0; font-weight: 800; border-bottom: 2px solid var(--border-color); padding-bottom: 15px;"><i class="fa fa-comments modern-icon" style="color: var(--primary);"></i> Comunicação Rápida</h3>
+            <div class="chat-box" id="chat-box"></div>
+            <div id="quick-replies" style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:15px;"></div>
+            <button class="btn" style="width:100%; margin-top:20px; background:var(--input-bg); color: var(--text-main);" onclick="document.getElementById('chat-modal').style.display='none'; idChatAtivo=null;">Fechar Chat</button>
+        </div>
+    </div>
+    
+    <div id="qr-modal" class="modal-overlay">
+        <div class="modal-content">
+            <h3 style="margin-top:0; font-weight: 800; text-align: center;"><i class="fa fa-qrcode modern-icon" style="color: var(--primary);"></i> Validação de Leito</h3>
+            <p style="text-align: center; color: var(--text-muted); font-size: 0.9rem; margin-bottom: 20px;">Aponte a câmera para o leito</p>
+            <div id="qr-reader" style="width:100%; border-radius:16px; overflow:hidden; border: 2px solid var(--border-color);"></div>
+            <button class="btn" style="background:var(--danger-light); color:var(--danger-dark); width:100%; margin-top:20px;" onclick="fecharQR()">Cancelar Leitura</button>
+        </div>
+    </div>
+    
+    <div id="call-modal">
+        <div id="call-risco-faixa" style="background:var(--danger); width:100%; padding:10px; position:absolute; top:0; font-weight:800; font-size:1rem; display:none; letter-spacing: 1px; text-transform: uppercase; box-shadow: 0 4px 15px rgba(239, 68, 68, 0.4);">⚠️ PROTOCOLO DE ISOLAMENTO</div>
+        <i id="icone-sirene" class="fa fa-bell fa-shake modern-icon" style="font-size: 2.5rem; color: var(--warning); margin-bottom: 5px; filter: drop-shadow(0 0 15px rgba(245,158,11,0.5));"></i>
+        <img id="img-aviso-risco" src="" alt="Aviso EPI" style="display: none; max-width: 100px; max-height: 100px; border-radius: 12px; border: 3px solid var(--danger); box-shadow: 0 0 20px rgba(239, 68, 68, 0.5); margin: 10px 0; background: var(--white); padding: 5px; object-fit: contain;" onerror="this.style.display='none'; document.getElementById('icone-sirene').style.display='block';">
+        <h2 id="call-paciente" style="margin:0; font-size: 1.5rem; color: #FFF; font-weight: 800; letter-spacing: -0.5px;"></h2>
+        <h1 id="call-rota" style="margin:5px 0 10px 0; font-size: 2rem; color: var(--warning); font-weight: 800; letter-spacing: -1px; text-shadow: 0 4px 10px rgba(0,0,0,0.5);"></h1>
+        <p id="call-equip" style="color: #94A3B8; font-size: 1rem; margin-bottom: 20px; font-weight: 500;"></p>
+        
+        <button class="btn btn-main" style="width: 320px; max-width: 90vw; padding: 20px; font-size: 1.2rem; background: var(--success); border-radius: 12px; box-shadow: 0 4px 15px rgba(16, 185, 129, 0.4); font-weight: 800; letter-spacing: 1px; border: 2px solid #059669;" onclick="aceitarChamadoBotao()">
+            <i class="fa fa-check-circle modern-icon"></i> ACEITAR CHAMADO
+        </button>
+        
+        <div style="width: 320px; max-width: 90vw; margin-top: 15px;">
+            <div style="display:flex; justify-content:space-between; font-size:0.8rem; color:#94A3B8; font-weight:700; margin-bottom:5px;">
+                <span>Tempo para aceitar:</span>
+                <span id="timer-text">15s</span>
+            </div>
+            <div style="width: 100%; height: 6px; background: #334155; border-radius: 3px; overflow: hidden;">
+                <div id="progress-bar" style="width: 100%; height: 100%; background: var(--warning); transition: width 1s linear;"></div>
+            </div>
+        </div>
+
+        <button onclick="passarVezCall()" style="background:none; border:none; color:var(--danger); margin-top:20px; font-weight:700; font-size:1rem; letter-spacing: 1px; cursor: pointer; transition: 0.2s;">RECUSAR CHAMADO</button>
+    </div>
+
+    <div id="toast" class="toast-notif" onclick="this.style.display='none'">
+        <i class="fa fa-envelope modern-icon" style="font-size:1.5rem; color:var(--warning)"></i> 
+        <div><b id="toast-autor"></b><br><span id="toast-msg"></span></div>
+    </div>
 
     <div class="app-shell">
         
@@ -346,137 +470,11 @@
 
     </div>
 
-    <div id="historico-maq-modal" class="modal-overlay">
-        <div class="modal-content">
-            <h3 style="margin-top:0; font-weight: 800; border-bottom: 2px solid var(--border-color); padding-bottom: 15px;"><i class="fa fa-history modern-icon" style="color: var(--primary);"></i> Minhas Corridas (Hoje)</h3>
-            <div id="maqueiro-history-modal" style="font-size: 0.9rem; max-height: 400px; overflow-y: auto; padding-right: 5px;"></div>
-            <button class="btn" style="width:100%; margin-top:15px; background:var(--input-bg); color: var(--text-main);" onclick="document.getElementById('historico-maq-modal').style.display='none'">Fechar</button>
-        </div>
-    </div>
-
-    <div id="defeito-modal" class="modal-overlay">
-        <div class="modal-content" style="text-align: center;">
-            <h3 style="margin-top:0; font-weight: 800; color: var(--danger); border-bottom: 2px solid var(--border-color); padding-bottom: 15px;"><i class="fa fa-wrench modern-icon"></i> Reportar Defeito</h3>
-            <p style="font-size:0.95rem; color:var(--text-muted); margin-bottom:20px;">Informe o equipamento que apresentou problema para a manutenção.</p>
-            <label style="text-align: left;">Equipamento</label>
-            <select id="defeito-equipamento">
-                <option value="Cadeira de Rodas">Cadeira de Rodas</option>
-                <option value="Maca Padrão">Maca Padrão</option>
-                <option value="Maca com Cilindro O2">Maca com Cilindro O2</option>
-                <option value="Incubadora">Incubadora Neonatal</option>
-            </select>
-            <label style="text-align: left;">Descrição do Problema</label>
-            <textarea id="defeito-obs" rows="2" placeholder="Ex: Roda dianteira direita travando..."></textarea>
-            <button class="btn btn-main" style="width: 100%; padding: 16px; font-size: 1.1rem; background: var(--danger);" onclick="enviarDefeito()">ENVIAR RELATÓRIO</button>
-            <button class="btn" style="width:100%; margin-top:12px; background:var(--input-bg); color: var(--text-main);" onclick="document.getElementById('defeito-modal').style.display='none'">Cancelar</button>
-        </div>
-    </div>
-
-    <div id="rating-modal" class="modal-overlay">
-        <div class="modal-content" style="text-align: center;">
-            <h3 style="margin-top:0; font-weight: 800; color: var(--text-main);"><i class="fa fa-star modern-icon" style="color: var(--warning);"></i> Avaliar Atendimento</h3>
-            <p style="font-size:0.95rem; color:var(--text-muted); margin-bottom:20px;">Como foi o transporte deste paciente?</p>
-            <div class="star-rating" id="star-rating">
-                <i class="fa fa-star star-btn modern-icon" data-value="1"></i>
-                <i class="fa fa-star star-btn modern-icon" data-value="2"></i>
-                <i class="fa fa-star star-btn modern-icon" data-value="3"></i>
-                <i class="fa fa-star star-btn modern-icon" data-value="4"></i>
-                <i class="fa fa-star star-btn modern-icon" data-value="5"></i>
-            </div>
-            <textarea id="rating-obs" rows="2" placeholder="Deixe um elogio ou observação (opcional)..." style="margin-bottom: 20px;"></textarea>
-            <button class="btn btn-main" style="width: 100%; padding: 16px; font-size: 1.1rem;" onclick="enviarAvaliacao()">AVALIAR E FINALIZAR</button>
-            <button class="btn" style="width:100%; margin-top:12px; background:var(--input-bg); color: var(--text-main);" onclick="pularAvaliacao()">Pular e Finalizar</button>
-        </div>
-    </div>
-
-    <div id="gerador-qr-modal" class="modal-overlay">
-        <div class="modal-content" style="text-align: center;">
-            <h3 style="margin-top:0; font-weight: 800; border-bottom: 2px solid var(--border-color); padding-bottom: 15px;"><i class="fa fa-qrcode modern-icon" style="color: var(--primary);"></i> Gerador de Etiquetas QR</h3>
-            <p style="font-size:0.9rem; color:var(--text-muted); margin-bottom:20px;">Crie e imprima etiquetas de destino para colar nos leitos e salas.</p>
-            <label style="text-align: left;">Nome do Setor / Leito de Destino</label>
-            <input type="text" id="qr-text-input" placeholder="Ex: UTI 02 - Leito 05">
-            <button class="btn btn-main" style="margin-bottom: 20px; width: 100%;" onclick="gerarQRCodeEtiqueta()">GERAR CÓDIGO QR</button>
-            <div id="qr-code-output" style="display:flex; justify-content:center; margin-bottom: 20px; background: white; padding: 20px; border-radius: 12px; border: 1px solid var(--border-color); min-height: 240px; align-items: center;">
-                <span style="color: #94A3B8;">O código aparecerá aqui</span>
-            </div>
-            <button class="btn" style="background: var(--success); color: white; width: 100%; display: none;" id="btn-imprimir-qr" onclick="imprimirQR()"><i class="fa fa-print modern-icon"></i> IMPRIMIR ETIQUETA</button>
-            <button class="btn" style="width:100%; margin-top:12px; background:var(--input-bg); color: var(--text-main);" onclick="document.getElementById('gerador-qr-modal').style.display='none'">Fechar Aba</button>
-        </div>
-    </div>
-    
-    <div id="details-modal" class="modal-overlay">
-        <div class="modal-content">
-            <h3 style="margin-top:0; font-weight: 800; border-bottom: 2px solid var(--border-color); padding-bottom: 15px;"><i class="fa fa-wheelchair modern-icon" style="color: var(--primary);"></i> Prontuário Resumido</h3>
-            <div id="details-body" style="font-size:0.95rem; line-height:1.7; margin-top: 15px;"></div>
-            <button class="btn" style="width:100%; margin-top:24px; background:var(--input-bg); color: var(--text-main);" onclick="document.getElementById('details-modal').style.display='none'">Fechar</button>
-        </div>
-    </div>
-    
-    <div id="checklist-modal" class="modal-overlay">
-        <div class="modal-content" style="max-width: 400px;">
-            <h3 style="color:var(--warning-dark); margin-top:0; border-bottom: 3px solid var(--warning); padding-bottom: 15px; font-weight: 800;"><i class="fa fa-clipboard-check modern-icon"></i> Checklist de Segurança</h3>
-            <div id="checklist-dinamico"></div>
-            <button id="btn-iniciar-viagem" class="btn btn-main" style="width:100%; opacity:0.5; cursor:not-allowed; background: var(--success); padding: 16px; font-size: 1.1rem;" disabled onclick="confirmarChecklist()"><i class="fa fa-lock modern-icon"></i> INICIAR ROTA SEGURA</button>
-            <button class="btn" style="width:100%; margin-top:12px; background:var(--input-bg); color: var(--text-main);" onclick="fecharChecklist()">Cancelar</button>
-        </div>
-    </div>
-    
     <div id="login-animation" class="login-animation-overlay">
         <i class="fa fa-wheelchair maca-icon modern-icon"></i>
         <h2 style="margin-top:24px; font-weight: 800; letter-spacing: -1px;">iMaqueiro Pro</h2>
         <p style="font-weight: 500;">Autenticando credenciais...</p>
     </div>
-    
-    <div id="chat-modal" class="modal-overlay">
-        <div class="modal-content">
-            <h3 style="margin-top:0; font-weight: 800; border-bottom: 2px solid var(--border-color); padding-bottom: 15px;"><i class="fa fa-comments modern-icon" style="color: var(--primary);"></i> Comunicação Rápida</h3>
-            <div class="chat-box" id="chat-box"></div>
-            <div id="quick-replies" style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:15px;"></div>
-            <button class="btn" style="width:100%; margin-top:20px; background:var(--input-bg); color: var(--text-main);" onclick="document.getElementById('chat-modal').style.display='none'; idChatAtivo=null;">Fechar Chat</button>
-        </div>
-    </div>
-    
-    <div id="qr-modal" class="modal-overlay">
-        <div class="modal-content">
-            <h3 style="margin-top:0; font-weight: 800; text-align: center;"><i class="fa fa-qrcode modern-icon" style="color: var(--primary);"></i> Validação de Leito</h3>
-            <p style="text-align: center; color: var(--text-muted); font-size: 0.9rem; margin-bottom: 20px;">Aponte a câmera para o leito</p>
-            <div id="qr-reader" style="width:100%; border-radius:16px; overflow:hidden; border: 2px solid var(--border-color);"></div>
-            <button class="btn" style="background:var(--danger-light); color:var(--danger-dark); width:100%; margin-top:20px;" onclick="fecharQR()">Cancelar Leitura</button>
-        </div>
-    </div>
-    
-    <div id="call-modal">
-        <div id="call-risco-faixa" style="background:var(--danger); width:100%; padding:10px; position:absolute; top:0; font-weight:800; font-size:1rem; display:none; letter-spacing: 1px; text-transform: uppercase; box-shadow: 0 4px 15px rgba(239, 68, 68, 0.4);">⚠️ PROTOCOLO DE ISOLAMENTO</div>
-        <i id="icone-sirene" class="fa fa-bell fa-shake modern-icon" style="font-size: 2.5rem; color: var(--warning); margin-bottom: 5px; filter: drop-shadow(0 0 15px rgba(245,158,11,0.5));"></i>
-        <img id="img-aviso-risco" src="" alt="Aviso EPI" style="display: none; max-width: 100px; max-height: 100px; border-radius: 12px; border: 3px solid var(--danger); box-shadow: 0 0 20px rgba(239, 68, 68, 0.5); margin: 10px 0; background: var(--white); padding: 5px; object-fit: contain;" onerror="this.style.display='none'; document.getElementById('icone-sirene').style.display='block';">
-        <h2 id="call-paciente" style="margin:0; font-size: 1.5rem; color: #FFF; font-weight: 800; letter-spacing: -0.5px;"></h2>
-        <h1 id="call-rota" style="margin:5px 0 10px 0; font-size: 2rem; color: var(--warning); font-weight: 800; letter-spacing: -1px; text-shadow: 0 4px 10px rgba(0,0,0,0.5);"></h1>
-        <p id="call-equip" style="color: #94A3B8; font-size: 1rem; margin-bottom: 20px; font-weight: 500;"></p>
-        
-        <button class="btn btn-main" style="width: 320px; max-width: 90vw; padding: 20px; font-size: 1.2rem; background: var(--success); border-radius: 12px; box-shadow: 0 4px 15px rgba(16, 185, 129, 0.4); font-weight: 800; letter-spacing: 1px; border: 2px solid #059669;" onclick="aceitarChamadoBotao()">
-            <i class="fa fa-check-circle modern-icon"></i> ACEITAR CHAMADO
-        </button>
-        
-        <div style="width: 320px; max-width: 90vw; margin-top: 15px;">
-            <div style="display:flex; justify-content:space-between; font-size:0.8rem; color:#94A3B8; font-weight:700; margin-bottom:5px;">
-                <span>Tempo para aceitar:</span>
-                <span id="timer-text">15s</span>
-            </div>
-            <div style="width: 100%; height: 6px; background: #334155; border-radius: 3px; overflow: hidden;">
-                <div id="progress-bar" style="width: 100%; height: 100%; background: var(--warning); transition: width 1s linear;"></div>
-            </div>
-        </div>
-
-        <button onclick="passarVezCall()" style="background:none; border:none; color:var(--danger); margin-top:20px; font-weight:700; font-size:1rem; letter-spacing: 1px; cursor: pointer; transition: 0.2s;">RECUSAR CHAMADO</button>
-    </div>
-    
-    <div id="toast" class="toast-notif" onclick="this.style.display='none'">
-        <i class="fa fa-envelope modern-icon" style="font-size:1.5rem; color:var(--warning)"></i> 
-        <div><b id="toast-autor"></b><br><span id="toast-msg"></span></div>
-    </div>
-
-    <audio id="audio-alerta" src="https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3" loop preload="auto"></audio>
-    <audio id="audio-emergencia" src="https://assets.mixkit.co/active_storage/sfx/951/951-preview.mp3" loop preload="auto"></audio>
 
     <div id="anim-overlay" class="anim-overlay">
         <div id="anim-spinner" class="anim-icon" style="color: var(--primary-light);"><i class="fa fa-spinner fa-spin modern-icon"></i></div>
@@ -484,6 +482,9 @@
         <h2 id="anim-text" style="font-weight: 800; margin-top: 25px; letter-spacing: -0.5px;">Processando...</h2>
     </div>
 
-    <script src="app.js?v=5"></script>
+    <audio id="audio-alerta" src="https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3" loop preload="auto"></audio>
+    <audio id="audio-emergencia" src="https://assets.mixkit.co/active_storage/sfx/951/951-preview.mp3" loop preload="auto"></audio>
+
+    <script src="app.js?v=6"></script>
 </body>
 </html>
