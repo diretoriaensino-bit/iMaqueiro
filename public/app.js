@@ -1139,8 +1139,46 @@ function pararAlarme() {
 }
 function abrirChat(id) { idChatAtivo = id; const p = pedidosAtivos.find(x => x.id === id); const box = document.getElementById('chat-box'); box.innerHTML = (p.chat_mensagens || []).map(m => `<div class="msg ${m.autor === usuario.nome ? 'meu' : 'outro'}"><b>${m.autor}:</b> ${m.texto}</div>`).join(''); const fr = usuario.cargo === 'maqueiro' ? ["Chegando", "Elevador Ocupado", "Paciente não liberado"] : ["Aguarde", "Pode vir", "Docs prontos"]; document.getElementById('quick-replies').innerHTML = fr.map(f => `<button class="btn" style="border:1px solid var(--border-color); background:var(--card-bg); color:var(--text-main); font-size:0.8rem; border-radius:20px; padding: 8px 12px;" onclick="enviarMensagem('${f}')">${f}</button>`).join(''); document.getElementById('chat-modal').style.display = 'flex'; box.scrollTop = box.scrollHeight; }
 function enviarMensagem(texto) { socket.emit('enviar_mensagem', { idPedido: idChatAtivo, texto, autor: usuario.nome }); document.getElementById('chat-modal').style.display='none'; idChatAtivo=null; }
-function abrirQR(id) { document.getElementById('qr-modal').style.display = 'flex'; html5QrCode = new Html5Qrcode("qr-reader"); html5QrCode.start({ facingMode: "environment" }, { fps: 10, qrbox: 250 }, (txt) => { fecharQR(); socket.emit('cheguei_origem', id); }, () => {}); }
-function fecharQR() { if(html5QrCode) html5QrCode.stop().then(() => html5QrCode.clear()); document.getElementById('qr-modal').style.display = 'none'; }
+
+window.abrirQR = function(id) { 
+    document.getElementById('qr-modal').style.display = 'flex'; 
+    html5QrCode = new Html5Qrcode("qr-reader"); 
+    
+    html5QrCode.start({ facingMode: "environment" }, { fps: 10, qrbox: 250 }, (txt) => { 
+        // 1. Leu com sucesso! Para a câmera imediatamente
+        fecharQR(); 
+        
+        // 2. Dá um feedback visual e vibra o celular
+        if('vibrate' in navigator) navigator.vibrate(100);
+        Swal.fire({
+            icon: 'success',
+            title: 'Leito Confirmado!',
+            text: 'Paciente localizado.',
+            toast: true,
+            position: 'top-end',
+            timer: 3000,
+            showConfirmButton: false
+        });
+
+        // 3. Avisa o servidor para avançar de fase!
+        socket.emit('cheguei_origem', id); 
+        
+    }, (erro_de_leitura) => {
+        // Apenas ignora enquanto não acha o QR
+    }).catch((err) => {
+        console.error("Erro ao abrir câmera", err);
+        Swal.fire('Erro', 'Não foi possível acessar a lente da câmera.', 'error');
+    }); 
+};
+
+window.fecharQR = function() { 
+    if(html5QrCode) {
+        html5QrCode.stop().then(() => {
+            html5QrCode.clear();
+        }).catch((e) => console.log("Câmera já parada", e));
+    }
+    document.getElementById('qr-modal').style.display = 'none'; 
+};
 
 function rechamarPaciente(nome, novaOrigem, equipamento) {
     document.getElementById('paciente').value = nome;

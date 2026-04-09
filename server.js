@@ -170,6 +170,24 @@ socket.on('paciente_pronto', async (id) => {
     // ... (Mantendo os outros sockets de aceitar, finalizar, etc) ...
    socket.on('aceitar_chamado', async (data) => {
     console.log(`[SOCKET] Maqueiro ${data.nomeMaqueiro} tentando aceitar chamado #${data.idPedido}`);
+
+    // Avança para: Chegou no paciente (QR Code lido)
+    socket.on('cheguei_origem', async (id) => {
+        await supabase.from('pedidos').update({ status: 'na_origem' }).eq('id', id);
+        atualizarTodos();
+    });
+
+    // Avança para: Checkist preenchido e Rota iniciada
+    socket.on('iniciar_ida', async (id) => {
+        await supabase.from('pedidos').update({ status: 'em_transito_ida' }).eq('id', id);
+        atualizarTodos();
+    });
+
+    // Avança para: Paciente entregue no destino
+    socket.on('entregue_destino', async (id) => {
+        await supabase.from('pedidos').update({ status: 'no_destino' }).eq('id', id);
+        atualizarTodos();
+    });
     
     try {
         const { error } = await supabase
