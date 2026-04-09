@@ -88,50 +88,87 @@ socket.on('login_sucesso', u => {
 socket.on('login_erro', m => { document.getElementById('login-msg').innerHTML = `<i class="fa fa-exclamation-triangle modern-icon"></i> ${m}`; });
 function fazerLogout() { localStorage.removeItem('imaqueiro_user'); location.reload(); }
 
+// ============================================================================
+// [04] MOTOR DE NOTIFICAÇÕES (PUSH NOTIFICATIONS CAPACITOR) - OPÇÃO A (ALARME)
+// ============================================================================
 async function inicializarNotificacoesNativas() {
     try {
-        // Verifica se estamos rodando dentro do celular (Capacitor)
+        // LINHA 1: Verifica se o aplicativo está rodando dentro do celular (Capacitor) e se o motor de notificação existe.
         if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.PushNotifications) {
+            
+            // LINHA 2: Cria um "atalho" para o motor de notificações, para não ter que digitar esse nome gigante toda hora.
             const PushNotifications = window.Capacitor.Plugins.PushNotifications;
-
-            // 1. Pede a permissão do usuário
+            
+            // LINHA 3: Pula aquela janelinha na tela do Android perguntando: "Permitir que este app envie notificações?"
             let permStatus = await PushNotifications.requestPermissions();
             
-            if (permStatus.receive === 'granted') {
-                PushNotifications.register();
+            // LINHA 4: Se o maqueiro clicou em "Permitir" ('granted')...
+            if (permStatus.receive === 'granted') { 
+                // LINHA 5: Inscreve o celular na nuvem do Google (FCM) para ele poder receber mensagens.
+                PushNotifications.register(); 
             }
 
-            // 2. Registra o Token no Servidor
+            // ==========================================
+            // CRIANDO OS CANAIS DE SOM NATIVO DO ANDROID
+            // ==========================================
+            
+            // LINHA 6: Avisa ao Android para criar um "Canal" de avisos normais (Prioridade Amarela/Verde).
+            PushNotifications.createChannel({
+                id: 'canal_rotina',           // Nome interno que o nosso servidor (Render) vai chamar.
+                name: 'Chamados Normais',     // O nome que o maqueiro vê nas configurações do Android.
+                importance: 5,                // Nível 5 (Máximo): Força o Android a fazer barulho e mostrar na tela.
+                visibility: 1,                // Nível 1: Permite que a mensagem apareça mesmo com a tela bloqueada por senha.
+                sound: 'alerta',              // Manda o Android procurar o arquivo "alerta.mp3" na pasta "raw".
+                vibration: true               // Liga o motor de vibração do celular.
+            });
+
+            // LINHA 7: Avisa ao Android para criar o Canal Escandaloso (Prioridade Vermelha / SOS).
+            PushNotifications.createChannel({
+                id: 'canal_emergencia',       // Nome interno do canal de emergência.
+                name: 'Código Azul',          // Nome visível nas configurações.
+                importance: 5,                // Nível Máximo de intrusão.
+                visibility: 1,                // Visível na tela de bloqueio.
+                sound: 'emergencia',          // Toca o arquivo LONGO de 45s "emergencia.mp3" da pasta "raw".
+                vibration: true               // Faz o celular tremer na mesa.
+            });
+
+            // ==========================================
+            // ESCUTANDO OS EVENTOS DO CELULAR
+            // ==========================================
+
+            // LINHA 8: Quando o celular termina de se registrar no Google, ele recebe um "endereço postal" (Token).
             PushNotifications.addListener('registration', (token) => {
-                console.log('✅ Antena ligada! Meu Token FCM é:', token.value);
+                // LINHA 9: Pega esse Token e envia escondido pro Render. É assim que o Render sabe o "número" do celular.
                 socket.emit('registrar_token_fcm', { nome: usuario.nome, token: token.value });
             });
 
-            // 3. Clique na Notificação
-            PushNotifications.addListener('pushNotificationActionPerformed', (notification) => {
-                console.log('👇 Notificação clicada!');
-            });
-
-            // 4. Recebendo notificação com app em segundo plano
+            // LINHA 10: O que fazer se a notificação chegar e o maqueiro estiver com o APP ABERTO olhando pra tela?
             PushNotifications.addListener('pushNotificationReceived', (notification) => {
-                // Se for Código Azul (Emergência), dispara a sirene mesmo fora do app
+                // Como o app está aberto, o Android não toca o som da pasta "raw" automaticamente. 
+                // LINHA 11: Então nós checamos: O dado invisível que o Render mandou diz que é "Vermelho"?
                 if (notification.data && notification.data.urgencia === 'Vermelho') {
+                    // LINHA 12: Se for Vermelho, a gente força a tag <audio> do HTML a tocar a sirene em loop.
                     const a2 = document.getElementById('audio-emergencia');
                     if(a2) a2.play().catch(()=>{});
                 } else {
+                    // LINHA 13: Se não for vermelho, toca o áudio normal do HTML.
                     const a1 = document.getElementById('audio-alerta');
                     if(a1) a1.play().catch(()=>{});
                 }
             });
 
-        } else {
-            console.log("Sistema de notificação background só funciona no celular instalado (APK).");
+            // LINHA 14: O que fazer quando o maqueiro clica em cima do balão da notificação?
+            PushNotifications.addListener('pushNotificationActionPerformed', (notification) => {
+                // LINHA 15: Ele apenas avisa no sistema. O Android já se encarrega de abrir o aplicativo sozinho.
+                // Como o app vai abrir e carregar os dados, o botão verde gigante já vai pular na tela dele.
+                console.log('Notificação clicada pelo maqueiro!');
+            });
         }
-    } catch (e) {
-        console.error("Notificações nativas não suportadas ou erro:", e);
+    } catch (e) { 
+        // LINHA 16: Se der erro (ex: testando pelo PC que não tem notificação nativa), ele só avisa e não quebra o app.
+        console.error("Erro nas notificações:", e); 
     }
 }
-
 // ============================================================================
 // [04] UI/UX GERAL, ANIMAÇÕES E ÁUDIOS
 // ============================================================================
