@@ -1075,36 +1075,43 @@ setInterval(() => {
 
 function aceitarChamadoManual(id) { socket.emit('aceitar_chamado', { idPedido: id, nomeMaqueiro: usuario.nome }); }
 
-function aceitarChamadoBotao() {
-    const idParaAceitar = idChamadoAtual;
-    
-    if (!idParaAceitar) {
-        console.error("Erro: ID do chamado não encontrado.");
-        return;
+window.aceitarChamadoBotao = function() {
+    try {
+        const idParaAceitar = idChamadoAtual;
+        
+        if (!idParaAceitar) {
+            Swal.fire('Erro', 'ID do chamado perdido. Recarregue o app.', 'error');
+            return;
+        }
+
+        // 1. Para o cronômetro e o alarme
+        clearInterval(timerDespacho); 
+        pararAlarme(); 
+        
+        // 2. Avisa o servidor (Render) que você aceitou
+        socket.emit('aceitar_chamado', {
+            idPedido: idParaAceitar, 
+            nomeMaqueiro: usuario.nome
+        }); 
+
+        // 3. Esconde a tela de chamada e mostra aviso de sucesso
+        document.getElementById('call-modal').style.display = 'none';
+        
+        Swal.fire({
+            title: 'Aceito!',
+            text: 'Transporte atribuído a você.',
+            icon: 'success',
+            toast: true,
+            position: 'top-end',
+            timer: 3000,
+            showConfirmButton: false
+        });
+        
+    } catch (erro) {
+        console.error(erro);
+        alert("Erro no botão: " + erro.message); // Se algo falhar, ele te avisa na tela!
     }
-
-    // 1. Para o cronômetro e o alarme
-    clearInterval(timerDespacho); 
-    pararAlarme(); 
-    
-    // 2. Avisa o servidor (Render) que você aceitou
-    socket.emit('aceitar_chamado', {
-        idPedido: idParaAceitar, 
-        nomeMaqueiro: usuario.nome
-    }); 
-
-    // 3. Esconde a tela de chamada e mostra aviso de sucesso
-    document.getElementById('call-modal').style.display = 'none';
-    Swal.fire({
-        title: 'Aceito!',
-        text: 'Transporte atribuído a você.',
-        icon: 'success',
-        toast: true,
-        position: 'top-end',
-        timer: 3000,
-        showConfirmButton: false
-    });
-}
+};
 
 function passarVezCall() { 
     clearInterval(timerDespacho); 
