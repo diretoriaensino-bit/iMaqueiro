@@ -329,12 +329,21 @@ function renderizar(ativos, historico) {
 
             const cardBase = `<div class="card" style="${borderRisco}"><button onclick="abrirDetalhes(${p.id})" style="position:absolute; right:15px; top:15px; border:none; background:none; cursor:pointer; font-size:1.2rem; color:var(--text-muted); transition:0.2s;"><i class="fa fa-wheelchair modern-icon"></i></button>${badgeRetorno}<div style="display:flex; justify-content:space-between; align-items:start; margin-bottom:12px; padding-right:30px;"><b style="font-size:1.15rem; letter-spacing:-0.5px; color:${isRetorno ? 'var(--warning-dark)' : 'inherit'};">${telaOrigem} ➔ ${telaDestino}</b></div><div style="display:flex; gap:8px; margin-bottom: 12px; flex-wrap:wrap;">${getUrgenciaBadge(p.urgencia)} ${badgeRisco} ${tempoBadge}</div><div style="font-size:0.95rem; margin-bottom:6px; font-weight:500;"><i class="fa fa-user modern-icon" style="color:var(--text-muted); width:15px;"></i> ${p.paciente}</div><div style="font-size:0.85rem; color:var(--text-muted); margin-bottom:4px; font-weight:500;"><i class="fa fa-wheelchair modern-icon" style="width:15px;"></i> ${p.tipo}</div> ${badgeEquipe} <button onclick="abrirChat(${p.id})" style="position:absolute; right:15px; bottom:15px; border:none; background:var(--primary-light); width:38px; height:38px; border-radius:50%; cursor:pointer; transition:0.2s;"><i class="fa fa-comment modern-icon" style="color:var(--primary-hover)"></i></button>`;
 
+            // ==========================================
+            // LÓGICA DA ENFERMAGEM (BOTÃO RESTAURADO)
+            // ==========================================
             if(usuario.cargo === 'enfermagem' && nList) {
                 let botoesExtras = "";
                 let statusText = "Aguardando maqueiro...";
                 
                 if (p.status === 'pendente') {
-                    statusText = "Aguardando maqueiro aceitar...";
+                    // SE O PACIENTE NÃO ESTIVER PRONTO, MOSTRA O BOTÃO AZUL
+                    if (!p.pronto_pela_enfermagem) {
+                        statusText = "Aguardando preparo do paciente";
+                        botoesExtras += `<button class="btn btn-main" style="margin-top:12px; background:var(--primary); font-size:0.9rem;" onclick="socket.emit('paciente_pronto', ${p.id})"><i class="fa fa-thumbs-up modern-icon"></i> PACIENTE PRONTO</button>`;
+                    } else {
+                        statusText = "Paciente pronto. Aguardando maqueiro...";
+                    }
                 } else if (p.status === 'agendado') {
                     const dataFormatada = new Date(p.data_agendamento).toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' });
                     statusText = `<b><i class="fa fa-calendar modern-icon"></i> Agendado para: ${dataFormatada}</b>`;
@@ -386,64 +395,59 @@ function renderizar(ativos, historico) {
                 nList.innerHTML += `<div style="margin-bottom:20px;">${cardBase} ${statusBox} <div style="font-size:0.8rem; color:var(--text-muted); margin-top:8px; text-align:center; font-weight:500;">Responsável: <b>${p.maqueiro_ida || 'Aguardando...'}</b></div>${botoesExtras}</div></div>`;
             }
             
-            // =========================================================
-            // MÁGICA DO MAQUEIRO (DESTRAVADA)
-            // =========================================================
+            // ==========================================
+            // LÓGICA DO MAQUEIRO (GATILHO DO CHAMADO)
+            // ==========================================
             if(usuario.cargo === 'maqueiro') {
                 const isPendente = p.status === 'pendente' || p.status === 'aguardando_retorno'; 
                 const isMeu = p.maqueiro_ida === usuario.nome || p.maqueiro_volta === usuario.nome;
                 
-                // O Servidor enviou o seu nome no chamado?
-                const souOSugerido = (p.maqueiro_sugerido === usuario.nome);
-                
                 if(isPendente && mPendentes) {
-                    let btnText = "AGUARDANDO...";
+                    // Verifica se a enfermagem já apertou o botão "Paciente Pronto"
+                    let pacienteEstaPronto = p.pronto_pela_enfermagem || isRetorno; 
+                    
+                    let btnText = "AGUARDANDO PREPARO";
                     let btnColor = "#CBD5E1";
-                    let badgePronto = "";
+                    let blockClick = true;
 
-                    if (souOSugerido) {
+                    if (pacienteEstaPronto) {
                         btnText = "ACEITAR CHAMADO";
                         btnColor = "var(--success)";
-                        badgePronto = `<span class="badge badge-success" style="margin-bottom:8px;">SUA VEZ!</span><br>`;
-                    } else {
-                        btnText = "EM DESPACHO PARA OUTRO...";
-                        btnColor = "transparent";
-                        badgePronto = `<span class="badge" style="background:#E2E8F0; color:#64748B; margin-bottom:8px;">OCUPADO</span><br>`;
-                    }
+                        blockClick = false;
 
-                    // A TRAVA FOI REMOVIDA AQUI! 
-                    // Toca a sirene IMEDIATAMENTE se for a sua vez e você não rejeitou antes
-                    if(souOSugerido && !chamadosRejeitados.includes(p.id) && usuario.status_trabalho !== 'intervalo') {
-                        console.log("[SISTEMA] Disparando botão de chamado para: " + usuario.nome);
-                        callNow = true; 
-                        idChamadoAtual = p.id; 
-                        document.getElementById('call-paciente').innerText = p.paciente; 
-                        document.getElementById('call-rota').innerText = telaOrigem + " ➔ " + telaDestino; 
-                        document.getElementById('call-equip').innerText = p.tipo; 
-                        
-                        const faixaRisco = document.getElementById('call-risco-faixa'); 
-                        const imgRisco = document.getElementById('img-aviso-risco'); 
-                        const iconeSirene = document.getElementById('icone-sirene');
-                        
-                        if (p.risco_assistencial !== 'Nenhum') { 
-                            faixaRisco.style.display = 'block'; imgRisco.style.display = 'block'; iconeSirene.style.display = 'none'; 
-                            if(p.risco_assistencial === 'Contato') imgRisco.src = '/img-contato.png'; 
-                            else if (p.risco_assistencial === 'Gotículas') imgRisco.src = '/img-goticulas.png'; 
-                            else if (p.risco_assistencial === 'Aerosol') imgRisco.src = '/img-aerosol.png'; 
-                        } else { 
-                            faixaRisco.style.display = 'none'; imgRisco.style.display = 'none'; iconeSirene.style.display = 'block'; 
-                        }
-                        
-                        if(audioLigado) { 
-                            if (p.urgencia === 'Vermelho') document.getElementById('audio-emergencia').play().catch(()=>{}); 
-                            else document.getElementById('audio-alerta').play().catch(()=>{}); 
-                            if (p.risco_assistencial !== 'Nenhum') setTimeout(() => falarAvisoRisco(p.risco_assistencial), 1000); 
+                        // DISPARA A TELA GIGANTE E A SIRENE!
+                        // Só dispara se o maqueiro estiver disponível e não rejeitou
+                        if(usuario.status_trabalho !== 'intervalo' && !chamadosRejeitados.includes(p.id)) {
+                            callNow = true; idChamadoAtual = p.id; 
+                            document.getElementById('call-paciente').innerText = p.paciente; 
+                            document.getElementById('call-rota').innerText = telaOrigem + " ➔ " + telaDestino; 
+                            document.getElementById('call-equip').innerText = p.tipo; 
+                            
+                            const faixaRisco = document.getElementById('call-risco-faixa'); 
+                            const imgRisco = document.getElementById('img-aviso-risco'); 
+                            const iconeSirene = document.getElementById('icone-sirene');
+                            
+                            if (p.risco_assistencial !== 'Nenhum') { 
+                                faixaRisco.style.display = 'block'; imgRisco.style.display = 'block'; iconeSirene.style.display = 'none'; 
+                                if(p.risco_assistencial === 'Contato') imgRisco.src = '/img-contato.png'; 
+                                else if (p.risco_assistencial === 'Gotículas') imgRisco.src = '/img-goticulas.png'; 
+                                else if (p.risco_assistencial === 'Aerosol') imgRisco.src = '/img-aerosol.png'; 
+                            } else { 
+                                faixaRisco.style.display = 'none'; imgRisco.style.display = 'none'; iconeSirene.style.display = 'block'; 
+                            }
+                            
+                            if(audioLigado) { 
+                                if (p.urgencia === 'Vermelho') document.getElementById('audio-emergencia').play().catch(()=>{}); 
+                                else document.getElementById('audio-alerta').play().catch(()=>{}); 
+                                if (p.risco_assistencial !== 'Nenhum') setTimeout(() => falarAvisoRisco(p.risco_assistencial), 1000); 
+                            }
                         }
                     }
                     
-                    let estiloBotao = souOSugerido ? `background:${btnColor}; color: white; box-shadow:0 4px 15px rgba(16,185,129,0.3);` : `background: var(--input-bg); color: var(--text-muted); border: 1px solid var(--border-color);`;
+                    let estiloBotao = `background:${btnColor}; color: ${blockClick ? 'var(--text-muted)' : 'white'}; font-weight:800;`;
+                    if (!blockClick) estiloBotao += " box-shadow:0 4px 15px rgba(16,185,129,0.3);";
                     
-                    mPendentes.innerHTML += `${cardBase}${badgePronto}<button class="btn btn-main" style="${estiloBotao} margin-top:15px; width:100%;" onclick="aceitarChamadoManual(${p.id})" ${souOSugerido ? '' : 'disabled'}><i class="fa fa-hand-paper modern-icon"></i> ${btnText}</button></div>`;
+                    mPendentes.innerHTML += `${cardBase}<span class="badge badge-preparo" style="margin-bottom:8px; display:${pacienteEstaPronto ? 'none' : 'inline-block'}">EM PREPARO</span><br><button class="btn btn-main" style="${estiloBotao} margin-top:15px; width:100%;" onclick="aceitarChamadoManual(${p.id})" ${blockClick ? 'disabled' : ''}><i class="fa fa-hand-paper modern-icon"></i> ${btnText}</button></div>`;
                 } 
                 else if (isMeu && mAtivo) {
                     temAtivo = true; let btnAcao = "";
