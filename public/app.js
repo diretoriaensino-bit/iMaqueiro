@@ -78,44 +78,53 @@ window.addEventListener('online', () => { document.getElementById('offline-banne
 // =======================================================
 // AQUI ESTÁ A LIGAÇÃO COM A INTERNET (RENDER)
 // =======================================================
-// TODO: Substitua o link abaixo pelo link real do seu Render!
 const socket = io('https://imaqueiro.onrender.com'); 
 
 let usuario, pedidosAtivos = [], historicoGlobal = [], idChamadoAtual, idChatAtivo, html5QrCode;
 let chamadosRejeitados = []; let idChecklistAtual = null; let graficoSetoresInstancia = null; let qrcodeGerado = null;
 
-// =======================================================
-// MOTOR DE NOTIFICAÇÕES NATIVAS (CAPACITOR + FIREBASE)
-// =======================================================
+// ==========================================
+// SISTEMA DE NOTIFICAÇÕES EM SEGUNDO PLANO
+// ==========================================
 async function inicializarNotificacoesNativas() {
-    if (!window.Capacitor) return; // Só roda se estiver no celular
-
     try {
-        const { PushNotifications } = capacitorPushNotifications; // Puxa o plugin nativo
+        // Verifica se estamos rodando dentro do celular (Capacitor)
+        if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.PushNotifications) {
+            const PushNotifications = window.Capacitor.Plugins.PushNotifications;
 
-        let perm = await PushNotifications.requestPermissions();
-        if (perm.receive === 'granted') {
-            await PushNotifications.register();
-        }
-
-        PushNotifications.addListener('registration', (token) => {
-            console.log('Token do Aparelho:', token.value);
-            socket.emit('registrar_token_fcm', {
-                nome: usuario.nome,
-                token: token.value
-            });
-        });
-
-        PushNotifications.addListener('pushNotificationReceived', (notification) => {
-            // Se for Código Azul (Emergência), dispara a sirene mesmo fora do app
-            if (notification.data && notification.data.urgencia === 'Vermelho') {
-                const a2 = document.getElementById('audio-emergencia');
-                if(a2) a2.play().catch(()=>{});
-            } else {
-                const a1 = document.getElementById('audio-alerta');
-                if(a1) a1.play().catch(()=>{});
+            // 1. Pede a permissão do usuário
+            let permStatus = await PushNotifications.requestPermissions();
+            
+            if (permStatus.receive === 'granted') {
+                PushNotifications.register();
             }
-        });
+
+            // 2. Registra o Token no Servidor
+            PushNotifications.addListener('registration', (token) => {
+                console.log('✅ Antena ligada! Meu Token FCM é:', token.value);
+                socket.emit('registrar_token_fcm', { nome: usuario.nome, token: token.value });
+            });
+
+            // 3. Clique na Notificação
+            PushNotifications.addListener('pushNotificationActionPerformed', (notification) => {
+                console.log('👇 Notificação clicada!');
+            });
+
+            // 4. Recebendo notificação com app em segundo plano
+            PushNotifications.addListener('pushNotificationReceived', (notification) => {
+                // Se for Código Azul (Emergência), dispara a sirene mesmo fora do app
+                if (notification.data && notification.data.urgencia === 'Vermelho') {
+                    const a2 = document.getElementById('audio-emergencia');
+                    if(a2) a2.play().catch(()=>{});
+                } else {
+                    const a1 = document.getElementById('audio-alerta');
+                    if(a1) a1.play().catch(()=>{});
+                }
+            });
+
+        } else {
+            console.log("Sistema de notificação background só funciona no celular instalado (APK).");
+        }
     } catch (e) {
         console.error("Notificações nativas não suportadas ou erro:", e);
     }
@@ -186,6 +195,7 @@ function resolverDefeito(index) {
         carregarManutencao();
     }, 450); 
 }
+
 function enviarAvaliacao() {
     if (notaAtual === 0) return alert('Por favor, selecione pelo menos 1 estrela para avaliar.');
     socket.emit('finalizar_geral', idChamadoParaAvaliar);
@@ -194,12 +204,14 @@ function enviarAvaliacao() {
     document.getElementById('toast').style.display = 'flex'; document.getElementById('toast').style.borderLeft = '5px solid var(--success)';
     setTimeout(() => document.getElementById('toast').style.display='none', 4000);
 }
+
 function pularAvaliacao() { socket.emit('finalizar_geral', idChamadoParaAvaliar); document.getElementById('rating-modal').style.display = 'none'; }
 
 function abrirGeradorQR() {
     document.getElementById('qr-text-input').value = ""; document.getElementById('qr-code-output').innerHTML = '<span style="color: #94A3B8;">O código aparecerá aqui</span>';
     document.getElementById('btn-imprimir-qr').style.display = 'none'; document.getElementById('gerador-qr-modal').style.display = 'flex';
 }
+
 function gerarQRCodeEtiqueta() {
     const texto = document.getElementById('qr-text-input').value;
     if(!texto) return alert("Digite o nome do setor ou leito para gerar o código!");
@@ -207,6 +219,7 @@ function gerarQRCodeEtiqueta() {
     qrcodeGerado = new QRCode(container, { text: texto, width: 200, height: 200, colorDark : "#000000", colorLight : "#ffffff", correctLevel : QRCode.CorrectLevel.H });
     document.getElementById('btn-imprimir-qr').style.display = 'block';
 }
+
 function imprimirQR() {
     const texto = document.getElementById('qr-text-input').value; const imgData = document.querySelector('#qr-code-output img').src;
     const printWindow = window.open('', '_blank');
