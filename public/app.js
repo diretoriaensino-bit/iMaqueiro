@@ -1075,15 +1075,36 @@ setInterval(() => {
 
 function aceitarChamadoManual(id) { socket.emit('aceitar_chamado', { idPedido: id, nomeMaqueiro: usuario.nome }); }
 
-document.getElementById('swipe-accept').addEventListener('input', function() { 
-    if(this.value > 85) { 
-        this.value = 0; 
-        clearInterval(timerDespacho); 
-        pararAlarme(); 
-        socket.emit('aceitar_chamado', {idPedido: idChamadoAtual, nomeMaqueiro: usuario.nome}); 
-        document.getElementById('call-modal').style.display = 'none';
-    } 
-});
+function aceitarChamadoBotao() {
+    const idParaAceitar = idChamadoAtual;
+    
+    if (!idParaAceitar) {
+        console.error("Erro: ID do chamado não encontrado.");
+        return;
+    }
+
+    // 1. Para o cronômetro e o alarme
+    clearInterval(timerDespacho); 
+    pararAlarme(); 
+    
+    // 2. Avisa o servidor (Render) que você aceitou
+    socket.emit('aceitar_chamado', {
+        idPedido: idParaAceitar, 
+        nomeMaqueiro: usuario.nome
+    }); 
+
+    // 3. Esconde a tela de chamada e mostra aviso de sucesso
+    document.getElementById('call-modal').style.display = 'none';
+    Swal.fire({
+        title: 'Aceito!',
+        text: 'Transporte atribuído a você.',
+        icon: 'success',
+        toast: true,
+        position: 'top-end',
+        timer: 3000,
+        showConfirmButton: false
+    });
+}
 
 function passarVezCall() { 
     clearInterval(timerDespacho); 
