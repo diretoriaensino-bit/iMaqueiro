@@ -1121,7 +1121,22 @@ function passarVezCall() {
     socket.emit('rejeitar_pedido', idChamadoAtual); 
 }
 
-function pararAlarme() { document.getElementById('audio-alerta').pause(); document.getElementById('audio-emergencia').pause(); window.speechSynthesis.cancel(); }
+function pararAlarme() { 
+    try {
+        const a1 = document.getElementById('audio-alerta');
+        if (a1) { a1.pause(); a1.currentTime = 0; }
+        
+        const a2 = document.getElementById('audio-emergencia');
+        if (a2) { a2.pause(); a2.currentTime = 0; }
+        
+        // Só tenta calar a voz se o sistema de voz existir no celular!
+        if ('speechSynthesis' in window && window.speechSynthesis) {
+            window.speechSynthesis.cancel();
+        }
+    } catch(e) {
+        console.error("Erro ao parar alarme:", e);
+    }
+}
 function abrirChat(id) { idChatAtivo = id; const p = pedidosAtivos.find(x => x.id === id); const box = document.getElementById('chat-box'); box.innerHTML = (p.chat_mensagens || []).map(m => `<div class="msg ${m.autor === usuario.nome ? 'meu' : 'outro'}"><b>${m.autor}:</b> ${m.texto}</div>`).join(''); const fr = usuario.cargo === 'maqueiro' ? ["Chegando", "Elevador Ocupado", "Paciente não liberado"] : ["Aguarde", "Pode vir", "Docs prontos"]; document.getElementById('quick-replies').innerHTML = fr.map(f => `<button class="btn" style="border:1px solid var(--border-color); background:var(--card-bg); color:var(--text-main); font-size:0.8rem; border-radius:20px; padding: 8px 12px;" onclick="enviarMensagem('${f}')">${f}</button>`).join(''); document.getElementById('chat-modal').style.display = 'flex'; box.scrollTop = box.scrollHeight; }
 function enviarMensagem(texto) { socket.emit('enviar_mensagem', { idPedido: idChatAtivo, texto, autor: usuario.nome }); document.getElementById('chat-modal').style.display='none'; idChatAtivo=null; }
 function abrirQR(id) { document.getElementById('qr-modal').style.display = 'flex'; html5QrCode = new Html5Qrcode("qr-reader"); html5QrCode.start({ facingMode: "environment" }, { fps: 10, qrbox: 250 }, (txt) => { fecharQR(); socket.emit('cheguei_origem', id); }, () => {}); }
