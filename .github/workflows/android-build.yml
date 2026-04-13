@@ -3,7 +3,7 @@ name: Build iMaqueiro APK
 on: 
   push:
     branches: [ "main", "master" ]
-  workflow_dispatch: # Adicionado botão para rodar manualmente!
+  workflow_dispatch:
 
 jobs:
   build:
@@ -14,7 +14,7 @@ jobs:
       - name: setup node
         uses: actions/setup-node@v4
         with:
-          node-version: '18'
+          node-version: '22' # <-- A MÁGICA ESTÁ AQUI: Atualizamos para a versão 22!
           
       - name: Install Capacitor
         run: |
