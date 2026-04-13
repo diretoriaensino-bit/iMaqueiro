@@ -1,0 +1,26 @@
+name: Build iMaqueiro APK
+on: [push]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: setup node
+        uses: actions/setup-node@v2
+        with:
+          node-version: '18'
+      - name: Install Capacitor
+        run: |
+          npm install @capacitor/core @capacitor/cli @capacitor/android @capacitor/push-notifications
+          npx cap init "iMaqueiro Pro" br.com.imaqueiro.pro --web-dir .
+          npx cap add android
+          npx cap sync
+      - name: Build Android APK
+        run: |
+          cd android && ./gradlew assembleDebug
+      - name: Upload APK
+        uses: actions/upload-artifact@v2
+        with:
+          name: imaqueiro-pro-debug
+          path: android/app/build/outputs/apk/debug/app-debug.apk
